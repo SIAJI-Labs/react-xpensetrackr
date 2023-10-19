@@ -1,16 +1,20 @@
-import { PageProps } from "@/types";
 import "../../css/siaji.scss";
+
+export interface User {
+    id: number;
+    name: string;
+    email: string;
+    email_verified_at: string;
+}
 
 export default function ApplicationLogo(
     {
         hasDescription,
         fontSizeMain
-    }: PageProps<
-        {
-            hasDescription?: boolean,
-            fontSizeMain?: string
-        }
-    >
+    }: {
+        hasDescription?: boolean,
+        fontSizeMain?: string
+    }
 ) {
     let descEl;
     if(hasDescription){

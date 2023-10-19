@@ -1,0 +1,47 @@
+// Root
+:root {
+    --color-accent: rgba(38, 196, 133, 1);
+    --color-accent-hover: rgba(29, 154, 104, 1);
+}
+
+body {
+    font-family: 'Signika', sans-serif !important;
+    font-weight: 300;
+}
+
+// Logo
+.main-logo {
+    .expense {
+
+    }
+    .trackr {
+        @apply
+            relative
+            before:absolute
+            before:left-1/2
+            before:top-1/2
+            before:-translate-x-1/2
+            before:-translate-y-1/2
+            before:w-[calc(100%+1.25rem)]
+            before:h-[calc(100%+.25rem)]
+            before:-z-10
+            before:-skew-x-12
+            before:rounded
+            before:px-4
+            before:py-2
+            z-0
+            text-white;
+
+        &::before {
+            background-color: var(--color-accent);
+        }
+    }
+
+    &:hover {
+        .trackr {
+            &::before {
+                background-color: var(--color-accent-hover);
+            }
+        }
+    }
+}

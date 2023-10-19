@@ -24,7 +24,6 @@ export default function Welcome(
 
             <section className=" min-h-screen flex flex-col gap-8 justify-center items-center">
                 <ApplicationLogo
-                    auth={auth}
                     hasDescription = {true}
                 ></ApplicationLogo>
                 

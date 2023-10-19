@@ -2,6 +2,8 @@
 
 namespace {{ namespace }};
 
+// use Inertia\Inertia;
+
 use {{ rootNamespace }}Http\Controllers\Controller;
 use Illuminate\Http\Request;
 

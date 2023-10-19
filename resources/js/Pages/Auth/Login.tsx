@@ -51,8 +51,6 @@ export default function Login({ status, canResetPassword }: { status?: string, c
             // Set to Password
             document.getElementById('auth-password')?.setAttribute('type', 'password');
         }
-
-        console.log(passwordIcon);
     }
 
     return (
@@ -107,7 +105,7 @@ export default function Login({ status, canResetPassword }: { status?: string, c
                                         <div className={ ` absolute right-4 top-1/2 -translate-y-1/2` }>
                                             <span
                                                 id="auth-password_icon"
-                                                className={ ` fas ${passwordIcon} cursor-pointer` }
+                                                className={ ` fa-solid ${passwordIcon} cursor-pointer` }
                                                 onClick={togglePasswordType}></span>
                                         </div>
                                     </div>

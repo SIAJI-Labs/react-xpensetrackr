@@ -1,12 +1,5 @@
 import "../../css/siaji.scss";
 
-export interface User {
-    id: number;
-    name: string;
-    email: string;
-    email_verified_at: string;
-}
-
 export default function ApplicationLogo(
     {
         hasDescription,

@@ -3,20 +3,20 @@ import { Head, Link } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { useState } from 'react';
 
-// Plugins
-import moment from 'moment';
-
 // Shadcn
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/Components/ui/dropdown-menu';
 import { Badge } from '@/Components/ui/badge';
+import RecordItem from '@/Components/template/RecordItem';
 
-export default function Dashboard({ auth }: PageProps) {
+export default function Dashboard({ auth, inspire = '' }: PageProps) {
     // Record List - Variable Init
     const [recordFilter, setRecordFilter] = useState<string>('complete');
     const [recordIsLoading, setRecordIsLoading] = useState<boolean>(true);
+    const [recordSkeletonCount, setRecordSkeletonCount] = useState<number>(5);
+    
     // Record List - Skeleton
     let skeletonTemplate = <>
         <div className={ ` flex flex-col gap-2 border rounded p-4` }>
@@ -47,73 +47,13 @@ export default function Dashboard({ auth }: PageProps) {
         </div>
     </>;
     // Record List - Template
-    let recordListTemplate = <>
-        <div className={ ` flex flex-col gap-2 border rounded p-4` }>
-            {/* Date, amount and action */}
-            <div className={ ` flex flex-row justify-between` } onClick={($refs) => {
-                let dropdownTrigger = ($refs.target as HTMLElement).querySelector(`[data-type="dropdown-trigger"]`);
-                if(dropdownTrigger){
-                    dropdownTrigger.dispatchEvent(new Event('click', { bubbles: true}));
-                }
-            }}>
-                <span>{moment().format('MMM Do, YYYY / HH:mm')}</span>
-
-                <div className={ ` flex flex-row gap-2 items-center` }>
-                    <span>Rp 10.000</span>
-                    <div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="link" className={ ` p-0 h-auto leading-none` } data-type="dropdown-trigger">
-                                    <i className={ `fa-solid fa-ellipsis-vertical` }></i>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent sideOffset={5} side={ `left` } align={ `start` }>
-                                <DropdownMenuItem>
-                                    <Link href={ `` }>Detail</Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <Link href={ `` }>Edit</Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <Link href={ `` }>Delete</Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </div>
-            </div>
-
-            {/* Icon, Category, Notes */}
-            <div className={ ` flex flex-row gap-4 items-center` }>
-                <div className={ ` p-3 h-10 w-10 rounded-full bg-red-500 flex items-center justify-center` }>
-                    <i className={ `fa-solid fa-right-from-bracket -rotate-90 text-white` }></i>
-                </div>
-
-                <div className={ ` w-full flex flex-col overflow-hidden` }>
-                    <span className={ ` whitespace-nowrap overflow-hidden text-ellipsis` }>Uncategorized</span>
-                    <span className={ ` whitespace-nowrap text-sm overflow-hidden text-ellipsis` }>Balance</span>
-                </div>
-            </div>
-
-            {/* Extra Information */}
-            <div className={ ` mt-2 flex flex-row gap-2` }>
-                <Badge className={ ` rounded flex flex-row gap-1 items-center` }>
-                    <i className={ `fa-solid fa-flag leading-none text-xs` }></i>
-                    <span>Expense</span>
-                </Badge>
-                <Badge className={ ` rounded flex flex-row gap-1 items-center` }>
-                    <i className={ `fa-solid fa-wallet leading-none text-xs` }></i>
-                    <span>Cash</span>
-                </Badge>
-                <Badge className={ ` rounded flex flex-row gap-1 items-center` }>
-                    <i className={ `fa-solid fa-align-left leading-none text-xs` }></i>
-                    <span>Notes</span>
-                </Badge>
-            </div>
-        </div>
-    </>
+    let recordListTemplate = <RecordItem></RecordItem>;
+    // Simulate API call
     setTimeout(() => {
+        // Remove loading state
         setRecordIsLoading(false);
+        // Update skeleton count to match loaded record item
+        setRecordSkeletonCount(1);
     }, 1000);
 
     return (
@@ -126,8 +66,12 @@ export default function Dashboard({ auth }: PageProps) {
             <div className="py-12 flex flex-col gap-4">
                 {/* Welcome page & Quotes */}
                 <Card className={ ` shadow-sm` }>
-                    <CardContent className={ `pt-6` }>
-                        <span>Hi <span className={ ` font-semibold` }>{auth.user.name}</span>, how's doing? 👋</span>
+                    <CardHeader>
+                        <CardTitle>Hi <span className={ ` font-semibold` }>{auth.user.name}</span>,</CardTitle>
+                        <CardDescription>how's doing? 👋</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div dangerouslySetInnerHTML={{ __html: inspire }} className={ ` p-4 rounded-lg bg-gray-100` }></div>
                     </CardContent>
                 </Card>
 
@@ -154,7 +98,11 @@ export default function Dashboard({ auth }: PageProps) {
                                     setRecordFilter('pending');
                                     setRecordIsLoading(!recordIsLoading);
                                 }}
-                            >Pending</Button>
+                                className={ ` flex flex-row gap-1` }
+                            >
+                                <span>Pending</span>
+                                <Badge className={ `${recordFilter === 'pending' ? ' bg-white text-primary' : null} leading-none p-0 h-4 w-4 flex items-center justify-center` }>5</Badge>
+                            </Button>
                         </div>
 
                         {/* Filtered Content */}
@@ -162,7 +110,7 @@ export default function Dashboard({ auth }: PageProps) {
                             {(() => {
                                 if(recordIsLoading){
                                     let element = [];
-                                    for(let i = 0; i < 5; i++){
+                                    for(let i = 0; i < recordSkeletonCount; i++){
                                         element.push(
                                             <div key={ `skeleton-${i}` }>
                                                 {skeletonTemplate}
@@ -178,6 +126,18 @@ export default function Dashboard({ auth }: PageProps) {
                             })()}
                         </div>
                     </CardContent>
+
+                    {(() => {
+                        if(!recordIsLoading){
+                            return <>
+                                <CardFooter>
+                                    <Button variant={ `outline` }>Load more</Button>
+                                </CardFooter>
+                            </>;
+                        }
+
+                        return <></>;
+                    })()}
                 </Card>
             </div>
         </SystemLayout>

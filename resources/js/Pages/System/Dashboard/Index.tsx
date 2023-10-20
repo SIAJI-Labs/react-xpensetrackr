@@ -70,12 +70,12 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
             query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
         }
 
-        // // Create request
-        // const req = await fetch(`${route('api.record.v1.list')}?${query.join('&')}`);
-        // const response = await req.json();
+        // Create request
+        const req = await fetch(`${route('api.record.v1.list')}?${query.join('&')}`);
+        const response = await req.json();
 
-        // // Apply to related property
-        // setRecordItem(response.result.data);
+        // Apply to related property
+        setRecordItem(response.result.data);
 
         // Remove loading state
         setRecordIsLoading(false);

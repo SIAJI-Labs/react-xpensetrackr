@@ -4,12 +4,20 @@ export interface User {
     email: string;
     email_verified_at: string;
 }
+export interface CategoryItem {
+    id: number;
+    uuid: string;
+    user_id: number;
+    parent_id: number;
+    parent: CategoryItem;
+    name: string;
+}
 export interface RecordItem {
     id: number;
+    uuid: string;
     user_id: number;
     category_id: number;
-    category: string;
-    uuid: string;
+    category: CategoryItem;
     name: string;
     type: string;
     from_wallet_id: string;

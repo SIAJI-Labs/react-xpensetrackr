@@ -1,7 +1,7 @@
 import SystemLayout from '@/Layouts/SystemLayout';
 import { Head, Link } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { useState } from 'react';
+import { PageProps, RecordItem } from '@/types';
+import { useEffect, useState } from 'react';
 
 // Shadcn
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -9,13 +9,20 @@ import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/Components/ui/dropdown-menu';
 import { Badge } from '@/Components/ui/badge';
-import RecordItem from '@/Components/template/RecordItem';
+import RecordTemplate from '@/Components/template/RecordTemplate';
+import { Loader2 } from 'lucide-react';
+import NoDataTemplate from '@/Components/template/NoDataTemplate';
 
 export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: string}>) {
+    // Global Variable
+    const [refreshLoading, setRefreshLoading] = useState<boolean>(false)
+
     // Record List - Variable Init
     const [recordFilter, setRecordFilter] = useState<string>('complete');
     const [recordIsLoading, setRecordIsLoading] = useState<boolean>(true);
     const [recordSkeletonCount, setRecordSkeletonCount] = useState<number>(5);
+    const [recordItem, setRecordItem] = useState([]);
+    const [recordPendingCount, setRecordPendingCount] = useState<number>(0);
     
     // Record List - Skeleton
     let skeletonTemplate = <>
@@ -47,14 +54,52 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
         </div>
     </>;
     // Record List - Template
-    let recordListTemplate = <RecordItem></RecordItem>;
+    const recordListTemplate = (obj:RecordItem) => {
+        return <RecordTemplate record={obj}></RecordTemplate>;
+    }
     // Simulate API call
-    setTimeout(() => {
+    const fetchRecordList = async () => {
+        // Build parameter
+        const query = [];
+        const obj = {
+            limit: 5,
+            filter_status: recordFilter
+        };
+        for (const key in obj) {
+            query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]));
+        }
+
+        // Create request
+        const req = await fetch(`${route('api.record.v1.list')}?${query.join('&')}`);
+        const response = await req.json();
+
+        // Apply to related property
+        setRecordItem(response.result.data);
+
         // Remove loading state
         setRecordIsLoading(false);
+    }
+    
+    useEffect(() => {
+        fetchRecordList();
+    }, [recordFilter]);
+    useEffect(() => {
         // Update skeleton count to match loaded record item
-        setRecordSkeletonCount(1);
-    }, 1000);
+        setRecordSkeletonCount(recordItem.length > 0 ? recordItem.length : 3);
+    }, [recordItem]);
+
+    // Create Request
+    const fetchPending = async () => {
+        setRefreshLoading(true);
+        const req = await fetch(route('api.record.v1.count-pending'));
+        const response = await req.json();
+
+        setRecordPendingCount(response?.result?.data);
+        setRefreshLoading(false);
+    }
+    useEffect(() => {
+        fetchPending();
+    }, []);
 
     return (
         <SystemLayout
@@ -73,6 +118,20 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
                     <CardContent>
                         <div dangerouslySetInnerHTML={{ __html: inspire }} className={ ` p-4 rounded-lg bg-gray-100` }></div>
                     </CardContent>
+                    <CardFooter>
+                        {(() => {
+                            if(refreshLoading){
+                                return <Button disabled>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Please wait
+                                </Button>
+                            }
+
+                            return <Button variant={ `outline` } onClick={() => {
+                                fetchPending();
+                            }}>Refresh</Button>;
+                        })()}
+                    </CardFooter>
                 </Card>
 
                 {/* Record List */}
@@ -87,21 +146,33 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
                             <Button
                                 variant={ recordFilter === 'complete' ? `default` : `outline` }
                                 onClick={() => {
-                                    setRecordFilter('complete');
-                                    setRecordIsLoading(!recordIsLoading);
+                                    if(recordFilter !== 'complete'){
+                                        setRecordFilter('complete');
+                                        setRecordIsLoading(!recordIsLoading);
+                                    }
                                 }}
                             >Complete</Button>
 
                             <Button
                                 variant={ recordFilter === 'pending' ? `default` : `outline` }
                                 onClick={() => {
-                                    setRecordFilter('pending');
-                                    setRecordIsLoading(!recordIsLoading);
+                                    if(recordFilter !== 'pending'){
+                                        setRecordFilter('pending');
+                                        setRecordIsLoading(!recordIsLoading);
+                                    }
                                 }}
                                 className={ ` flex flex-row gap-1` }
                             >
                                 <span>Pending</span>
-                                <Badge className={ `${recordFilter === 'pending' ? ' bg-white text-primary' : null} leading-none p-0 h-4 w-4 flex items-center justify-center` }>5</Badge>
+                                {(() => {
+                                    if(recordPendingCount > 0){
+                                        return <>
+                                            <Badge className={ `${recordFilter === 'pending' ? ' bg-white text-primary' : null} leading-none p-0 h-4 w-4 flex items-center justify-center` }>{recordPendingCount}</Badge>
+                                        </>;
+                                    }
+
+                                    return <></>;
+                                })()}
                             </Button>
                         </div>
 
@@ -120,8 +191,20 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
 
                                     return element;
                                 } else {
-                                    // Return 
-                                    return <>{recordListTemplate}</>;
+                                    let element = [];
+                                    let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                                    // Loop through response
+                                    if(recordItem.length > 0){
+                                        recordItem.map((val, index) => {
+                                            element.push(
+                                                <div key={ `record_item-${index}` }>
+                                                    {recordListTemplate(val)}
+                                                </div>
+                                            );
+                                        });
+                                    }
+
+                                    return element.length > 0 ? element : defaultContent;
                                 }
                             })()}
                         </div>

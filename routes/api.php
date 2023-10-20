@@ -17,3 +17,24 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::group([
+    'as' => 'api.'
+], function(){
+    // Record
+    Route::group([
+        'prefix' => 'record',
+        'as' => 'record.'
+    ], function(){
+        // v1
+        Route::group([
+            'prefix' => 'v1',
+            'as' => 'v1.'
+        ], function(){
+            // Fetch Pending Count
+            Route::get('count-pending', [\App\Http\Controllers\Api\v1\RecordController::class, 'countPending'])->name('count-pending');
+            // List
+            Route::get('list', [\App\Http\Controllers\Api\v1\RecordController::class, 'index'])->name('list');
+        });
+    });
+});

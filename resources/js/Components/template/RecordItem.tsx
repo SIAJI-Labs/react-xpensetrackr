@@ -1,7 +1,7 @@
 import { useState, PropsWithChildren, ReactNode } from 'react';
 import "../../../css/siaji.scss";
 
-import { Record } from '@/types';
+import { RecordItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
 // Plugins
@@ -12,7 +12,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/Components/ui/dropdown-menu';
 
-export default function RecordItem({ record }: PropsWithChildren<{record?: Record}> ){
+export default function RecordItem({ record }: PropsWithChildren<{record?: RecordItem}> ){
     return (
         <>
             <DropdownMenu>

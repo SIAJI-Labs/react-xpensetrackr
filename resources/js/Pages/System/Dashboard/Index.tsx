@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuIte
 import { Badge } from '@/Components/ui/badge';
 import RecordItem from '@/Components/template/RecordItem';
 
-export default function Dashboard({ auth, inspire = '' }: PageProps) {
+export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: string}>) {
     // Record List - Variable Init
     const [recordFilter, setRecordFilter] = useState<string>('complete');
     const [recordIsLoading, setRecordIsLoading] = useState<boolean>(true);

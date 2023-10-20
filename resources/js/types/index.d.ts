@@ -4,7 +4,7 @@ export interface User {
     email: string;
     email_verified_at: string;
 }
-export interface Record {
+export interface RecordItem {
     id: number;
     user_id: number;
     category_id: number;

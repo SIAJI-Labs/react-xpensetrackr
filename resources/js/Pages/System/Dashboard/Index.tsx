@@ -64,17 +64,18 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
         const obj = {
             limit: 5,
             filter_status: recordFilter
-        };
+        }
+        // } as { [key: string]: any };
         for (const key in obj) {
-            query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]));
+            query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
         }
 
-        // Create request
-        const req = await fetch(`${route('api.record.v1.list')}?${query.join('&')}`);
-        const response = await req.json();
+        // // Create request
+        // const req = await fetch(`${route('api.record.v1.list')}?${query.join('&')}`);
+        // const response = await req.json();
 
-        // Apply to related property
-        setRecordItem(response.result.data);
+        // // Apply to related property
+        // setRecordItem(response.result.data);
 
         // Remove loading state
         setRecordIsLoading(false);
@@ -180,7 +181,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
                         <div className={ ` flex flex-col gap-4` }>
                             {(() => {
                                 if(recordIsLoading){
-                                    let element = [];
+                                    let element: any[] = [];
                                     for(let i = 0; i < recordSkeletonCount; i++){
                                         element.push(
                                             <div key={ `skeleton-${i}` }>
@@ -191,12 +192,12 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
 
                                     return element;
                                 } else {
-                                    let element = [];
+                                    let recordElement: any[] = [];
                                     let defaultContent = <NoDataTemplate></NoDataTemplate>;
                                     // Loop through response
                                     if(recordItem.length > 0){
                                         recordItem.map((val, index) => {
-                                            element.push(
+                                            recordElement.push(
                                                 <div key={ `record_item-${index}` }>
                                                     {recordListTemplate(val)}
                                                 </div>
@@ -204,7 +205,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
                                         });
                                     }
 
-                                    return element.length > 0 ? element : defaultContent;
+                                    return recordElement.length > 0 ? recordElement : defaultContent;
                                 }
                             })()}
                         </div>

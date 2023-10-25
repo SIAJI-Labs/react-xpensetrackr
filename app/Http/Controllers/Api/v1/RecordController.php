@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-// use Inertia\Inertia;
-
 use App\Http\Controllers\Controller;
-use App\Traits\JsonResponseTrait;
 use Illuminate\Http\Request;
+
+use App\Traits\JsonResponseTrait;
 
 class RecordController extends Controller
 {
@@ -18,7 +17,7 @@ class RecordController extends Controller
     public function index(Request $request)
     {
         $data = \App\Models\Record::query()
-            ->with('category.parent');
+            ->with('category.parent', 'fromWallet.parent', 'toWallet.parent');
 
         // Apply Filter
         if($request->has('filter_status') && in_array($request->filter_status, ['pending', 'complete'])){
@@ -36,6 +35,7 @@ class RecordController extends Controller
             $data->orderBy('datetime', $sort_type);
         }
 
+        // Pagination
         $perPage = 5;
         if($request->has('per_page') && is_numeric($request->per_page)){
             $perPage = $request->per_page;
@@ -96,6 +96,8 @@ class RecordController extends Controller
      */
     public function countPending(Request $request)
     {
+        // sleep(10);
+        
         $pending = \App\Models\Record::where('is_pending', true)
             ->count();
             

@@ -9,9 +9,9 @@ import InputError from '@/Components/InputError';
 // Shadcn
 import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import Checkbox from '@/Components/Checkbox';
 import { Button } from '@/Components/ui/button';
+import { Label } from '@/Components/ui/label';
 
 export default function Login({ status, canResetPassword }: { status?: string, canResetPassword: boolean }) {
     const { data, setData, post, processing, errors, reset } = useForm({

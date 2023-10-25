@@ -62,7 +62,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
         // Build parameter
         const query = [];
         const obj = {
-            limit: 5,
+            limit: 10,
             filter_status: recordFilter
         }
         // } as { [key: string]: any };
@@ -97,6 +97,9 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
 
         setRecordPendingCount(response?.result?.data);
         setRefreshLoading(false);
+
+        // Fetch newest record-item
+        fetchRecordList();
     }
     useEffect(() => {
         fetchPending();
@@ -109,37 +112,43 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
         >
             <Head title="Dashboard" />
 
-            <div className="py-12 flex flex-col gap-4">
+            <div className="flex flex-col gap-6">
                 {/* Welcome page & Quotes */}
-                <Card className={ ` shadow-sm` }>
-                    <CardHeader>
-                        <CardTitle>Hi <span className={ ` font-semibold` }>{auth.user.name}</span>,</CardTitle>
-                        <CardDescription>how's doing? 👋</CardDescription>
+                <Card className={ `` }>
+                    <CardHeader className={ `` }>
+                        <div className={ `flex flex-col space-y-2 ` }>
+                            <CardTitle><span className={ ` font-light` }>Hi</span> <span className={ ` font-semibold` }>{auth.user.name}</span>,</CardTitle>
+                            <CardDescription>how's doing? 👋</CardDescription>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div dangerouslySetInnerHTML={{ __html: inspire }} className={ ` p-4 rounded-lg bg-gray-100` }></div>
                     </CardContent>
-                    <CardFooter>
-                        {(() => {
-                            if(refreshLoading){
-                                return <Button disabled>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Please wait
-                                </Button>
-                            }
-
-                            return <Button variant={ `outline` } onClick={() => {
-                                fetchPending();
-                            }}>Refresh</Button>;
-                        })()}
-                    </CardFooter>
                 </Card>
 
                 {/* Record List */}
-                <Card className={ ` shadow-sm` }>
+                <Card className={ `` }>
                     <CardHeader>
-                        <CardTitle>Record: List</CardTitle>
-                        <CardDescription>See your latest transaction</CardDescription>
+
+                        <div className={ ` flex flex-row justify-between items-center` }>
+                            <div>
+                                <CardTitle>
+                                        <div>Record: List</div>
+                                </CardTitle>
+                                <CardDescription>See your latest transaction</CardDescription>
+                            </div>
+                            {(() => {
+                                if(refreshLoading){
+                                    return <Button disabled>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    </Button>
+                                }
+
+                                return <Button variant={ `outline` } onClick={() => {
+                                    fetchPending();
+                                }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
+                            })()}
+                        </div>
                     </CardHeader>
                     <CardContent className={ ` flex flex-col gap-6` }>
                         {/* Filter Button */}

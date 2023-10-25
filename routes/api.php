@@ -21,6 +21,21 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::group([
     'as' => 'api.'
 ], function(){
+    // Category
+    Route::group([
+        'prefix' => 'category',
+        'as' => 'category.'
+    ], function(){
+        // v1
+        Route::group([
+            'prefix' => 'v1',
+            'as' => 'v1.'
+        ], function(){
+            // List
+            Route::get('list', [\App\Http\Controllers\Api\v1\CategoryController::class, 'index'])->name('list');
+        });
+    });
+
     // Record
     Route::group([
         'prefix' => 'record',

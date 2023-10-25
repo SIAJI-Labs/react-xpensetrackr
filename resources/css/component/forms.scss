@@ -1,0 +1,13 @@
+/*
+* Forms
+*/
+.form--group {
+    @apply
+        mb-4;
+}
+.form--label {
+    @apply 
+        font-normal
+        inline-block 
+        mb-1;
+}

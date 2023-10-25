@@ -12,6 +12,16 @@ export interface CategoryItem {
     parent: CategoryItem;
     name: string;
 }
+export interface WalletItem {
+    id: number;
+    uuid: string;
+    user_id: number;
+    parent_id: number;
+    parent: WalletItem;
+    type: string;
+    starting_balance?: number;
+    name: string;
+}
 export interface RecordItem {
     id: number;
     uuid: string;
@@ -21,9 +31,9 @@ export interface RecordItem {
     name: string;
     type: string;
     from_wallet_id: string;
-    from_wallet: string;
+    from_wallet: WalletItem;
     to_wallet_id: string;
-    to_wallet: string;
+    to_wallet: WalletItem;
     amount: number;
     extra_type: string;
     extra_percentage: number;

@@ -50,6 +50,24 @@ Route::group([
             Route::get('count-pending', [\App\Http\Controllers\Api\v1\RecordController::class, 'countPending'])->name('count-pending');
             // List
             Route::get('list', [\App\Http\Controllers\Api\v1\RecordController::class, 'index'])->name('list');
+            
+            // Store
+            Route::post('store', [\App\Http\Controllers\Api\v1\RecordController::class, 'store'])->name('store');
+        });
+    });
+
+    // Wallet
+    Route::group([
+        'prefix' => 'wallet',
+        'as' => 'wallet.'
+    ], function(){
+        // v1
+        Route::group([
+            'prefix' => 'v1',
+            'as' => 'v1.'
+        ], function(){
+            // List
+            Route::get('list', [\App\Http\Controllers\Api\v1\WalletController::class, 'index'])->name('list');
         });
     });
 });

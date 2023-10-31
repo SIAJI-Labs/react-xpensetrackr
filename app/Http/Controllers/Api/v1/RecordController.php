@@ -64,7 +64,40 @@ class RecordController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // sleep(10);
+        
+        $request->validate([
+            'type' => ['required', 'string', 'in:expense,transfer,income'],
+            'category' => ['nullable', 'string', 'exists:'.(new \App\Models\Category())->getTable().',uuid'],
+            'from_wallet' => ['required', 'string', 'exists:'.(new \App\Models\Wallet())->getTable().',uuid'],
+            'to_wallet' => ['nullable', 'required_if:type,transfer', 'different:from_wallet', 'exists:'.(new \App\Models\Wallet())->getTable().',uuid'],
+            'amount' => ['required', 'numeric'],
+            'extra_amount' => ['nullable', 'numeric'],
+            'extra_type' => ['nullable', 'string', 'in:amount,percentage'],
+            'date' => ['required', 'string'],
+            'hours' => ['required', 'numeric', 'between:0,23'],
+            'minutes' => ['required', 'numeric', 'between:0,59'],
+            'notes' => ['required', 'string']
+        ]);
+
+        \DB::transaction(function () use ($request) {
+            $date = date('Y-m-d', strtotime($request->date));
+            $time = date('H:i', strtotime($request->hours.':'.$request->minutes));
+            $timestamp = date('Y-m-d H:i:00', strtotime($date.' '.$time));
+            // Fetch Timezone
+            $timezone = $request->timezone;
+            // Convert timestamp with related timezone to UTC
+            $formated = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $timestamp, $timezone);
+            $utc = $formated->setTimezone('UTC')->format('Y-m-d H:i:s');
+
+            // Store to database
+        });
+
+        // \Log::debug("Debug on Record API Controller", [
+        //     'request' => $request->all()
+        // ]);
+
+        return $this->formatedJsonResponse(200, 'Data Stored', []);
     }
 
     /**

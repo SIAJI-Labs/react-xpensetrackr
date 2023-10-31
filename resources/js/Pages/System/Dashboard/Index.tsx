@@ -2,26 +2,30 @@ import SystemLayout from '@/Layouts/SystemLayout';
 import { Head, Link } from '@inertiajs/react';
 import { PageProps, RecordItem } from '@/types';
 import { useEffect, useState } from 'react';
-
-// Shadcn
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
-import { Skeleton } from '@/Components/ui/skeleton';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/Components/ui/dropdown-menu';
-import { Badge } from '@/Components/ui/badge';
-import RecordTemplate from '@/Components/template/RecordTemplate';
 import { Loader2 } from 'lucide-react';
+import axios from 'axios';
+
+// Partials
+import RecordTemplate from '@/Components/template/RecordTemplate';
 import NoDataTemplate from '@/Components/template/NoDataTemplate';
+
+// Shadcn Component
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Skeleton } from '@/Components/ui/skeleton';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+
 
 export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: string}>) {
     // Global Variable
-    const [refreshLoading, setRefreshLoading] = useState<boolean>(false)
+    const [refreshLoading, setRefreshLoading] = useState<boolean>(false);
 
     // Record List - Variable Init
     const [recordFilter, setRecordFilter] = useState<string>('complete');
     const [recordIsLoading, setRecordIsLoading] = useState<boolean>(true);
     const [recordSkeletonCount, setRecordSkeletonCount] = useState<number>(5);
     const [recordItem, setRecordItem] = useState([]);
+    const [recordItemAbortController, setRecordItemAbortController] = useState<AbortController | null>(null);
     const [recordPendingCount, setRecordPendingCount] = useState<number>(0);
     
     // Record List - Skeleton
@@ -59,6 +63,20 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
     }
     // Simulate API call
     const fetchRecordList = async () => {
+        setRefreshLoading(true);
+
+        // Cancel previous request
+        if(recordItemAbortController instanceof AbortController){
+            recordItemAbortController.abort();
+        }
+        
+        // Create a new AbortController
+        const abortController = new AbortController();
+        // Store the AbortController in state
+        setRecordItemAbortController(abortController);
+
+        setRecordIsLoading(true);
+
         // Build parameter
         const query = [];
         const obj = {
@@ -70,17 +88,35 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
             query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
         }
 
-        // Create request
-        const req = await fetch(`${route('api.record.v1.list')}?${query.join('&')}`);
-        const response = await req.json();
+        try {
+            const response = await axios.get(`${route('api.record.v1.list')}?${query.join('&')}`, {
+              cancelToken: new axios.CancelToken(function executor(c) {
+                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                abortController.abort = c;
+              })
+            });
+        
+            // Use response.data instead of req.json() to get the JSON data
+            let jsonResponse = response.data;
+                // Apply to related property
+            setRecordItem(jsonResponse.result.data);
 
-        // Apply to related property
-        setRecordItem(response.result.data);
+            // Remove loading state
+            setRecordIsLoading(false);
+            setRefreshLoading(false);
+            // Clear the AbortController from state
+            setRecordItemAbortController(null);
+          } catch (error) {
 
-        // Remove loading state
-        setRecordIsLoading(false);
+            if (axios.isCancel(error)) {
+              // Handle the cancellation here if needed
+              console.log('Request was canceled', error);
+            } else {
+              // Handle other errors
+              console.error('Error:', error);
+            }
+        }
     }
-    
     useEffect(() => {
         fetchRecordList();
     }, [recordFilter]);
@@ -89,19 +125,32 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
         setRecordSkeletonCount(recordItem.length > 0 ? recordItem.length : 3);
     }, [recordItem]);
 
-    // Create Request
+    // Create Request to check pending count
     const fetchPending = async () => {
         setRefreshLoading(true);
-        const req = await fetch(route('api.record.v1.count-pending'));
-        const response = await req.json();
 
-        setRecordPendingCount(response?.result?.data);
-        setRefreshLoading(false);
+        try {
+            const response = await axios.get(route('api.record.v1.count-pending'));
+        
+            // Use response.data instead of req.json() to get the JSON data
+            let jsonResponse = response.data;
+            setRecordPendingCount(jsonResponse?.result?.data);
+            setRefreshLoading(false);
 
-        // Fetch newest record-item
-        fetchRecordList();
+            // Fetch newest record-item
+            fetchRecordList();
+        } catch (error) {
+            if (axios.isCancel(error)) {
+                // Handle the cancellation here if needed
+                console.log('Request was canceled', error);
+            } else {
+                // Handle other errors
+                console.error('Error:', error);
+            }
+        }
     }
     useEffect(() => {
+        // First fetch pending count
         fetchPending();
     }, []);
 
@@ -145,6 +194,12 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
                                 }
 
                                 return <Button variant={ `outline` } onClick={() => {
+                                    // Cancel previous request
+                                    if(recordItemAbortController instanceof AbortController){
+                                        recordItemAbortController.abort();
+                                    }
+                                    
+                                    // Fetch Pending Count
                                     fetchPending();
                                 }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
                             })()}

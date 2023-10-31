@@ -27,6 +27,7 @@ import { useToast } from "@/Components/ui/use-toast";
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import axios, { AxiosError } from 'axios';
 
 type RecordDialogProps = {
     openState: boolean;
@@ -67,6 +68,8 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                 setValueRecordDate(moment(now).toDate());
                 setValueRecordHours(String(hours));
                 setValueRecordMinutes(String(minutes));
+            } else {
+                setKeepOpenRecordDialog(false);
             }
         }, 100);
     }, [openState]);
@@ -120,85 +123,77 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
         formData.append('notes', String(valueRecordNotes ?? ''));
         formData.append('timezone', moment.tz.guess());
 
-        // Make a request
-        fetch(route('api.record.v1.store'), {
-            method: 'POST',
-            mode: 'cors',
-            body: formData,
-            signal: abortController.signal, // Use the specific AbortController's signal
+        axios.post(route('api.record.v1.store'), formData, {
+            cancelToken: new axios.CancelToken(function executor(c) {
+                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                abortController.abort = c;
+            })
         }).then((response) => {
-            if (response.ok) {
-                return response.json();
-            }
-
-            return Promise.reject(response);
-            // throw new Error();
-        })
-        .then((responseJson) => {
-            // Handle success response
-            if(responseJson?.code === 200){
-                if(!keepOpenRecordDialog){
-                    setOpenState(false);
-                } else {
-                    // Reset form
-                    resetRecordDialog();
-
-                    // Handle when record dialog is opened
-                    if(openState){
-                        // Update timestamp
-                        let now = moment();
-                        let hours = now.get('hour');
-                        let minutes = now.get('minute');
-
-                        // Update state
-                        setValueRecordDate(moment(now).toDate());
-                        setValueRecordHours(String(hours));
-                        setValueRecordMinutes(String(minutes));
+            if (response.status === 200) {
+                const responseJson = response.data;
+            
+                if (responseJson?.code === 200) {
+                    if (!keepOpenRecordDialog) {
+                        setOpenState(false);
+                    } else {
+                        // Reset form
+                        resetRecordDialog();
+                
+                        // Handle when record dialog is opened
+                        if (openState) {
+                            // Update timestamp
+                            let now = moment();
+                            let hours = now.get('hour');
+                            let minutes = now.get('minute');
+                
+                            // Update state
+                            setValueRecordDate(moment(now).toDate());
+                            setValueRecordHours(String(hours));
+                            setValueRecordMinutes(String(minutes));
+                        }
                     }
+            
+                    toast({
+                        title: "Action: Success",
+                        description: "Record data successfully saved",
+                    });
                 }
-
-                toast({
-                    title: "Action: Success",
-                    description: "Record data successfully saved",
-                });
             }
 
             return true;
-        })
-        .catch((response) => {
-            // Fetch error message if exists
-            response.json().then((json: any) => {
-                if(json.errors){
-                    // Store to error bag variable
-                    setErrorRecordDialog(json.errors);
-                }
-            });
+        }).catch((response) => {
+            const axiosError = response as AxiosError;
+
+            let errors:any = axiosError.response?.data;
+            if(errors.errors){
+                // Store to the error bag variable
+                setErrorRecordDialog(errors.errors);
+            }
 
             // Set a timeout to perform an action after a delay (e.g., 100 milliseconds)
             setTimeout(() => {
                 // Find all elements with the class 'form--group' that are marked as 'is--invalid'
                 const errorElements = document.querySelectorAll('#recordDialog-forms .form--group.is--invalid');
-
+        
                 // Check if there are any 'is--invalid' elements
                 if (errorElements.length > 0) {
                     // Find the element with the highest top offset within the 'is--invalid' elements
                     const highestElement = Array.from(errorElements).reduce((a, b) =>
                         (a as HTMLElement).offsetTop > (b as HTMLElement).offsetTop ? b : a
                     );
-
+            
                     // Scroll the element with the highest top offset into view with a smooth behavior
                     highestElement.scrollIntoView({ behavior: 'smooth' });
                 }
             }, 100);
-            
         }).finally(() => {
             // Clear the AbortController from state
             setAbortControllerRecordDialog(null);
-
+        
             // Update to original state
             let submitBtn = document.getElementById('record_dialog-submit');
-            if(submitBtn){
-                if(submitBtn.tagName.toLowerCase() === 'button'){
+            if (submitBtn) {
+                if (submitBtn.tagName.toLowerCase() === 'button') {
                     submitBtn.removeAttribute('disabled');
                 }
                 submitBtn.innerHTML = `Submit`;
@@ -231,12 +226,27 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                 query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
             }
 
-            const req = await fetch(`${route('api.category.v1.list')}?${query.join('&')}`, {
-                signal: abortController.signal
-            });
-            const response = await req.json();
+            try {
+                const response = await axios.get(`${route('api.category.v1.list')}?${query.join('&')}`, {
+                    cancelToken: new axios.CancelToken(function executor(c) {
+                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                        abortController.abort = c;
+                    })
+                });
+            
+                // Use response.data instead of req.json() to get the JSON data
+                let jsonResponse = response.data;
 
-            return response.result.data;
+                return jsonResponse.result.data;
+              } catch (error) {
+                if (axios.isCancel(error)) {
+                    // Handle the cancellation here if needed
+                    console.log('Request was canceled', error);
+                } else {
+                    // Handle other errors
+                    console.error('Error:', error);
+                }
+            }
         } catch (error) {
             // Handle errors, if needed
             console.error('Request error:', error);
@@ -318,12 +328,26 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                 query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
             }
 
-            const req = await fetch(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
-                signal: abortController.signal
-            });
-            const response = await req.json();
-
-            return response.result.data;
+            try {
+                const response = await axios.get(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
+                    cancelToken: new axios.CancelToken(function executor(c) {
+                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                        abortController.abort = c;
+                    })
+                });
+            
+                // Use response.data instead of req.json() to get the JSON data
+                let responseJson = response.data;
+                return responseJson.result.data;
+            } catch (error) {
+                if (axios.isCancel(error)) {
+                    // Handle the cancellation here if needed
+                    console.log('Request was canceled', error);
+                } else {
+                    // Handle other errors
+                    console.error('Error:', error);
+                }
+            }
         } catch (error) {
             // Handle errors, if needed
             console.error('Request error:', error);
@@ -403,12 +427,26 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                 query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
             }
 
-            const req = await fetch(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
-                signal: abortController.signal
-            });
-            const response = await req.json();
-
-            return response.result.data;
+            try {
+                const response = await axios.get(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
+                    cancelToken: new axios.CancelToken(function executor(c) {
+                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                        abortController.abort = c;
+                    })
+                });
+            
+                // Use response.data instead of req.json() to get the JSON data
+                let responseJson = response.data;
+                return responseJson.result.data;
+            } catch (error) {
+                if (axios.isCancel(error)) {
+                    // Handle the cancellation here if needed
+                    console.log('Request was canceled', error);
+                } else {
+                    // Handle other errors
+                    console.error('Error:', error);
+                }
+            }
         } catch (error) {
             // Handle errors, if needed
             console.error('Request error:', error);

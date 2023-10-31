@@ -16,6 +16,8 @@ class RecordController extends Controller
      */
     public function index(Request $request)
     {
+        // sleep(10);
+
         $data = \App\Models\Record::query()
             ->with('category.parent', 'fromWallet.parent', 'toWallet.parent');
 

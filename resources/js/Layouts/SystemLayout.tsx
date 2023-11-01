@@ -1,4 +1,4 @@
-import { useState, PropsWithChildren, ReactNode, useEffect, useMemo, FormEventHandler, useRef } from 'react';
+import React, { useState, PropsWithChildren, ReactNode, useEffect, useMemo, FormEventHandler, useRef } from 'react';
 import { Head } from '@inertiajs/react';
 import { User } from '@/types';
 
@@ -18,7 +18,7 @@ import { Button } from '@/Components/ui/button';
 
 export default function SystemLayout({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
     const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
-    const handleOpenState = (isOpen: boolean) => {
+    const handleOpenRecordDialog = (isOpen: boolean) => {
         setOpenRecordDialog(isOpen);
     };
 
@@ -41,7 +41,9 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 )} */}
 
                 <div className={ ` flex justify-center p-6` }>
-                    <main className={ ` max-w-[400px] lg:min-w-[400px] py-[calc(64px)]` }>{children}</main>
+                    <main className={ ` max-w-[400px] lg:min-w-[400px] py-[calc(64px)]` }>
+                        {children}
+                    </main>
                 </div>
 
                 {/* Record Modal */}
@@ -49,7 +51,7 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                     setOpenRecordDialog(true);
                 }}>Add record</Button>
                 {/* Record Modal - Dialog */}
-                <RecordDialog openState={ openRecordDialog } setOpenState={ handleOpenState }/>
+                <RecordDialog openState={ openRecordDialog } setOpenState={ handleOpenRecordDialog }/>
             </div>
 
             <Toaster />

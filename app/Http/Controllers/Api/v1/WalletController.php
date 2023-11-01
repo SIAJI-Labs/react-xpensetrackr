@@ -19,9 +19,11 @@ class WalletController extends Controller
     public function index(Request $request)
     {
         // sleep(10);
+        $user = $request->user();
 
         $data = \App\Models\Wallet::query()
-            ->with('parent');
+            ->with('parent')
+            ->where('user_id', $user->id);
 
         // Apply Filter
         if($request->has('keyword') && $request->keyword != ''){

@@ -15,8 +15,12 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 
+type DashboardProps = {
+    inspire: string,
+    handleOpenRecordDialog?: (isOpen: boolean) => void
+}
 
-export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: string}>) {
+export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardProps>) {
     // Global Variable
     const [refreshLoading, setRefreshLoading] = useState<boolean>(false);
 
@@ -58,8 +62,8 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
         </div>
     </>;
     // Record List - Template
-    const recordListTemplate = (obj:RecordItem) => {
-        return <RecordTemplate record={obj}></RecordTemplate>;
+    const recordListTemplate = (obj:RecordItem, handleOpenRecordDialog?: (isOpen: boolean) => void) => {
+        return <RecordTemplate record={obj} handleOpenRecordDialog={ handleOpenRecordDialog }></RecordTemplate>;
     }
     // Simulate API call
     const fetchRecordList = async () => {
@@ -152,6 +156,18 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
     useEffect(() => {
         // First fetch pending count
         fetchPending();
+
+        // Listen to Record Dialog event
+        const handleDialogRecord = () => {
+            console.log('Listen to Dialog Record Event');
+
+            fetchPending();
+        }
+        window.addEventListener('dialogRecord', handleDialogRecord);
+        // Remove the event listener when the component unmounts
+        return () => {
+            window.removeEventListener('dialogRecord', handleDialogRecord);
+        };
     }, []);
 
     return (

@@ -19,7 +19,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::group([
-    'as' => 'api.'
+    'as' => 'api.',
+    'middleware' => ['auth:sanctum']
 ], function(){
     // Category
     Route::group([

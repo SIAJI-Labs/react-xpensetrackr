@@ -5,15 +5,20 @@ import { RecordItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
 // Plugins
-import moment from 'moment';
-import { formatRupiah, ucwords } from '@/function';
+import moment from 'moment-timezone';
+import { formatRupiah, momentFormated, ucwords } from '@/function';
 
 // Shadcn
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/Components/ui/dropdown-menu';
 
-export default function RecordTemplate({ record }: PropsWithChildren<{record?: RecordItem}> ){
+type RecordTemplateProps = {
+    record?: RecordItem,
+    handleOpenRecordDialog?: (isOpen: boolean) => void;
+}
+
+export default function RecordTemplate({ record, handleOpenRecordDialog }: PropsWithChildren<RecordTemplateProps> ){
     // Generate random string as section-key
     let r = (Math.random() + 1).toString(36).substring(7);
 
@@ -22,13 +27,13 @@ export default function RecordTemplate({ record }: PropsWithChildren<{record?: R
 
     return (
         <section key={r}  onClick={($refs) => {
-            console.log($refs);
             setOpenDropdown(true);
         }}>
             <div className={ ` flex flex-col gap-2 border rounded p-4 cursor-pointer` }>
                 {/* Date, amount and action */}
                 <div className={ ` flex flex-row justify-between flex-wrap-reverse` }>
-                    <span className={ ` font-medium w-full md:w-auto` }>{moment(record?.datetime).format('MMM Do, YYYY / HH:mm')}</span>
+                    {/* <span className={ ` font-medium w-full md:w-auto` }>{moment(record?.datetime).tz(moment.tz.guess()).format('MMM Do, YYYY / HH:mm')}</span> */}
+                    <span className={ ` font-medium w-full md:w-auto` }>{ momentFormated('MMM Do, YYYY / HH:mm', record?.datetime, moment.tz.guess()) }</span>
 
                     <div className={ ` flex flex-row flex-1 md:flex-none justify-between gap-2 items-center` }>
                         <span className={ ` font-normal ${record ? (record.type === 'expense' ? ` text-red-500` : `text-green-500`) : ``}` }>{formatRupiah(record?.amount ?? 0)}</span>
@@ -40,16 +45,26 @@ export default function RecordTemplate({ record }: PropsWithChildren<{record?: R
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
-                                    <DropdownMenuItem>
-                                        <Link href={ `` }>
+                                    <Link href={ `` }>
+                                        <DropdownMenuItem className={ ` cursor-pointer` }>
                                             <span className={ ` text-blue-500` }>Detail</span>
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <Link href={ `` }>
-                                            <span className={ ` text-yellow-500` }>Edit</span>
-                                        </Link>
-                                    </DropdownMenuItem>
+                                        </DropdownMenuItem>
+                                    </Link>
+                                    {(() => {
+                                        // Check if record dialog form is exists
+                                        let recordDialogSection = document.getElementById('recordDialog-section');
+                                        if(recordDialogSection){
+                                            return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
+                                                if(handleOpenRecordDialog !== undefined){
+                                                    handleOpenRecordDialog(true);
+                                                }
+                                            }}>
+                                                <span className={ ` text-yellow-500` }>Edit</span>
+                                            </DropdownMenuItem>;
+                                        }
+
+                                        return <></>;
+                                    })()}
                                     <DropdownMenuItem>
                                         <Link href={ `` }>
                                             <span className={ ` text-red-500` }>Delete</span>

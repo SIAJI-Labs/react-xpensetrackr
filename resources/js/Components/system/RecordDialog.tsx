@@ -70,6 +70,9 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                 setValueRecordMinutes(String(minutes));
             } else {
                 setKeepOpenRecordDialog(false);
+
+                // Announce Dialog Global Event
+                window.dispatchEvent(new CustomEvent('dialogRecord'));
             }
         }, 100);
     }, [openState]);
@@ -534,7 +537,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
     const [keepOpenRecordDialog, setKeepOpenRecordDialog] = useState<boolean>(false);
 
     return (
-        <section>
+        <section id={ `recordDialog-section` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
                 <DialogContent className=" h-full lg:min-w-[800px] md:max-h-[85vh] p-0" data-type="record-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>

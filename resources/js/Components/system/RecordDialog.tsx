@@ -4,11 +4,11 @@ import { CategoryItem, WalletItem, User, RecordItem } from '@/types';
 import axios, { AxiosError } from 'axios';
 
 // Script
-import '../../function';
-import { momentFormated, ucwords } from '../../function';
+import '@/function';
+import { momentFormated, ucwords } from '@/function';
 // Plugins
 import { Calendar as CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
-import '../../../plugins/fontawesome/all.scss';
+import '@/../plugins/fontawesome/all.scss';
 import { IMaskMixin } from 'react-imask'
 import moment from 'moment-timezone';
 

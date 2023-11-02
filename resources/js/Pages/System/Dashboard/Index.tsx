@@ -162,8 +162,6 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
 
         // Listen to Record Dialog event
         const handleDialogRecord = () => {
-            console.log('Listen to Dialog Record Event');
-
             setTimeout(() => {
                 // Update record list
                 fetchPending();
@@ -200,7 +198,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                 </Card>
 
                 {/* Record List */}
-                <Card className={ `` }>
+                <Card className={ ` w-full` }>
                     <CardHeader>
                         <div className={ ` flex flex-row justify-between items-center` }>
                             <div>

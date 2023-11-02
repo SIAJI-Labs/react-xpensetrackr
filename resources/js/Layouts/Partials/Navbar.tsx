@@ -47,18 +47,29 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                     {(() => {
                         let el: any[] = []
                         let suggestions: { name: string, icon?: string, link?: any}[] = [
-                            { name: 'Quick Action: Create new Record', icon: '', link: null },
+                            { name: 'Quick Action: Create new Record', icon: '', link: route('sys.quick-action.record') },
                             { name: 'Quick Action: Planned Payment Summary', icon: '', link: null },
                             { name: 'Quick Action: Show Pending Record', icon: '', link: null },
                         ];
 
                         suggestions.map((obj, index) => {
-                            el.push(
-                                <CommandItem className={ ` flex flex-row gap-2 !py-2` } key={ `command_item_suggestion-${index}` }>
-                                    <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
-                                    <span>{obj.name}</span>
-                                </CommandItem>
-                            );
+                            if(obj.link){
+                                el.push(
+                                    <Link href={ obj.link } className={ `cursor-pointer` } key={ `command_item_suggestion-${index}` }>
+                                        <CommandItem className={ ` flex flex-row gap-2 !py-2 cursor-pointer` }>
+                                            <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
+                                            <span>{obj.name}</span>
+                                        </CommandItem>
+                                    </Link>
+                                );
+                            } else {
+                                el.push(
+                                    <CommandItem className={ ` flex flex-row gap-2 !py-2 opacity-50 cursor-not-allowed` } key={ `command_item_suggestion-${index}` }>
+                                        <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
+                                        <span>{obj.name}</span>
+                                    </CommandItem>
+                                );
+                            }
                         });
                         if(el.length > 0){
                             return <>
@@ -75,11 +86,12 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                     {(() => {
                         let el: any[] = []
                         let feature: { name: string, icon?: string, link?: any}[] = [
+                            { name: 'Dashboard', icon: '', link: route('sys.index') },
                             { name: 'Budget', icon: '', link: null },
                             { name: 'Debt', icon: '', link: null },
                             { name: 'Goals', icon: '', link: null },
                             { name: 'Planned Payment', icon: '', link: null },
-                            { name: 'Record', icon: '', link: null },
+                            { name: 'Record', icon: '', link: route('sys.record.index') },
                             { name: 'Record Template', icon: '', link: null },
                             { name: 'Shopping List', icon: '', link: null },
                             { name: 'Wallet', icon: '', link: null },
@@ -87,19 +99,33 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                             { name: 'Wallet Share', icon: '', link: null },
                         ];
                         feature.map((obj, index) => {
-                            el.push(
-                                <CommandItem className={ ` flex flex-row gap-2 !py-2` } key={ `command_item_feature-${index}` }>
-                                    <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
-                                    <span>{obj.name}</span>
-                                </CommandItem>
-                            );
+                            if(obj.link){
+                                el.push(
+                                    <Link href={ obj.link } className={ `cursor-pointer` } key={ `command_item_feature-${index}` }>
+                                        <CommandItem className={ ` flex flex-row gap-2 !py-2 cursor-pointer` }>
+                                            <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
+                                            <span>{obj.name}</span>
+                                        </CommandItem>
+                                    </Link>
+                                );
+                            } else {
+                                el.push(
+                                    <CommandItem className={ ` flex flex-row gap-2 !py-2 opacity-50 cursor-not-allowed` } key={ `command_item_feature-${index}` }>
+                                        <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
+                                        <span>{obj.name}</span>
+                                    </CommandItem>
+                                );
+                            }
                         });
                         if(el.length > 0){
-                            return <>
-                                <CommandGroup heading="Feature">
+                            // Generate random string as section-key
+                            let r = (Math.random() + 1).toString(36).substring(7);
+
+                            return <div key={ r }>
+                                <CommandGroup heading="Feature" key={ r }>
                                     {el}
                                 </CommandGroup>
-                            </>;
+                            </div>;
                         }
 
                         return <></>;

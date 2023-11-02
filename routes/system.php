@@ -17,6 +17,19 @@ Route::group([
     'as' => 'sys.',
     'middleware' => ['auth']
 ], function(){
+    // Quick Action
+    Route::group([
+        'as' => 'quick-action.',
+        'prefix' => 'quick-action'
+    ], function(){
+        // Make Pending Record
+        Route::get('record', \App\Http\Controllers\System\QuickAction\RecordController::class)->name('record');
+    });
+
     // Dashboard
     Route::get('dashboard', \App\Http\Controllers\System\DashboardController::class)->name('index');
+
+    // Record
+    Route::get('record/{uuid}', [\App\Http\Controllers\System\RecordController::class, 'show'])->name('record.show');
+    Route::get('record', [\App\Http\Controllers\System\RecordController::class, 'index'])->name('record.index');
 });

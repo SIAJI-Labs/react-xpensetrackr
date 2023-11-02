@@ -38,6 +38,7 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 {/* Navbar */}
                 <Navbar
                     user={user}
+                    key={ 'system-navbar' }
                 ></Navbar>
 
                 {/* {header && (
@@ -47,7 +48,7 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 )} */}
 
                 <div className={ ` flex justify-center p-6` }>
-                    <main className={ ` max-w-[400px] lg:min-w-[400px] py-[calc(64px)]` }>
+                    <main className={ ` max-w-[400px] md:min-w-[400px] py-[calc(64px)]` }>
                         {children}
                     </main>
                 </div>

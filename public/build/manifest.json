@@ -1,51 +1,6 @@
 {
-  "_ApplicationLogo-aa0e3791.js": {
-    "file": "assets/ApplicationLogo-aa0e3791.js",
-    "imports": [
-      "resources/js/app.tsx",
-      "_button-715969d9.js"
-    ]
-  },
-  "_GuestLayout-af89c091.js": {
-    "file": "assets/GuestLayout-af89c091.js",
-    "imports": [
-      "resources/js/app.tsx"
-    ]
-  },
-  "_InputError-f0929862.js": {
-    "file": "assets/InputError-f0929862.js",
-    "imports": [
-      "resources/js/app.tsx"
-    ]
-  },
-  "_InputLabel-a4ac3245.js": {
-    "file": "assets/InputLabel-a4ac3245.js",
-    "imports": [
-      "resources/js/app.tsx"
-    ]
-  },
-  "_PrimaryButton-4e2ec909.js": {
-    "file": "assets/PrimaryButton-4e2ec909.js",
-    "imports": [
-      "resources/js/app.tsx"
-    ]
-  },
-  "_TextInput-62d86047.js": {
-    "file": "assets/TextInput-62d86047.js",
-    "imports": [
-      "resources/js/app.tsx"
-    ]
-  },
-  "_button-715969d9.js": {
+  "_ApplicationLogo-57dd092e.js": {
     "assets": [
-      "assets/fa-brands-400-faae6fc0.woff2",
-      "assets/fa-brands-400-003f1154.ttf",
-      "assets/fa-regular-400-9169d8be.woff2",
-      "assets/fa-regular-400-7d81a1a7.ttf",
-      "assets/fa-solid-900-886c8611.woff2",
-      "assets/fa-solid-900-cea79b34.ttf",
-      "assets/fa-v4compatibility-335fd7d9.woff2",
-      "assets/fa-v4compatibility-455e8e72.ttf",
       "assets/Signika-Medium-0573ce85.woff2",
       "assets/Signika-Medium-5bc99a69.woff",
       "assets/Signika-Medium-4738b60e.ttf",
@@ -63,28 +18,145 @@
       "assets/Signika-SemiBold-a43fb387.ttf"
     ],
     "css": [
-      "assets/button-36c17fac.css"
+      "assets/siaji-630ad263.css"
     ],
-    "file": "assets/button-715969d9.js",
+    "file": "assets/ApplicationLogo-57dd092e.js",
     "imports": [
       "resources/js/app.tsx"
     ]
   },
-  "_index-deae1771.js": {
-    "file": "assets/index-deae1771.js",
+  "_GuestLayout-11b76a0c.js": {
+    "file": "assets/GuestLayout-11b76a0c.js",
     "imports": [
-      "resources/js/app.tsx",
-      "_button-715969d9.js"
+      "resources/js/app.tsx"
     ]
   },
-  "_transition-1b79b827.js": {
-    "file": "assets/transition-1b79b827.js",
+  "_InputError-9485b69e.js": {
+    "file": "assets/InputError-9485b69e.js",
+    "imports": [
+      "resources/js/app.tsx"
+    ]
+  },
+  "_InputLabel-a2f5ee2c.js": {
+    "file": "assets/InputLabel-a2f5ee2c.js",
+    "imports": [
+      "resources/js/app.tsx"
+    ]
+  },
+  "_PrimaryButton-9e0c1bf3.js": {
+    "file": "assets/PrimaryButton-9e0c1bf3.js",
+    "imports": [
+      "resources/js/app.tsx"
+    ]
+  },
+  "_PublicLayout-d6fe9bea.js": {
+    "file": "assets/PublicLayout-d6fe9bea.js",
+    "imports": [
+      "resources/js/app.tsx",
+      "_button-3f373d9f.js"
+    ]
+  },
+  "_SystemLayout-89675fa8.js": {
+    "file": "assets/SystemLayout-89675fa8.js",
+    "imports": [
+      "resources/js/app.tsx",
+      "_textarea-1abc0be6.js",
+      "_button-3f373d9f.js",
+      "_index-d0f2d8d6.js"
+    ]
+  },
+  "_TextInput-5d45f556.js": {
+    "file": "assets/TextInput-5d45f556.js",
+    "imports": [
+      "resources/js/app.tsx"
+    ]
+  },
+  "_badge-23ba6077.js": {
+    "file": "assets/badge-23ba6077.js",
+    "imports": [
+      "resources/js/app.tsx",
+      "_button-3f373d9f.js"
+    ]
+  },
+  "_button-3f373d9f.js": {
+    "assets": [
+      "assets/fa-brands-400-faae6fc0.woff2",
+      "assets/fa-brands-400-003f1154.ttf",
+      "assets/fa-regular-400-9169d8be.woff2",
+      "assets/fa-regular-400-7d81a1a7.ttf",
+      "assets/fa-solid-900-886c8611.woff2",
+      "assets/fa-solid-900-cea79b34.ttf",
+      "assets/fa-v4compatibility-335fd7d9.woff2",
+      "assets/fa-v4compatibility-455e8e72.ttf"
+    ],
+    "css": [
+      "assets/button-acfe5849.css"
+    ],
+    "file": "assets/button-3f373d9f.js",
+    "imports": [
+      "resources/js/app.tsx"
+    ]
+  },
+  "_card-ca01e443.js": {
+    "file": "assets/card-ca01e443.js",
+    "imports": [
+      "resources/js/app.tsx",
+      "_button-3f373d9f.js"
+    ]
+  },
+  "_index-d0f2d8d6.js": {
+    "file": "assets/index-d0f2d8d6.js",
+    "imports": [
+      "resources/js/app.tsx",
+      "_button-3f373d9f.js"
+    ]
+  },
+  "_skeleton-0c359982.js": {
+    "assets": [
+      "assets/Signika-Medium-0573ce85.woff2",
+      "assets/Signika-Medium-5bc99a69.woff",
+      "assets/Signika-Medium-4738b60e.ttf",
+      "assets/Signika-Light-3ee014e3.woff2",
+      "assets/Signika-Light-a991ec8a.woff",
+      "assets/Signika-Light-62587362.ttf",
+      "assets/Signika-Bold-7f03dde6.woff2",
+      "assets/Signika-Bold-0ef8de13.woff",
+      "assets/Signika-Bold-a7952cb1.ttf",
+      "assets/Signika-Regular-15d5e59a.woff2",
+      "assets/Signika-Regular-85c00fb7.woff",
+      "assets/Signika-Regular-0bee8bbb.ttf",
+      "assets/Signika-SemiBold-0c80d66d.woff2",
+      "assets/Signika-SemiBold-e4b47489.woff",
+      "assets/Signika-SemiBold-a43fb387.ttf"
+    ],
+    "css": [
+      "assets/siaji-630ad263.css"
+    ],
+    "file": "assets/skeleton-0c359982.js",
+    "imports": [
+      "resources/js/app.tsx",
+      "_textarea-1abc0be6.js",
+      "_badge-23ba6077.js",
+      "_button-3f373d9f.js",
+      "_SystemLayout-89675fa8.js"
+    ]
+  },
+  "_textarea-1abc0be6.js": {
+    "file": "assets/textarea-1abc0be6.js",
+    "imports": [
+      "resources/js/app.tsx",
+      "_button-3f373d9f.js",
+      "_index-d0f2d8d6.js"
+    ]
+  },
+  "_transition-ed1dedd0.js": {
+    "file": "assets/transition-ed1dedd0.js",
     "imports": [
       "resources/js/app.tsx"
     ]
   },
   "button.css": {
-    "file": "assets/button-36c17fac.css",
+    "file": "assets/button-acfe5849.css",
     "src": "button.css"
   },
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.ttf": {
@@ -180,159 +252,308 @@
     "src": "resources/fonts/signika/Signika-SemiBold.woff2"
   },
   "resources/js/Pages/Auth/ConfirmPassword.tsx": {
-    "file": "assets/ConfirmPassword-d178e8c1.js",
+    "file": "assets/ConfirmPassword-a72cf369.js",
     "imports": [
       "resources/js/app.tsx",
-      "_GuestLayout-af89c091.js",
-      "_InputError-f0929862.js",
-      "_InputLabel-a4ac3245.js",
-      "_PrimaryButton-4e2ec909.js",
-      "_TextInput-62d86047.js"
+      "_GuestLayout-11b76a0c.js",
+      "_InputError-9485b69e.js",
+      "_InputLabel-a2f5ee2c.js",
+      "_PrimaryButton-9e0c1bf3.js",
+      "_TextInput-5d45f556.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/ConfirmPassword.tsx"
   },
   "resources/js/Pages/Auth/ForgotPassword.tsx": {
-    "file": "assets/ForgotPassword-d17245de.js",
+    "file": "assets/ForgotPassword-754c7ffd.js",
     "imports": [
       "resources/js/app.tsx",
-      "_GuestLayout-af89c091.js",
-      "_InputError-f0929862.js",
-      "_PrimaryButton-4e2ec909.js",
-      "_TextInput-62d86047.js"
+      "_GuestLayout-11b76a0c.js",
+      "_InputError-9485b69e.js",
+      "_PrimaryButton-9e0c1bf3.js",
+      "_TextInput-5d45f556.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/ForgotPassword.tsx"
   },
   "resources/js/Pages/Auth/Login.tsx": {
-    "file": "assets/Login-4ca9369b.js",
+    "assets": [
+      "assets/Signika-Medium-0573ce85.woff2",
+      "assets/Signika-Medium-5bc99a69.woff",
+      "assets/Signika-Medium-4738b60e.ttf",
+      "assets/Signika-Light-3ee014e3.woff2",
+      "assets/Signika-Light-a991ec8a.woff",
+      "assets/Signika-Light-62587362.ttf",
+      "assets/Signika-Bold-7f03dde6.woff2",
+      "assets/Signika-Bold-0ef8de13.woff",
+      "assets/Signika-Bold-a7952cb1.ttf",
+      "assets/Signika-Regular-15d5e59a.woff2",
+      "assets/Signika-Regular-85c00fb7.woff",
+      "assets/Signika-Regular-0bee8bbb.ttf",
+      "assets/Signika-SemiBold-0c80d66d.woff2",
+      "assets/Signika-SemiBold-e4b47489.woff",
+      "assets/Signika-SemiBold-a43fb387.ttf"
+    ],
+    "css": [
+      "assets/siaji-630ad263.css"
+    ],
+    "file": "assets/Login-7bb9891e.js",
     "imports": [
       "resources/js/app.tsx",
-      "_ApplicationLogo-aa0e3791.js",
-      "_InputError-f0929862.js",
-      "_index-deae1771.js",
-      "_button-715969d9.js"
+      "_PublicLayout-d6fe9bea.js",
+      "_ApplicationLogo-57dd092e.js",
+      "_InputError-9485b69e.js",
+      "_card-ca01e443.js",
+      "_index-d0f2d8d6.js",
+      "_button-3f373d9f.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/Login.tsx"
   },
   "resources/js/Pages/Auth/Register.tsx": {
-    "file": "assets/Register-655b0772.js",
+    "file": "assets/Register-0fb35df8.js",
     "imports": [
       "resources/js/app.tsx",
-      "_GuestLayout-af89c091.js",
-      "_InputError-f0929862.js",
-      "_InputLabel-a4ac3245.js",
-      "_PrimaryButton-4e2ec909.js",
-      "_TextInput-62d86047.js"
+      "_GuestLayout-11b76a0c.js",
+      "_InputError-9485b69e.js",
+      "_InputLabel-a2f5ee2c.js",
+      "_PrimaryButton-9e0c1bf3.js",
+      "_TextInput-5d45f556.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/Register.tsx"
   },
   "resources/js/Pages/Auth/ResetPassword.tsx": {
-    "file": "assets/ResetPassword-a96b8a8c.js",
+    "file": "assets/ResetPassword-87b4b28e.js",
     "imports": [
       "resources/js/app.tsx",
-      "_GuestLayout-af89c091.js",
-      "_InputError-f0929862.js",
-      "_InputLabel-a4ac3245.js",
-      "_PrimaryButton-4e2ec909.js",
-      "_TextInput-62d86047.js"
+      "_GuestLayout-11b76a0c.js",
+      "_InputError-9485b69e.js",
+      "_InputLabel-a2f5ee2c.js",
+      "_PrimaryButton-9e0c1bf3.js",
+      "_TextInput-5d45f556.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/ResetPassword.tsx"
   },
   "resources/js/Pages/Auth/VerifyEmail.tsx": {
-    "file": "assets/VerifyEmail-8f998942.js",
+    "file": "assets/VerifyEmail-43349e9b.js",
     "imports": [
       "resources/js/app.tsx",
-      "_GuestLayout-af89c091.js",
-      "_PrimaryButton-4e2ec909.js"
+      "_GuestLayout-11b76a0c.js",
+      "_PrimaryButton-9e0c1bf3.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/VerifyEmail.tsx"
   },
   "resources/js/Pages/Profile/Edit.tsx": {
-    "file": "assets/Edit-af42a716.js",
+    "file": "assets/Edit-ebd754da.js",
     "imports": [
       "resources/js/app.tsx",
-      "_transition-1b79b827.js",
+      "_transition-ed1dedd0.js",
       "resources/js/Pages/Profile/Partials/DeleteUserForm.tsx",
       "resources/js/Pages/Profile/Partials/UpdatePasswordForm.tsx",
       "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.tsx",
-      "_InputError-f0929862.js",
-      "_InputLabel-a4ac3245.js",
-      "_TextInput-62d86047.js",
-      "_PrimaryButton-4e2ec909.js"
+      "_InputError-9485b69e.js",
+      "_InputLabel-a2f5ee2c.js",
+      "_TextInput-5d45f556.js",
+      "_PrimaryButton-9e0c1bf3.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Profile/Edit.tsx"
   },
   "resources/js/Pages/Profile/Partials/DeleteUserForm.tsx": {
-    "file": "assets/DeleteUserForm-3f593041.js",
+    "file": "assets/DeleteUserForm-e2624c71.js",
     "imports": [
       "resources/js/app.tsx",
-      "_InputError-f0929862.js",
-      "_InputLabel-a4ac3245.js",
-      "_transition-1b79b827.js",
-      "_TextInput-62d86047.js"
+      "_InputError-9485b69e.js",
+      "_InputLabel-a2f5ee2c.js",
+      "_transition-ed1dedd0.js",
+      "_TextInput-5d45f556.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Profile/Partials/DeleteUserForm.tsx"
   },
   "resources/js/Pages/Profile/Partials/UpdatePasswordForm.tsx": {
-    "file": "assets/UpdatePasswordForm-feed87cb.js",
+    "file": "assets/UpdatePasswordForm-7c9660ec.js",
     "imports": [
       "resources/js/app.tsx",
-      "_InputError-f0929862.js",
-      "_InputLabel-a4ac3245.js",
-      "_PrimaryButton-4e2ec909.js",
-      "_TextInput-62d86047.js",
-      "_transition-1b79b827.js"
+      "_InputError-9485b69e.js",
+      "_InputLabel-a2f5ee2c.js",
+      "_PrimaryButton-9e0c1bf3.js",
+      "_TextInput-5d45f556.js",
+      "_transition-ed1dedd0.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Profile/Partials/UpdatePasswordForm.tsx"
   },
   "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.tsx": {
-    "file": "assets/UpdateProfileInformationForm-f2bab625.js",
+    "file": "assets/UpdateProfileInformationForm-209d21c5.js",
     "imports": [
       "resources/js/app.tsx",
-      "_InputError-f0929862.js",
-      "_InputLabel-a4ac3245.js",
-      "_PrimaryButton-4e2ec909.js",
-      "_TextInput-62d86047.js",
-      "_transition-1b79b827.js"
+      "_InputError-9485b69e.js",
+      "_InputLabel-a2f5ee2c.js",
+      "_PrimaryButton-9e0c1bf3.js",
+      "_TextInput-5d45f556.js",
+      "_transition-ed1dedd0.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.tsx"
   },
   "resources/js/Pages/Public/Homepage/Index.tsx": {
-    "file": "assets/Index-826d3ff3.js",
+    "assets": [
+      "assets/Signika-Medium-0573ce85.woff2",
+      "assets/Signika-Medium-5bc99a69.woff",
+      "assets/Signika-Medium-4738b60e.ttf",
+      "assets/Signika-Light-3ee014e3.woff2",
+      "assets/Signika-Light-a991ec8a.woff",
+      "assets/Signika-Light-62587362.ttf",
+      "assets/Signika-Bold-7f03dde6.woff2",
+      "assets/Signika-Bold-0ef8de13.woff",
+      "assets/Signika-Bold-a7952cb1.ttf",
+      "assets/Signika-Regular-15d5e59a.woff2",
+      "assets/Signika-Regular-85c00fb7.woff",
+      "assets/Signika-Regular-0bee8bbb.ttf",
+      "assets/Signika-SemiBold-0c80d66d.woff2",
+      "assets/Signika-SemiBold-e4b47489.woff",
+      "assets/Signika-SemiBold-a43fb387.ttf"
+    ],
+    "css": [
+      "assets/siaji-630ad263.css"
+    ],
+    "file": "assets/Index-85b71d93.js",
     "imports": [
       "resources/js/app.tsx",
-      "_ApplicationLogo-aa0e3791.js",
-      "_button-715969d9.js"
+      "_PublicLayout-d6fe9bea.js",
+      "_ApplicationLogo-57dd092e.js",
+      "_button-3f373d9f.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Public/Homepage/Index.tsx"
   },
   "resources/js/Pages/System/Dashboard/Index.tsx": {
-    "file": "assets/Index-d94c9768.js",
+    "assets": [
+      "assets/Signika-Medium-0573ce85.woff2",
+      "assets/Signika-Medium-5bc99a69.woff",
+      "assets/Signika-Medium-4738b60e.ttf",
+      "assets/Signika-Light-3ee014e3.woff2",
+      "assets/Signika-Light-a991ec8a.woff",
+      "assets/Signika-Light-62587362.ttf",
+      "assets/Signika-Bold-7f03dde6.woff2",
+      "assets/Signika-Bold-0ef8de13.woff",
+      "assets/Signika-Bold-a7952cb1.ttf",
+      "assets/Signika-Regular-15d5e59a.woff2",
+      "assets/Signika-Regular-85c00fb7.woff",
+      "assets/Signika-Regular-0bee8bbb.ttf",
+      "assets/Signika-SemiBold-0c80d66d.woff2",
+      "assets/Signika-SemiBold-e4b47489.woff",
+      "assets/Signika-SemiBold-a43fb387.ttf"
+    ],
+    "css": [
+      "assets/siaji-630ad263.css"
+    ],
+    "file": "assets/Index-f07e0f6b.js",
     "imports": [
       "resources/js/app.tsx",
-      "_button-715969d9.js",
-      "_index-deae1771.js"
+      "_SystemLayout-89675fa8.js",
+      "_skeleton-0c359982.js",
+      "_card-ca01e443.js",
+      "_button-3f373d9f.js",
+      "_badge-23ba6077.js",
+      "_textarea-1abc0be6.js",
+      "_index-d0f2d8d6.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/System/Dashboard/Index.tsx"
   },
+  "resources/js/Pages/System/QuickAction/Record.tsx": {
+    "assets": [
+      "assets/Signika-Medium-0573ce85.woff2",
+      "assets/Signika-Medium-5bc99a69.woff",
+      "assets/Signika-Medium-4738b60e.ttf",
+      "assets/Signika-Light-3ee014e3.woff2",
+      "assets/Signika-Light-a991ec8a.woff",
+      "assets/Signika-Light-62587362.ttf",
+      "assets/Signika-Bold-7f03dde6.woff2",
+      "assets/Signika-Bold-0ef8de13.woff",
+      "assets/Signika-Bold-a7952cb1.ttf",
+      "assets/Signika-Regular-15d5e59a.woff2",
+      "assets/Signika-Regular-85c00fb7.woff",
+      "assets/Signika-Regular-0bee8bbb.ttf",
+      "assets/Signika-SemiBold-0c80d66d.woff2",
+      "assets/Signika-SemiBold-e4b47489.woff",
+      "assets/Signika-SemiBold-a43fb387.ttf"
+    ],
+    "css": [
+      "assets/siaji-630ad263.css"
+    ],
+    "file": "assets/Record-d4955303.js",
+    "imports": [
+      "resources/js/app.tsx",
+      "_button-3f373d9f.js",
+      "_textarea-1abc0be6.js",
+      "_PublicLayout-d6fe9bea.js",
+      "_card-ca01e443.js",
+      "_index-d0f2d8d6.js",
+      "_badge-23ba6077.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/Pages/System/QuickAction/Record.tsx"
+  },
+  "resources/js/Pages/System/Record/Index.tsx": {
+    "assets": [
+      "assets/Signika-Medium-0573ce85.woff2",
+      "assets/Signika-Medium-5bc99a69.woff",
+      "assets/Signika-Medium-4738b60e.ttf",
+      "assets/Signika-Light-3ee014e3.woff2",
+      "assets/Signika-Light-a991ec8a.woff",
+      "assets/Signika-Light-62587362.ttf",
+      "assets/Signika-Bold-7f03dde6.woff2",
+      "assets/Signika-Bold-0ef8de13.woff",
+      "assets/Signika-Bold-a7952cb1.ttf",
+      "assets/Signika-Regular-15d5e59a.woff2",
+      "assets/Signika-Regular-85c00fb7.woff",
+      "assets/Signika-Regular-0bee8bbb.ttf",
+      "assets/Signika-SemiBold-0c80d66d.woff2",
+      "assets/Signika-SemiBold-e4b47489.woff",
+      "assets/Signika-SemiBold-a43fb387.ttf"
+    ],
+    "css": [
+      "assets/siaji-630ad263.css"
+    ],
+    "file": "assets/Index-cd4d168f.js",
+    "imports": [
+      "resources/js/app.tsx",
+      "_SystemLayout-89675fa8.js",
+      "_skeleton-0c359982.js",
+      "_card-ca01e443.js",
+      "_button-3f373d9f.js",
+      "_textarea-1abc0be6.js",
+      "_index-d0f2d8d6.js",
+      "_badge-23ba6077.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/Pages/System/Record/Index.tsx"
+  },
+  "resources/js/Pages/System/Record/Show.tsx": {
+    "file": "assets/Show-2105b3e9.js",
+    "imports": [
+      "resources/js/app.tsx",
+      "_SystemLayout-89675fa8.js",
+      "_textarea-1abc0be6.js",
+      "_button-3f373d9f.js",
+      "_index-d0f2d8d6.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/Pages/System/Record/Show.tsx"
+  },
   "resources/js/app.css": {
-    "file": "assets/app-dde25766.css",
+    "file": "assets/app-b383d5d5.css",
     "src": "resources/js/app.css"
   },
   "resources/js/app.tsx": {
     "css": [
-      "assets/app-dde25766.css"
+      "assets/app-b383d5d5.css"
     ],
     "dynamicImports": [
       "resources/js/Pages/Auth/ConfirmPassword.tsx",
@@ -346,10 +567,17 @@
       "resources/js/Pages/Profile/Partials/UpdatePasswordForm.tsx",
       "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.tsx",
       "resources/js/Pages/Public/Homepage/Index.tsx",
-      "resources/js/Pages/System/Dashboard/Index.tsx"
+      "resources/js/Pages/System/Dashboard/Index.tsx",
+      "resources/js/Pages/System/QuickAction/Record.tsx",
+      "resources/js/Pages/System/Record/Index.tsx",
+      "resources/js/Pages/System/Record/Show.tsx"
     ],
-    "file": "assets/app-3a1701cf.js",
+    "file": "assets/app-17d73614.js",
     "isEntry": true,
     "src": "resources/js/app.tsx"
+  },
+  "siaji.css": {
+    "file": "assets/siaji-630ad263.css",
+    "src": "siaji.css"
   }
 }

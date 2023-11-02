@@ -17,15 +17,11 @@ import { Badge } from '@/Components/ui/badge';
 
 type DashboardProps = {
     inspire: string,
-    handleOpenRecordDialog?: (isOpen: boolean) => void
 }
 
 export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardProps>) {
     // Record Dialog
     const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
-    const handleOpenRecordDialog = (isOpen: boolean) => {
-        setOpenRecordDialog(isOpen);
-    }
 
     // Global Variable
     const [refreshLoading, setRefreshLoading] = useState<boolean>(false);
@@ -68,8 +64,8 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
         </div>
     </>;
     // Record List - Template
-    const recordListTemplate = (obj:RecordItem, handleOpenRecordDialog?: (isOpen: boolean) => void) => {
-        return <RecordTemplate record={obj} handleOpenRecordDialog={ handleOpenRecordDialog }></RecordTemplate>;
+    const recordListTemplate = (obj:RecordItem) => {
+        return <RecordTemplate record={obj}></RecordTemplate>;
     }
     // Simulate API call
     const fetchRecordList = async () => {
@@ -183,7 +179,6 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
         <SystemLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}
-            childHandleRecordDialog={ openRecordDialog }
         >
             <Head title="Dashboard" />
 
@@ -289,7 +284,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                                         recordItem.map((val, index) => {
                                             recordElement.push(
                                                 <div key={ `record_item-${index}` }>
-                                                    {recordListTemplate(val, handleOpenRecordDialog)}
+                                                    {recordListTemplate(val)}
                                                 </div>
                                             );
                                         });

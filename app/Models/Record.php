@@ -106,6 +106,41 @@ class Record extends Model
     {
         parent::boot();
 
+        // Listen to Saving Event
+        static::saving(function ($model) {
+            // Fetch timestamp data
+            $datetime = $model->{'datetime'};
+
+            // Convert to UTC based on user timezone
+            // $timezone = $model->user->getPreference('timezone') ?? 'UTC';
+            $timezone = $model->timezone;
+            $updateDatetime = false;
+
+            // Record is not pending, user using their timezone when adding new record. Adjust it's datetime to UTC timezone
+            if(!empty($timezone) && !$model->{'is_pending'}){
+                $updateDatetime = true;
+            }
+
+            // Final check, if model is target transfer
+            if(!empty($model->to_wallet_id) && $model->type === 'income'){
+                $updateDatetime = false;
+            }
+
+            if($updateDatetime){
+                $formated = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $datetime, $timezone);
+                $datetime = $formated->setTimezone('UTC')->format('Y-m-d H:i:s');
+            } else {
+                if(empty($timezone)){
+                    $timezone = null;
+                }
+            }
+
+            $model->date = date('Y-m-d', strtotime($datetime));
+            $model->time = date('H:i:s', strtotime($datetime));
+            $model->datetime = date('Y-m-d H:i:s', strtotime($datetime));
+            $model->timezone = $timezone;
+        });
+
         // Listen to Create Event
         static::creating(function ($model) {
             // Always generate UUID on Data Create

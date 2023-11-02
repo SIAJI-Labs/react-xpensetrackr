@@ -15,10 +15,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuIte
 
 type RecordTemplateProps = {
     record?: RecordItem,
-    handleOpenRecordDialog?: (isOpen: boolean) => void;
 }
 
-export default function RecordTemplate({ record, handleOpenRecordDialog }: PropsWithChildren<RecordTemplateProps> ){
+export default function RecordTemplate({ record }: PropsWithChildren<RecordTemplateProps> ){
     // Generate random string as section-key
     let r = (Math.random() + 1).toString(36).substring(7);
 
@@ -55,9 +54,12 @@ export default function RecordTemplate({ record, handleOpenRecordDialog }: Props
                                         let recordDialogSection = document.getElementById('recordDialog-section');
                                         if(recordDialogSection){
                                             return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                                if(handleOpenRecordDialog !== undefined){
-                                                    handleOpenRecordDialog(true);
-                                                }
+                                                window.dispatchEvent(new CustomEvent('recordDialogEditAction', {
+                                                    bubbles: true,
+                                                    detail: {
+                                                        uuid: record?.uuid
+                                                    }
+                                                }));
                                             }}>
                                                 <span className={ ` text-yellow-500` }>Edit</span>
                                             </DropdownMenuItem>;

@@ -1,10 +1,10 @@
 import { FormEventHandler, useEffect, useMemo, useState } from 'react';
 import { format } from "date-fns"
-import { CategoryItem, WalletItem, User } from '@/types';
+import { CategoryItem, WalletItem, User, RecordItem } from '@/types';
 
 // Script
 import '../../function';
-import { ucwords } from '../../function';
+import { momentFormated, ucwords } from '../../function';
 // Plugins
 import { Calendar as CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import '../../../plugins/fontawesome/all.scss';
@@ -54,21 +54,21 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                 abortControllerRecordDialog.abort();
             }
             
-            // Reset form
-            resetRecordDialog();
-            
             // Handle when record dialog is opened
             if(openState){
-                // Update timestamp
-                let now = moment();
-                let hours = now.get('hour');
-                let minutes = now.get('minute');
-                
-                // Update state
-                setValueRecordDate(moment(now).toDate());
-                setValueRecordHours(String(hours));
-                setValueRecordMinutes(String(minutes));
+                if(!valueRecordUuid){
+                    // Update timestamp
+                    let now = moment();
+                    let hours = now.get('hour');
+                    let minutes = now.get('minute');
+                    
+                    // Update state
+                    setValueRecordDate(moment(now).toDate());
+                    setValueRecordHours(String(hours));
+                    setValueRecordMinutes(String(minutes));
+                }
             } else {
+                resetRecordDialog();
                 setKeepOpenRecordDialog(false);
 
                 // Announce Dialog Global Event
@@ -77,8 +77,102 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
         }, 100);
     }, [openState]);
 
+    const [abortControllerRecordItem, setAbortControllerRecordItem] = useState<AbortController | null>(null);
+    const fetchRecordData = async (uuid: string, action: string = 'detail') => {
+        // Cancel previous request
+        if(abortControllerRecordItem instanceof AbortController){
+            abortControllerRecordItem.abort();
+        }
+
+        // Create a new AbortController
+        const abortController = new AbortController();
+        // Store the AbortController in state
+        setAbortControllerRecordItem(abortController);
+        
+        // Fetch
+        try {
+            const response = await axios.get(`${route('api.record.v1.show', uuid)}?action=${action}`, {
+                cancelToken: new axios.CancelToken(function executor(c) {
+                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                    abortController.abort = c;
+                })
+            });
+        
+            // Use response.data instead of req.json() to get the JSON data
+            let jsonResponse = response.data;
+
+            return jsonResponse.result.data;
+        } catch (error) {
+            if (axios.isCancel(error)) {
+                // Handle the cancellation here if needed
+                console.log('Request was canceled', error);
+            } else {
+                // Handle other errors
+                console.error('Error:', error);
+            }
+        }
+
+        return [];
+    }
+    useEffect(() => {
+        // Listen to Edit Action
+        const recordDialogEditAction = (event: any) => {
+            console.log('Listen to Dialog Record Edit Event');
+            
+            if(event?.detail?.uuid){
+                let uuid = event.detail.uuid;
+
+                // Fetch Data
+                fetchRecordData(uuid, 'edit').then((data: RecordItem) => {
+                    console.log(data);
+                    let raw = momentFormated('YYYY-MM-DD HH:mm:ss', data.datetime, moment.tz.guess());
+                    let date = moment(raw).toDate();
+                    let hours = String(moment(raw).get('hour'));
+                    let minutes = String(moment(raw).get('minute'));
+
+                    // Update State
+                    setValueRecordUuid(data.uuid)
+                    setValueRecordType(data.to_wallet ? 'transfer' : data.type);
+                    setValueRecordCategory(data.category ? data.category.uuid : '');
+                    setValueRecordFromWallet(data.from_wallet ? data.from_wallet.uuid : '');
+                    setValueRecordToWallet(data.to_wallet ? data.to_wallet.uuid : '');
+                    setValueRecordAmount(data.amount);
+                    setValueRecordExtraAmount(data.extra_type === 'amount' ? data.extra_amount : data.extra_percentage);
+                    setValueRecordExtraType(data.extra_type);
+                    setValueRecordDate(date);
+                    setValueRecordHours(hours);
+                    setValueRecordMinutes(minutes);
+                    setValueRecordNotes(data.note);
+
+                    // Update Combobox Label
+                    if(data.category){
+                        setCategoryComboboxLabel(`${data.category.parent ? `${data.category.parent.name} - ` : ''}${data.category.name}`);
+                    }
+                    if(data.from_wallet){
+                        setFromWalletComboboxLabel(`${data.from_wallet.parent ? `${data.from_wallet.parent.name} - ` : ''}${data.from_wallet.name}`);
+                    }
+                    if(data.to_wallet){
+                        setToWalletComboboxLabel(`${data.to_wallet.parent ? `${data.to_wallet.parent.name} - ` : ''}${data.to_wallet.name}`);
+                    }
+
+
+                    // Open record-dialog
+                    setTimeout(() => {
+                        setOpenState(true);
+                    }, 100);
+                });
+            }
+        }
+        window.addEventListener('recordDialogEditAction', recordDialogEditAction);
+        // Remove the event listener when the component unmounts
+        return () => {
+            window.removeEventListener('recordDialogEditAction', recordDialogEditAction);
+        };
+    }, []);
+
     // Record Dialog - Forms
     const resetRecordDialog = () => {
+        setValueRecordUuid('');
         setValueRecordType('expense');
         setValueRecordCategory('');
         setValueRecordFromWallet('');
@@ -126,7 +220,15 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
         formData.append('notes', String(valueRecordNotes ?? ''));
         formData.append('timezone', moment.tz.guess());
 
-        axios.post(route('api.record.v1.store'), formData, {
+        // Adjust route target
+        let actionRoute = route('api.record.v1.store');
+        if(valueRecordUuid){
+            formData.append('_method', 'PUT');
+            actionRoute = route('api.record.v1.update', valueRecordUuid);
+        }
+
+        // Make request call
+        axios.post(actionRoute, formData, {
             cancelToken: new axios.CancelToken(function executor(c) {
                 // Create a CancelToken using Axios, which is equivalent to AbortController.signal
                 abortController.abort = c;
@@ -204,6 +306,8 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
         });
     }
 
+    // Record UUID
+    const [valueRecordUuid, setValueRecordUuid] = useState<string>('');
     // Record Type
     const [valueRecordType, setValueRecordType] = useState<string>('expense');
     // Category Combobox
@@ -241,7 +345,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                 let jsonResponse = response.data;
 
                 return jsonResponse.result.data;
-              } catch (error) {
+            } catch (error) {
                 if (axios.isCancel(error)) {
                     // Handle the cancellation here if needed
                     console.log('Request was canceled', error);
@@ -296,16 +400,22 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
     }, [categoryComboboxInput, openRecordCategory]);
     useEffect(() => {
         // Handle selection Label
-        if(valueRecordCategory !== '' && categoryComboboxList.length > 0){
-            const selected: CategoryItem | undefined = categoryComboboxList.find(
-                (options: CategoryItem) => options?.uuid === valueRecordCategory
-            ) as CategoryItem | undefined;
-
-            if (selected) {
-                setCategoryComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+        if(openState){
+            if(valueRecordCategory !== '' && categoryComboboxList.length > 0){
+                const selected: CategoryItem | undefined = categoryComboboxList.find(
+                    (options: CategoryItem) => options?.uuid === valueRecordCategory
+                ) as CategoryItem | undefined;
+    
+                if (selected) {
+                    setCategoryComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                }
+            } else {
+                setCategoryComboboxLabel(`Select an option`);
             }
         } else {
-            setCategoryComboboxLabel(`Select an option`);
+            if(!valueRecordUuid){
+                setCategoryComboboxLabel(`Select an option`);
+            }
         }
     }, [valueRecordCategory]);
 
@@ -395,16 +505,22 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
         }
     }, [fromWalletComboboxInput, openRecordFromWallet]);
     useEffect(() => {
-        if(valueRecordFromWallet !== '' && fromWalletComboboxList.length > 0){
-            const selected: WalletItem | undefined = fromWalletComboboxList.find(
-                (options: WalletItem) => options?.uuid === valueRecordFromWallet
-            ) as WalletItem | undefined;
-
-            if (selected) {
-                setFromWalletComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+        if(openState){
+            if(valueRecordFromWallet !== '' && fromWalletComboboxList.length > 0){
+                const selected: WalletItem | undefined = fromWalletComboboxList.find(
+                    (options: WalletItem) => options?.uuid === valueRecordFromWallet
+                ) as WalletItem | undefined;
+    
+                if (selected) {
+                    setFromWalletComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                }
+            } else {
+                setFromWalletComboboxLabel(`Select an option`);
             }
         } else {
-            setFromWalletComboboxLabel(`Select an option`);
+            if(!valueRecordUuid){
+                setFromWalletComboboxLabel(`Select an option`);
+            }
         }
     }, [valueRecordFromWallet]);
 
@@ -494,16 +610,22 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
         }
     }, [toWalletComboboxInput, openRecordToWallet]);
     useEffect(() => {
-        if(valueRecordToWallet !== '' && toWalletComboboxList.length > 0){
-            const selected: WalletItem | undefined = toWalletComboboxList.find(
-                (options: WalletItem) => options?.uuid === valueRecordToWallet
-            ) as WalletItem | undefined;
-
-            if (selected) {
-                setToWalletComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+        if(openState){
+            if(valueRecordToWallet !== '' && toWalletComboboxList.length > 0){
+                const selected: WalletItem | undefined = toWalletComboboxList.find(
+                    (options: WalletItem) => options?.uuid === valueRecordToWallet
+                ) as WalletItem | undefined;
+    
+                if (selected) {
+                    setToWalletComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                }
+            } else {
+                setToWalletComboboxLabel(`Select an option`);
             }
         } else {
-            setToWalletComboboxLabel(`Select an option`);
+            if(!valueRecordUuid){
+                setToWalletComboboxLabel(`Select an option`);
+            }
         }
     }, [valueRecordToWallet]);
 
@@ -541,7 +663,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
             <Dialog open={openState} onOpenChange={setOpenState}>
                 <DialogContent className=" h-full lg:min-w-[800px] md:max-h-[85vh] p-0" data-type="record-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
-                        <DialogTitle>Add new Record</DialogTitle>
+                        <DialogTitle>{ valueRecordUuid ? `Edit` : `Add new` } Record</DialogTitle>
                     </DialogHeader>
 
                     <form onSubmit={handleRecordDialogSubmit} id={ `recordDialog-forms` } className={ ` overflow-auto border-t border-b ` }>

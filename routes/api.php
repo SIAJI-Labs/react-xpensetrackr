@@ -54,6 +54,11 @@ Route::group([
             
             // Store
             Route::post('store', [\App\Http\Controllers\Api\v1\RecordController::class, 'store'])->name('store');
+            // Update
+            Route::put('{uuid}', [\App\Http\Controllers\Api\v1\RecordController::class, 'update'])->name('update');
+
+            // Show
+            Route::get('{uuid}', [\App\Http\Controllers\Api\v1\RecordController::class, 'show'])->name('show');
         });
     });
 

@@ -17,16 +17,11 @@ import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
 
 
-export default function SystemLayout({ user, header, children, childHandleRecordDialog }: PropsWithChildren<{ user: User, header?: ReactNode, childHandleRecordDialog?: boolean }>) {
+export default function SystemLayout({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
     const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
     const handleOpenRecordDialog = (isOpen: boolean) => {
         setOpenRecordDialog(isOpen);
     };
-    useEffect(() => {
-        if(childHandleRecordDialog){
-            handleOpenRecordDialog(childHandleRecordDialog);
-        }
-    }, [childHandleRecordDialog]);
 
     return (
         <ThemeProvider>

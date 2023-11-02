@@ -662,7 +662,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
             <Dialog open={openState} onOpenChange={setOpenState}>
                 <DialogContent className=" h-full lg:min-w-[800px] md:max-h-[85vh] p-0" data-type="record-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
-                        <DialogTitle>{ valueRecordUuid ? `Edit` : `Add new` } Record</DialogTitle>
+                        <DialogTitle className={ ` dark:text-white` }>{ valueRecordUuid ? `Edit` : `Add new` } Record</DialogTitle>
                     </DialogHeader>
 
                     <form onSubmit={handleRecordDialogSubmit} id={ `recordDialog-forms` } className={ ` overflow-auto border-t border-b ` }>
@@ -676,7 +676,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                             let recordType: any[] = [];
                                             ['income', 'transfer', 'expense'].map((value, index) => {
                                                 recordType.push(
-                                                    <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valueRecordType === value ? `bg-gray-200 hover:bg-gray-200` : null} hover:bg-gray-100 transition` } onClick={() => {
+                                                    <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valueRecordType === value ? `bg-gray-200 hover:bg-gray-200` : ` dark:text-white dark:hover:text-black`} hover:bg-gray-100 transition` } onClick={() => {
                                                         setValueRecordType(value);
                                                     }} key={ `record_type-${value}` }>
                                                         <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
@@ -705,7 +705,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                                     variant="outline"
                                                     role="combobox"
                                                     aria-expanded={openRecordCategory}
-                                                    className={ `w-full justify-between ${errorRecordDialog?.category ? ` border-red-500` : ''}` }
+                                                    className={ `w-full justify-between ${errorRecordDialog?.category ? ` border-red-500` : ''} dark:text-white` }
                                                 >
                                                     <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{categoryComboboxLabel}</span>
                                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -750,7 +750,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                                     variant="outline"
                                                     role="combobox"
                                                     aria-expanded={openRecordFromWallet}
-                                                    className={ `w-full justify-between ${errorRecordDialog?.from_wallet ? ` border-red-500` : ''}` }
+                                                    className={ `w-full justify-between ${errorRecordDialog?.from_wallet ? ` border-red-500` : ''} dark:text-white` }
                                                 >
                                                     <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{fromWalletComboboxLabel}</span>
                                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -797,7 +797,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                                             variant="outline"
                                                             role="combobox"
                                                             aria-expanded={openRecordToWallet}
-                                                            className={ ` w-full justify-between ${errorRecordDialog?.to_wallet ? ` border-red-500` : ''}` }
+                                                            className={ ` w-full justify-between ${errorRecordDialog?.to_wallet ? ` border-red-500` : ''} dark:text-white` }
                                                         >
                                                             <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{toWalletComboboxLabel}</span>
                                                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -940,7 +940,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     variant={"outline"}
-                                                    className={ ` w-full justify-start text-left font-normal ${!valueRecordDate && "text-muted-foreground"} ${errorRecordDialog?.date ? ` border-red-500` : ''}`}
+                                                    className={ ` w-full justify-start text-left font-normal ${!valueRecordDate && "text-muted-foreground"} ${errorRecordDialog?.date ? ` border-red-500` : ''} dark:text-white`}
                                                 >
                                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                                     {valueRecordDate ? format(valueRecordDate, "PPP") : <span>Pick a date</span>}
@@ -965,7 +965,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                             <Select onValueChange={(value) => {
                                                 setValueRecordHours(value);
                                             }} value={ valueRecordHours }>
-                                                <SelectTrigger className={ `w-full text-center ${errorRecordDialog?.hours ? ` border-red-500` : ''}` }>
+                                                <SelectTrigger className={ `w-full text-center ${errorRecordDialog?.hours ? ` border-red-500` : ''} dark:text-white` }>
                                                     <SelectValue placeholder="Hours" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -998,7 +998,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                             <Select onValueChange={(value) => {
                                                 setValueRecordMinutes(value);
                                             }} value={ valueRecordMinutes }>
-                                                <SelectTrigger className={ `w-full text-center ${errorRecordDialog?.minutes ? ` border-red-500` : ''}` }>
+                                                <SelectTrigger className={ `w-full text-center ${errorRecordDialog?.minutes ? ` border-red-500` : ''} dark:text-white` }>
                                                     <SelectValue placeholder="Minutes" className={ `` } />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -1049,7 +1049,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                     }} />
                                         <label
                                             htmlFor="record_dialog-keep_open"
-                                            className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70` }
+                                            className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
                                         >
                                             Keep Open?
                                         </label>

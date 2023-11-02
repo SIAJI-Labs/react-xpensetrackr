@@ -195,14 +195,13 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div dangerouslySetInnerHTML={{ __html: inspire }} className={ ` p-4 rounded-lg bg-gray-100` }></div>
+                        <div dangerouslySetInnerHTML={{ __html: inspire }} className={ ` p-4 rounded-lg bg-gray-100 dark:bg-background dark:border` }></div>
                     </CardContent>
                 </Card>
 
                 {/* Record List */}
                 <Card className={ `` }>
                     <CardHeader>
-
                         <div className={ ` flex flex-row justify-between items-center` }>
                             <div>
                                 <CardTitle>
@@ -240,6 +239,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                                         setRecordIsLoading(!recordIsLoading);
                                     }
                                 }}
+                                className={ ` dark:border-white` }
                             >Complete</Button>
 
                             <Button
@@ -250,7 +250,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                                         setRecordIsLoading(!recordIsLoading);
                                     }
                                 }}
-                                className={ ` flex flex-row gap-1` }
+                                className={ ` flex flex-row gap-1 dark:border-white` }
                             >
                                 <span>Pending</span>
                                 {(() => {
@@ -303,7 +303,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                         if(!recordIsLoading){
                             return <>
                                 <CardFooter>
-                                    <Button variant={ `outline` }>Load more</Button>
+                                    <Button variant={ `outline` } className={ `dark:border-white` }>Load more</Button>
                                 </CardFooter>
                             </>;
                         }

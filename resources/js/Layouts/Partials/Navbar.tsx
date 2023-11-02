@@ -118,7 +118,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                 </CommandList>
             </CommandDialog>
             
-            <nav className="bg-white border-b fixed w-full">
+            <nav className="bg-white dark:bg-background border-b fixed w-full">
                 {/* Navbar */}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 relative">
@@ -127,7 +127,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                             <div className={ `` }>
                                 <Sheet>
                                     <SheetTrigger asChild>
-                                        <Button variant={ `ghost` }><i className={ `fa-solid fa-toggle-off` }></i></Button>
+                                        <Button variant={ `ghost` } className={ ` dark:text-white` }><i className={ `fa-solid fa-toggle-off` }></i></Button>
                                     </SheetTrigger>
                                     <SheetContent side={ `left` }>
                                         <SheetHeader>
@@ -146,7 +146,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                         <div className={ ` absolute h-full left-1/2 -translate-x-1/2 items-center flex sm:max-w-[400px] w-full` }>
                             <div className={ ` flex flex-row gap-4 w-full justify-between border h-10 rounded-md items-center px-4 cursor-pointer` } id={ `navbar-search` }>
                                 <div className={ ` flex flex-row items-center gap-4` }>
-                                    <i className={ `fa-solid fa-magnifying-glass` }></i>
+                                    <i className={ `fa-solid fa-magnifying-glass dark:text-white` }></i>
                                     <span className={ ` leading-none text-muted-foreground text-sm` }>Command or Search...</span>
                                 </div>
 
@@ -161,7 +161,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                             {/* Notification - Sheet */}
                             <Sheet>
                                 <SheetTrigger asChild>
-                                    <Button variant={ `ghost` }><i className={ `fa-regular fa-bell` }></i></Button>
+                                    <Button variant={ `ghost` } className={ ` dark:text-white` }><i className={ `fa-regular fa-bell` }></i></Button>
                                 </SheetTrigger>
                                 <SheetContent side={ `right` }>
                                     <SheetHeader>
@@ -237,7 +237,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                         <DropdownMenuSeparator />
 
                                         <DropdownMenuGroup>
-                                            <DropdownMenuItem className={ ` flex flex-row gap-2 text-destructive` }>
+                                            <DropdownMenuItem className={ ` flex flex-row gap-2 text-red-500` }>
                                                 <Link href={route('logout')} method="post" as="button" className={ `flex flex-row gap-2 items-center` }>
                                                     <i className={ `fa-solid fa-arrow-right-from-bracket leading-none w-1/12` }></i>
                                                     <span className=' w-11/12'>Sign-out</span>

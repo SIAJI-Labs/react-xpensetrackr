@@ -34,7 +34,7 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 <meta name="description" content="Your page description" />
             </Head>
 
-            <div className="min-h-screen bg-gray-100 relative">
+            <div className="min-h-screen bg-gray-100 dark:bg-background relative">
                 {/* Navbar */}
                 <Navbar
                     user={user}
@@ -53,7 +53,7 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 </div>
 
                 {/* Record Modal */}
-                <Button variant="outline" className={ ` fixed right-4 bottom-4` } onClick={() => {
+                <Button variant="outline" className={ ` fixed right-4 bottom-4 dark:text-white dark:border-white` } onClick={() => {
                     setOpenRecordDialog(true);
                 }}>Add record</Button>
                 {/* Record Modal - Dialog */}

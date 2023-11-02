@@ -49,16 +49,17 @@ Route::group([
         ], function(){
             // Fetch Pending Count
             Route::get('count-pending', [\App\Http\Controllers\Api\v1\RecordController::class, 'countPending'])->name('count-pending');
-            // List
+            // List/Index
             Route::get('list', [\App\Http\Controllers\Api\v1\RecordController::class, 'index'])->name('list');
+            // Show
+            Route::get('{uuid}', [\App\Http\Controllers\Api\v1\RecordController::class, 'show'])->name('show');
             
             // Store
             Route::post('store', [\App\Http\Controllers\Api\v1\RecordController::class, 'store'])->name('store');
             // Update
             Route::put('{uuid}', [\App\Http\Controllers\Api\v1\RecordController::class, 'update'])->name('update');
-
-            // Show
-            Route::get('{uuid}', [\App\Http\Controllers\Api\v1\RecordController::class, 'show'])->name('show');
+            // Delete
+            Route::delete('{uuid}', [\App\Http\Controllers\Api\v1\RecordController::class, 'destroy'])->name('destroy');
         });
     });
 

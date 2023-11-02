@@ -299,9 +299,21 @@ class RecordController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        $user = $request->user();
+
+        $data = \App\Models\Record::with('category.parent', 'fromWallet.parent', 'toWallet.parent')
+            ->where(\DB::raw('BINARY `uuid`'), $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        \DB::transaction(function () use ($request, $data) {
+            // Remove data
+            $data->delete();
+        });
+
+        return $this->formatedJsonResponse(200, 'Data Deleted', []);
     }
 
     /**

@@ -67,11 +67,24 @@ export default function RecordTemplate({ record }: PropsWithChildren<RecordTempl
 
                                         return <></>;
                                     })()}
-                                    <DropdownMenuItem>
-                                        <Link href={ `` }>
-                                            <span className={ ` text-red-500` }>Delete</span>
-                                        </Link>
-                                    </DropdownMenuItem>
+                                    {(() => {
+                                        // Check if record dialog form is exists
+                                        let recordDialogSection = document.getElementById('recordDeleteDialog-section');
+                                        if(recordDialogSection){
+                                            return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
+                                                window.dispatchEvent(new CustomEvent('recordDialogDeleteAction', {
+                                                    bubbles: true,
+                                                    detail: {
+                                                        uuid: record?.uuid
+                                                    }
+                                                }));
+                                            }}>
+                                                <span className={ ` text-red-500` }>Delete</span>
+                                            </DropdownMenuItem>;
+                                        }
+
+                                        return <></>;
+                                    })()}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>

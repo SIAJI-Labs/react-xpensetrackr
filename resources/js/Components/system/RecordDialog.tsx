@@ -1,6 +1,7 @@
 import { FormEventHandler, useEffect, useMemo, useState } from 'react';
 import { format } from "date-fns"
 import { CategoryItem, WalletItem, User, RecordItem } from '@/types';
+import axios, { AxiosError } from 'axios';
 
 // Script
 import '../../function';
@@ -27,7 +28,6 @@ import { useToast } from "@/Components/ui/use-toast";
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import axios, { AxiosError } from 'axios';
 
 type RecordDialogProps = {
     openState: boolean;
@@ -154,7 +154,6 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                     if(data.to_wallet){
                         setToWalletComboboxLabel(`${data.to_wallet.parent ? `${data.to_wallet.parent.name} - ` : ''}${data.to_wallet.name}`);
                     }
-
 
                     // Open record-dialog
                     setTimeout(() => {

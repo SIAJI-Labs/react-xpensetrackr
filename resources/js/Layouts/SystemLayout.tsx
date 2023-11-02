@@ -15,12 +15,17 @@ import RecordDialog from '@/Components/system/RecordDialog';
 import { ThemeProvider } from '@/Components/template/theme-provider';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
+import RecordDeleteDialog from '@/Components/system/RecordDeleteDialog';
 
 
 export default function SystemLayout({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
     const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
     const handleOpenRecordDialog = (isOpen: boolean) => {
         setOpenRecordDialog(isOpen);
+    };
+    const [openRecordDeleteDialog, setOpenRecordDeleteDialog] = useState<boolean>(false);
+    const handleOpenRecordDeleteDialog = (isOpen: boolean) => {
+        setOpenRecordDeleteDialog(isOpen);
     };
 
     return (
@@ -53,6 +58,8 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 }}>Add record</Button>
                 {/* Record Modal - Dialog */}
                 <RecordDialog openState={ openRecordDialog } setOpenState={ handleOpenRecordDialog }/>
+                {/* Record Modal - Delete Dialog */}
+                <RecordDeleteDialog openState={ openRecordDeleteDialog } setOpenState={ handleOpenRecordDeleteDialog }></RecordDeleteDialog>
             </div>
 
             <Toaster />

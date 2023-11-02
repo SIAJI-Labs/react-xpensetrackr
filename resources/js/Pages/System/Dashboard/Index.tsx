@@ -124,7 +124,8 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
         }
     }
     useEffect(() => {
-        fetchRecordList();
+        // Update record list
+        fetchPending();
     }, [recordFilter]);
     useEffect(() => {
         // Update skeleton count to match loaded record item
@@ -163,10 +164,12 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
         const handleDialogRecord = () => {
             console.log('Listen to Dialog Record Event');
 
-            // Update record list
-            fetchPending();
-            // Open dialog state
-            setOpenRecordDialog(false);
+            setTimeout(() => {
+                // Update record list
+                fetchPending();
+                // Open dialog state
+                setOpenRecordDialog(false);
+            }, 100);
         }
         window.addEventListener('dialogRecord', handleDialogRecord);
         // Remove the event listener when the component unmounts

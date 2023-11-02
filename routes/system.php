@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group([
-    'as' => 'sys.'
+    'as' => 'sys.',
+    'middleware' => ['auth']
 ], function(){
     // Dashboard
     Route::get('dashboard', \App\Http\Controllers\System\DashboardController::class)->name('index');

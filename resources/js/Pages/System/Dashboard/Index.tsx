@@ -21,6 +21,12 @@ type DashboardProps = {
 }
 
 export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardProps>) {
+    // Record Dialog
+    const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
+    const handleOpenRecordDialog = (isOpen: boolean) => {
+        setOpenRecordDialog(isOpen);
+    }
+
     // Global Variable
     const [refreshLoading, setRefreshLoading] = useState<boolean>(false);
 
@@ -161,7 +167,10 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
         const handleDialogRecord = () => {
             console.log('Listen to Dialog Record Event');
 
+            // Update record list
             fetchPending();
+            // Open dialog state
+            setOpenRecordDialog(false);
         }
         window.addEventListener('dialogRecord', handleDialogRecord);
         // Remove the event listener when the component unmounts
@@ -174,6 +183,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
         <SystemLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}
+            childHandleRecordDialog={ openRecordDialog }
         >
             <Head title="Dashboard" />
 
@@ -279,7 +289,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                                         recordItem.map((val, index) => {
                                             recordElement.push(
                                                 <div key={ `record_item-${index}` }>
-                                                    {recordListTemplate(val)}
+                                                    {recordListTemplate(val, handleOpenRecordDialog)}
                                                 </div>
                                             );
                                         });

@@ -5,7 +5,7 @@ import { User } from '@/types';
 // Script
 import '@/function';
 // Plugins
-import '../../plugins/fontawesome/all.scss';
+import '@/../plugins/fontawesome/all.scss';
 
 // Partials
 import Navbar from './Partials/Navbar';
@@ -31,7 +31,10 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
     return (
         <ThemeProvider>
             <Head>
-                <meta name="description" content="Your page description" />
+                <meta name="description" content="Simplify your expenses, maximize your control" />
+
+                {/* Favicon */}
+                <link rel="icon" type="image/x-icon" href="/assets/images/favicon.svg"></link>
             </Head>
 
             <div className="min-h-screen bg-gray-100 dark:bg-background relative">
@@ -48,7 +51,7 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 )} */}
 
                 <div className={ ` flex justify-center p-6` }>
-                    <main className={ ` max-w-[400px] md:min-w-[400px] py-[calc(64px)]` }>
+                    <main className={ ` w-full md:max-w-[400px] md:min-w-[400px] py-[calc(64px)]` }>
                         {children}
                     </main>
                 </div>

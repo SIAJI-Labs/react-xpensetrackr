@@ -1,30 +1,33 @@
-import { PageProps, WalletItem } from "@/types";
 import { useEffect, useMemo, useState } from "react";
-import { Head } from "@inertiajs/react";
+import { PageProps, WalletItem } from "@/types";
 import axios, { AxiosError } from "axios";
+import { Head, Link } from "@inertiajs/react";
 
 import '@/../plugins/fontawesome/all.scss';
-import { ucwords } from "@/function";
+import { formatRupiah, ucwords } from "@/function";
 import moment from "moment-timezone";
 import '@/../css/siaji.scss';
 
 import ErrorMessage from "@/Components/forms/ErrorMessage";
-import PublicLayout from '@/Layouts/PublicLayout';
 import { Check, ChevronsUpDown } from "lucide-react";
+import { useToast } from "@/Components/ui/use-toast";
+import PublicLayout from '@/Layouts/PublicLayout';
 
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
+import { Textarea } from "@/Components/ui/textarea";
 import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
 import { Input } from "@/Components/ui/input";
 import { IMaskMixin } from "react-imask";
-import { Textarea } from "@/Components/ui/textarea";
-import { Badge } from "@/Components/ui/badge";
+import ApplicationLogo from "@/Components/ApplicationLogo";
 
 type Props = {
 }
 
 export default function Record({ auth }: PageProps<Props>) {
+    const { toast } = useToast();
     // extend style component
     const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
         <Input
@@ -233,6 +236,10 @@ export default function Record({ auth }: PageProps<Props>) {
             if (response.status === 200) {
                 const responseJson = response.data;
 
+                toast({
+                    title: "Action: Success",
+                    description: "Record data successfully saved",
+                });
                 // Update to next form
                 formReset();
                 setFormIndex(0);
@@ -489,6 +496,12 @@ export default function Record({ auth }: PageProps<Props>) {
 
             <div className={ ` flex flex-col justify-center items-center h-screen w-screen` }>
                 <main className={ ` max-w-[400px] md:min-w-[400px] py-[calc(64px)] px-6` }>
+                    <div className={ ` mb-4` }>
+                        <ApplicationLogo
+                            fontSizeMain={ ` text-3xl` }   
+                        ></ApplicationLogo>
+                    </div>
+
                     <Card>
                         {/* <CardHeader className={ `` }>
                             <div className={ `flex flex-col space-y-2 ` }>
@@ -769,19 +782,38 @@ export default function Record({ auth }: PageProps<Props>) {
                                                     </div>
 
                                                     {/* Note */}
-                                                    {(() => {
-                                                        if(valueRecordNotes){
-                                                            return  <div className=" w-full p-4 rounded-lg border-2 border-dashed mt-4">
-                                                                <span className=" flex items-center gap-2 text-sm">
-                                                                    <i className="fa-solid fa-align-left"></i>
-                                                                    <strong>Note(s)</strong>
-                                                                </span>
-                                                                <span className=" block mt-2">{ valueRecordNotes }</span>
-                                                            </div>
-                                                        }
+                                                    <div className=" w-full p-4 rounded-lg border-2 border-dashed mt-4">
+                                                        <span className=" flex items-center gap-2 text-sm">
+                                                            <i className="fa-solid fa-align-left"></i>
+                                                            <strong>Note(s)</strong>
+                                                        </span>
+                                                        <span className=" block mt-2">{ valueRecordNotes ?? 'No description provided' }</span>
+                                                    </div>
 
-                                                        return <></>;
-                                                    })()}
+                                                    {/* Amount, etc */}
+                                                    <div className={ `mt-4` }>
+                                                        <div className={ `flex justify-between mt-2 text-sm` }>
+                                                            <span>Amount</span>
+                                                            <span data-review="amount">{ formatRupiah(valueRecordAmount ?? 0) }</span>
+                                                        </div>
+                                                        <div className={ `flex justify-between mt-1 text-sm` }>
+                                                            <span>
+                                                                <span>Extra</span>
+                                                                {(() => {
+                                                                    if(valueRecordExtraType === 'percentage'){
+                                                                        return <span className={ `text-xs` }>({ valueRecordExtraAmount ?? 0 }%)</span>;
+                                                                    }
+                                                                    return <></>;
+                                                                })()}
+                                                            </span>
+                                                            <span data-review="extra_amount">{ formatRupiah((valueRecordFinalAmount ?? 0) - (valueRecordAmount ?? 0)) }</span>
+                                                        </div>
+                                                        <hr className={ `my-1` }/>
+                                                        <div className={ `flex justify-between mt-2` }>
+                                                            <span className={ `font-semibold` }>Final Amount</span>
+                                                            <span className={ `font-semibold` } data-review="final_amount">{ formatRupiah(valueRecordFinalAmount ?? 0) }</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             }
                                         ];
@@ -834,6 +866,10 @@ export default function Record({ auth }: PageProps<Props>) {
                             </div>
                         </CardFooter>
                     </Card>
+
+                    <div className={ ` mt-4 w-full text-center` }>
+                        <Link href={ route('sys.index') }>Go to Dashboard</Link>
+                    </div>
                 </main>
             </div>
         </PublicLayout>

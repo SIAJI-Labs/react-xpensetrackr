@@ -1,5 +1,5 @@
 import { useState, PropsWithChildren, ReactNode } from 'react';
-import "../../../css/siaji.scss";
+import "@/../css/siaji.scss";
 
 import { RecordItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -22,7 +22,7 @@ export default function RecordTemplate({ record }: PropsWithChildren<RecordTempl
     let r = (Math.random() + 1).toString(36).substring(7);
 
     // State for Dropdown
-    const [openDropdown, setOpenDropdown] = useState<boolean>(false)
+    const [openDropdown, setOpenDropdown] = useState<boolean>(false);
 
     return (
         <section key={r}  onClick={($refs) => {
@@ -44,7 +44,7 @@ export default function RecordTemplate({ record }: PropsWithChildren<RecordTempl
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
-                                    <Link href={ `` }>
+                                    <Link href={ route('sys.record.show', record?.uuid) }>
                                         <DropdownMenuItem className={ ` cursor-pointer` }>
                                             <span className={ ` text-blue-500` }>Detail</span>
                                         </DropdownMenuItem>
@@ -53,8 +53,23 @@ export default function RecordTemplate({ record }: PropsWithChildren<RecordTempl
                                         // Check if record dialog form is exists
                                         let recordDialogSection = document.getElementById('recordDialog-section');
                                         if(recordDialogSection){
-                                            return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                                window.dispatchEvent(new CustomEvent('recordDialogEditAction', {
+                                            return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
+                                                let el = $refs.target as HTMLElement;
+                                                if(el){
+                                                    let originalText = el.innerHTML;
+                                                    el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+
+                                                    const revertToOriginalText = () => {
+                                                        if(originalText){
+                                                            el.innerHTML = originalText;
+                                                        }
+
+                                                        document.removeEventListener('dialogRecordOpened', revertToOriginalText);
+                                                    }
+                                                    document.addEventListener('dialogRecordOpened', revertToOriginalText);
+                                                }
+
+                                                document.dispatchEvent(new CustomEvent('recordDialogEditAction', {
                                                     bubbles: true,
                                                     detail: {
                                                         uuid: record?.uuid
@@ -72,7 +87,7 @@ export default function RecordTemplate({ record }: PropsWithChildren<RecordTempl
                                         let recordDialogSection = document.getElementById('recordDeleteDialog-section');
                                         if(recordDialogSection){
                                             return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                                window.dispatchEvent(new CustomEvent('recordDialogDeleteAction', {
+                                                document.dispatchEvent(new CustomEvent('recordDialogDeleteAction', {
                                                     bubbles: true,
                                                     detail: {
                                                         uuid: record?.uuid

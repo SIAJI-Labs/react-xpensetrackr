@@ -65,7 +65,6 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
                 if (response.status === 200) {
                     const responseJson = response.data;
 
-                    console.log(responseJson);
                     setTimeout(() => {
                         if(setOpenState){
                             if (el) {
@@ -76,7 +75,12 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
                             }
             
                             // Announce Dialog Global Event
-                            window.dispatchEvent(new CustomEvent('dialogRecord'));
+                            document.dispatchEvent(new CustomEvent('dialogRecord', {
+                                bubbles: true,
+                                detail: {
+                                    action: 'delete'
+                                }
+                            }));
                             setOpenState(false);
                         }
                     }, 200);
@@ -101,6 +105,9 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <Button variant={ `ghost` } onClick={ ($refs) => {
+                            if(setOpenState){
+                                setOpenState(false);
+                            }
                             if(recordDeleteAbortController instanceof AbortController){
                                 recordDeleteAbortController.abort();
                             }

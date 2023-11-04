@@ -28,6 +28,7 @@ import { useToast } from "@/Components/ui/use-toast";
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import { useIsFirstRender } from '@/lib/utils';
 
 type RecordDialogProps = {
     openState: boolean;
@@ -35,7 +36,9 @@ type RecordDialogProps = {
 };
 
 export default function RecordDialog({ openState, setOpenState }: RecordDialogProps){
+    const isFirstRender = useIsFirstRender();
     const { toast } = useToast();
+
     // extend style component
     const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
         <Input
@@ -46,35 +49,40 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
 
     // Record Dialog
     useEffect(() => {
-        setTimeout(() => {
-            // Reset error bag
-            setErrorRecordDialog({});
-            // Cancel previous request
-            if(abortControllerRecordDialog instanceof AbortController){
-                abortControllerRecordDialog.abort();
-            }
-            
-            // Handle when record dialog is opened
-            if(openState){
-                if(!valueRecordUuid){
-                    // Update timestamp
-                    let now = moment();
-                    let hours = now.get('hour');
-                    let minutes = now.get('minute');
-                    
-                    // Update state
-                    setValueRecordDate(moment(now).toDate());
-                    setValueRecordHours(String(hours));
-                    setValueRecordMinutes(String(minutes));
+        if(!isFirstRender){
+            setTimeout(() => {
+                // Reset error bag
+                setErrorRecordDialog({});
+                // Cancel previous request
+                if(abortControllerRecordDialog instanceof AbortController){
+                    abortControllerRecordDialog.abort();
                 }
-            } else {
-                resetRecordDialog();
-                setKeepOpenRecordDialog(false);
-
-                // Announce Dialog Global Event
-                window.dispatchEvent(new CustomEvent('dialogRecord'));
-            }
-        }, 100);
+                
+                // Handle when record dialog is opened
+                if(openState){
+                    if(!valueRecordUuid){
+                        // Update timestamp
+                        let now = moment();
+                        let hours = now.get('hour');
+                        let minutes = now.get('minute');
+                        
+                        // Update state
+                        setValueRecordDate(moment(now).toDate());
+                        setValueRecordHours(String(hours));
+                        setValueRecordMinutes(String(minutes));
+                    }
+    
+                    // Announce Dialog Global Event
+                    document.dispatchEvent(new CustomEvent('dialogRecordOpened', { bubbles: true }));
+                } else {
+                    resetRecordDialog();
+                    setKeepOpenRecordDialog(false);
+    
+                    // Announce Dialog Global Event
+                    document.dispatchEvent(new CustomEvent('dialogRecord', { bubbles: true }));
+                }
+            }, 100);
+        }
     }, [openState]);
 
     const [abortControllerRecordItem, setAbortControllerRecordItem] = useState<AbortController | null>(null);
@@ -124,7 +132,6 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
 
                 // Fetch Data
                 fetchRecordData(uuid, 'edit').then((data: RecordItem) => {
-                    console.log(data);
                     let raw = momentFormated('YYYY-MM-DD HH:mm:ss', data.datetime, moment.tz.guess());
                     let date = moment(raw).toDate();
                     let hours = String(moment(raw).get('hour'));
@@ -142,7 +149,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                     setValueRecordDate(date);
                     setValueRecordHours(hours);
                     setValueRecordMinutes(minutes);
-                    setValueRecordNotes(data.note);
+                    setValueRecordNotes(data.note ?? '');
 
                     // Update Combobox Label
                     if(data.category){
@@ -160,12 +167,14 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                         setOpenState(true);
                     }, 100);
                 });
+            } else {
+                setOpenState(true);
             }
         }
-        window.addEventListener('recordDialogEditAction', recordDialogEditAction);
+        document.addEventListener('recordDialogEditAction', recordDialogEditAction);
         // Remove the event listener when the component unmounts
         return () => {
-            window.removeEventListener('recordDialogEditAction', recordDialogEditAction);
+            document.removeEventListener('recordDialogEditAction', recordDialogEditAction);
         };
     }, []);
 
@@ -653,7 +662,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
     const [valueRecordMinutes, setValueRecordMinutes] = useState<string>();
 
     // Notes
-    const [valueRecordNotes, setValueRecordNotes] = useState<string>();
+    const [valueRecordNotes, setValueRecordNotes] = useState<string>('');
     // Keep Record Dialog Open?
     const [keepOpenRecordDialog, setKeepOpenRecordDialog] = useState<boolean>(false);
 

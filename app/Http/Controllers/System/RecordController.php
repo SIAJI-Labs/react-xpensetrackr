@@ -20,8 +20,25 @@ class RecordController extends Controller
     /**
      * Handle the incoming request.
      */
-    public function show(Request $request)
+    public function show(Request $request, $id)
     {
-        return Inertia::render('System/Record/Show');
+        $user = $request->user();
+        $related = null;
+
+        $data = \App\Models\Record::with('category.parent', 'fromWallet.parent', 'toWallet.parent')
+            ->where(\DB::raw('BINARY `uuid`'), $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        // Check related
+        if($data->toWallet()->exists() && !empty($data->getRelated())){
+            $related = $data->getRelated();
+            $related->load('category.parent', 'fromWallet.parent', 'toWallet.parent');
+        }
+
+        return Inertia::render('System/Record/Show', [
+            'record' => $data,
+            'related' => $related
+        ]);
     }
 }

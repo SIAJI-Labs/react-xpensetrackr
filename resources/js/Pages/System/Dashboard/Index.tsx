@@ -1,6 +1,7 @@
 import SystemLayout from '@/Layouts/SystemLayout';
-import { Head, Link } from '@inertiajs/react';
 import { PageProps, RecordItem } from '@/types';
+import { useIsFirstRender } from '@/lib/utils';
+import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
@@ -20,6 +21,8 @@ type DashboardProps = {
 }
 
 export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardProps>) {
+    const isFirstRender = useIsFirstRender();
+
     // Record Dialog
     const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
 
@@ -27,7 +30,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
     const [refreshLoading, setRefreshLoading] = useState<boolean>(false);
 
     // Record List - Variable Init
-    const [recordFilter, setRecordFilter] = useState<string>('complete');
+    const [recordFilterStatus, setRecordFilterStatus] = useState<string>('complete');
     const [recordIsLoading, setRecordIsLoading] = useState<boolean>(true);
     const [recordSkeletonCount, setRecordSkeletonCount] = useState<number>(5);
     const [recordItem, setRecordItem] = useState([]);
@@ -87,7 +90,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
         const query = [];
         const obj = {
             limit: 10,
-            filter_status: recordFilter
+            filter_status: recordFilterStatus
         }
         // } as { [key: string]: any };
         for (const key in obj) {
@@ -124,9 +127,11 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
         }
     }
     useEffect(() => {
-        // Update record list
-        fetchPending();
-    }, [recordFilter]);
+        if(!isFirstRender){
+            // Update record list
+            fetchPending();
+        }
+    }, [recordFilterStatus]);
     useEffect(() => {
         // Update skeleton count to match loaded record item
         setRecordSkeletonCount(recordItem.length > 0 ? recordItem.length : 3);
@@ -157,24 +162,28 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
         }
     }
     useEffect(() => {
+        console.log("On load");
+
         // First fetch pending count
         fetchPending();
-
-        // Listen to Record Dialog event
-        const handleDialogRecord = () => {
-            setTimeout(() => {
-                // Update record list
-                fetchPending();
-                // Open dialog state
-                setOpenRecordDialog(false);
-            }, 100);
-        }
-        window.addEventListener('dialogRecord', handleDialogRecord);
-        // Remove the event listener when the component unmounts
-        return () => {
-            window.removeEventListener('dialogRecord', handleDialogRecord);
-        };
     }, []);
+    useEffect(() => {
+        if(!isFirstRender){
+            console.log("Handle record dialog");
+            // Listen to Record Dialog event
+            const handleDialogRecord = (event: any) => {
+                setTimeout(() => {
+                    // Update record list
+                    fetchPending();
+                }, 100);
+            }
+            document.addEventListener('dialogRecord', handleDialogRecord);
+            // Remove the event listener when the component unmounts
+            return () => {
+                document.removeEventListener('dialogRecord', handleDialogRecord);
+            };
+        }
+    });
 
     return (
         <SystemLayout
@@ -230,10 +239,10 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                         {/* Filter Button */}
                         <div className={ ` flex flex-row gap-4` } id={ `dashboard-recordList` }>
                             <Button
-                                variant={ recordFilter === 'complete' ? `default` : `outline` }
+                                variant={ recordFilterStatus === 'complete' ? `default` : `outline` }
                                 onClick={() => {
-                                    if(recordFilter !== 'complete'){
-                                        setRecordFilter('complete');
+                                    if(recordFilterStatus !== 'complete'){
+                                        setRecordFilterStatus('complete');
                                         setRecordIsLoading(!recordIsLoading);
                                     }
                                 }}
@@ -241,10 +250,10 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                             >Complete</Button>
 
                             <Button
-                                variant={ recordFilter === 'pending' ? `default` : `outline` }
+                                variant={ recordFilterStatus === 'pending' ? `default` : `outline` }
                                 onClick={() => {
-                                    if(recordFilter !== 'pending'){
-                                        setRecordFilter('pending');
+                                    if(recordFilterStatus !== 'pending'){
+                                        setRecordFilterStatus('pending');
                                         setRecordIsLoading(!recordIsLoading);
                                     }
                                 }}
@@ -254,7 +263,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                                 {(() => {
                                     if(recordPendingCount > 0){
                                         return <>
-                                            <Badge className={ `${recordFilter === 'pending' ? ' bg-white text-primary' : null} leading-none p-0 h-4 w-4 flex items-center justify-center` }>{recordPendingCount}</Badge>
+                                            <Badge className={ `${recordFilterStatus === 'pending' ? ' bg-white text-primary' : null} leading-none p-0 h-4 w-4 flex items-center justify-center` }>{recordPendingCount}</Badge>
                                         </>;
                                     }
 
@@ -301,7 +310,9 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                         if(!recordIsLoading){
                             return <>
                                 <CardFooter>
-                                    <Button variant={ `outline` } className={ `dark:border-white` }>Load more</Button>
+                                    <Link href={ route('sys.record.index') }>
+                                        <Button variant={ `outline` } className={ `dark:border-white` }>Load all</Button>
+                                    </Link>
                                 </CardFooter>
                             </>;
                         }

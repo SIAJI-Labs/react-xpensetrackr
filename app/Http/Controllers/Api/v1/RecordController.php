@@ -27,6 +27,9 @@ class RecordController extends Controller
         if($request->has('filter_status') && in_array($request->filter_status, ['pending', 'complete'])){
             $data->where('is_pending', $request->filter_status === 'pending');
         }
+        if($request->has('keyword') && !empty($request->keyword)){
+            $data->where('note', 'like', '%'.$request->keyword.'%');
+        }
 
         // Apply ordering
         $sort_type = 'desc';
@@ -40,6 +43,7 @@ class RecordController extends Controller
         }
 
         // Pagination
+        $hasMore = false;
         $perPage = 5;
         if($request->has('per_page') && is_numeric($request->per_page)){
             $perPage = $request->per_page;
@@ -49,13 +53,20 @@ class RecordController extends Controller
             $data = $data->simplePaginate($perPage);
         } else {
             if($request->has('limit') && is_numeric($request->limit)){
+                $raw = (clone $data);
+
                 // Apply limit (only if there's no paginate)
                 $data = $data->limit($request->limit);
+
+                if($data->get()->count() < $raw->count()){
+                    $hasMore = true;
+                }
             }
 
             // Fetch Data
             $data = [
                 'data' => $data->get(),
+                'has_more' => $hasMore
             ];
         }
 
@@ -81,7 +92,7 @@ class RecordController extends Controller
             'date' => ['required', 'string'],
             'hours' => ['required', 'numeric', 'between:0,23'],
             'minutes' => ['required', 'numeric', 'between:0,59'],
-            'notes' => ['required', 'string']
+            'notes' => ['nullable', 'string']
         ]);
 
         // Store to database
@@ -213,7 +224,7 @@ class RecordController extends Controller
             'date' => ['required', 'string'],
             'hours' => ['required', 'numeric', 'between:0,23'],
             'minutes' => ['required', 'numeric', 'between:0,59'],
-            'notes' => ['required', 'string']
+            'notes' => ['nullable', 'string']
         ]);
 
         $user = $request->user();
@@ -310,7 +321,7 @@ class RecordController extends Controller
 
         \DB::transaction(function () use ($request, $data) {
             // Remove data
-            $data->delete();
+            // $data->delete();
         });
 
         return $this->formatedJsonResponse(200, 'Data Deleted', []);

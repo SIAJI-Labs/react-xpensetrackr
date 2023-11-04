@@ -117,7 +117,8 @@ class Record extends Model
             $updateDatetime = false;
 
             // Record is not pending, user using their timezone when adding new record. Adjust it's datetime to UTC timezone
-            if(!empty($timezone) && !$model->{'is_pending'}){
+            // if(!empty($timezone) && !$model->{'is_pending'}){
+            if(!empty($timezone)){
                 $updateDatetime = true;
             }
 

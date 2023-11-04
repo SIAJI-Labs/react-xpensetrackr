@@ -9,9 +9,10 @@ import { useEffect, useState } from 'react';
 // Shadcn
 import { Skeleton } from '@/Components/ui/skeleton';
 import axios from 'axios';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import NoDataTemplate from '@/Components/template/NoDataTemplate';
+import { Input } from '@/Components/ui/input';
 
 // Props
 type RecordIndexProps = {
@@ -55,9 +56,31 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
         </div>
     </>;
 
+    // Record Filter
+    const [recordFilterKeyword, setRecordFilterKeyword] = useState<string>('');
+    const [recordFilterStatus, setRecordFilterStatus] = useState<string>('complete');
+    useEffect(() => {
+        if(recordFilterKeyword){
+            const timer = setTimeout(() => {
+                console.log('Filter');
+                setRecordPaginate(paginate_item);
+                fetchRecordList();
+            }, 500);
+
+            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+            return () => {
+                clearTimeout(timer);
+            };
+        }
+    }, [recordFilterKeyword]);
     // Record List - Variable Init
-    const [recordPaginate, setRecordPaginate] = useState<number>(5);
-    const [recordFilter, setRecordFilter] = useState<string>('complete');
+    let paginate_item = 1;
+    const [recordPaginate, setRecordPaginate] = useState<number>(paginate_item);
+    const [recordPaginateState, setRecordPaginateState] = useState<boolean>(false);
+    useEffect(() => {
+        fetchRecordList();
+    }, [recordPaginate]);
+
     const [recordIsLoading, setRecordIsLoading] = useState<boolean>(true);
     const [recordSkeletonCount, setRecordSkeletonCount] = useState<number>(5);
     const [recordItem, setRecordItem] = useState([]);
@@ -87,7 +110,8 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
         const query = [];
         const obj = {
             limit: recordPaginate,
-            filter_status: recordFilter
+            filter_status: recordFilterStatus,
+            keyword: recordFilterKeyword
         }
         // } as { [key: string]: any };
         for (const key in obj) {
@@ -104,8 +128,10 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
         
             // Use response.data instead of req.json() to get the JSON data
             let jsonResponse = response.data;
-                // Apply to related property
+            // Apply to related property
             setRecordItem(jsonResponse.result.data);
+            // Update load more state
+            setRecordPaginateState(jsonResponse.result.has_more);
 
             // Remove loading state
             setRecordIsLoading(false);
@@ -123,38 +149,13 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
             }
         }
     }
-    // Create Request to check pending count
-    const fetchPending = async () => {
-
-        try {
-            const response = await axios.get(route('api.record.v1.count-pending'));
-        
-            // Use response.data instead of req.json() to get the JSON data
-            let jsonResponse = response.data;
-            // setRecordPendingCount(jsonResponse?.result?.data);
-            // setRefreshLoading(false);
-
-            // Fetch newest record-item
-            fetchRecordList();
-        } catch (error) {
-            if (axios.isCancel(error)) {
-                // Handle the cancellation here if needed
-                console.log('Request was canceled', error);
-            } else {
-                // Handle other errors
-                console.error('Error:', error);
-            }
-        }
-    }
     useEffect(() => {
-        // First fetch pending count
-        fetchPending();
-
         // Listen to Record Dialog event
         const handleDialogRecord = () => {
             setTimeout(() => {
-                // Update record list
-                fetchPending();
+                console.log('Dialog Event');
+
+                fetchRecordList();
                 // Open dialog state
                 setOpenRecordDialog(false);
             }, 100);
@@ -164,7 +165,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
         return () => {
             window.removeEventListener('dialogRecord', handleDialogRecord);
         };
-    }, []);
+    });
 
     return (
         <>
@@ -186,27 +187,49 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                     <CardDescription>See your latest transaction</CardDescription>
                                 </div>
 
-                                {(() => {
-                                    // if(refreshLoading){
-                                    //     return <Button disabled>
-                                    //         <Loader2 className="h-4 w-4 animate-spin" />
-                                    //     </Button>
-                                    // }
+                                <div className={ `flex items-center gap-2` }>
+                                    {(() => {
+                                        // if(refreshLoading){
+                                        //     return <Button disabled>
+                                        //         <Loader2 className="h-4 w-4 animate-spin" />
+                                        //     </Button>
+                                        // }
 
-                                    return <Button variant={ `outline` } onClick={() => {
-                                        // Cancel previous request
-                                        if(recordItemAbortController instanceof AbortController){
-                                            recordItemAbortController.abort();
-                                        }
-                                        
-                                        // Fetch Pending Count
-                                        fetchPending();
-                                    }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
-                                })()}
+                                        return <Button variant={ `outline` } onClick={() => {
+                                            // Cancel previous request
+                                            if(recordItemAbortController instanceof AbortController){
+                                                recordItemAbortController.abort();
+                                            }
+                                            
+                                            console.log('Reload');
+                                            // Fetch Pending Count
+                                            fetchRecordList();
+                                        }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
+                                    })()}
+                                    <Button variant={ `outline` } onClick={() => {
+                                        document.dispatchEvent(new CustomEvent('recordDialogEditAction', {
+                                            bubbles: true,
+                                            }
+                                        ));
+                                    }}>
+                                        <i className={ `fa-solid fa-plus` }></i>
+                                    </Button>
+                                </div>
                             </div>
                         </CardHeader>
                         <CardContent className={ ` flex flex-col gap-6` }>
-                            {/* Filtered Content */}
+                            {/* Filter */}
+                            <div className={ ` flex flex-row gap-4` }>
+                                <Input placeholder={ `Search by record notes` } value={recordFilterKeyword} onChange={(event) => {
+                                    setRecordFilterKeyword(event.target.value);
+                                }}/>
+
+                                <Button>
+                                    <i className={ `fa-solid fa-filter` }></i>
+                                </Button>
+                            </div>
+
+                            {/* Content */}
                             <div className={ ` flex flex-col gap-4` }>
                                 {(() => {
                                     if(recordIsLoading){
@@ -239,6 +262,17 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                 })()}
                             </div>
                         </CardContent>
+                        <CardFooter>
+                            <Button
+                                variant={ `outline` }
+                                className={ `dark:border-white` }
+                                disabled={ !recordPaginateState }
+                                onClick={() => {
+                                    setRecordPaginateState(false);
+                                    setRecordPaginate(recordPaginate + paginate_item);
+                                }}
+                            >Load more</Button>
+                        </CardFooter>
                     </Card>
                 </div>
             </SystemLayout>

@@ -26,9 +26,14 @@ class RecordController extends Controller
         $related = null;
 
         $data = \App\Models\Record::with('category.parent', 'fromWallet.parent', 'toWallet.parent')
+            ->withTrashed()
             ->where(\DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
+
+        if($data->trashed()){
+            return redirect()->route('sys.record.index');
+        }
 
         // Check related
         if($data->toWallet()->exists() && !empty($data->getRelated())){

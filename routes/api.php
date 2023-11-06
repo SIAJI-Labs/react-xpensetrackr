@@ -18,6 +18,27 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// Guest
+Route::group([
+    'as' => 'api.',
+], function(){
+    // Authentication
+    Route::group([
+        'prefix' => 'auth',
+        'as' => 'auth.'
+    ], function(){
+        // v1
+        Route::group([
+            'prefix' => 'v1',
+            'as' => 'v1.'
+        ], function(){
+            // Login
+            Route::post('login', [\App\Http\Controllers\Api\v1\Auth\LoginController::class, 'login'])->name('login');
+        });
+    });
+});
+
+// Auth
 Route::group([
     'as' => 'api.',
     'middleware' => ['auth:sanctum']

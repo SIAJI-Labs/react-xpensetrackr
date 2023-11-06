@@ -208,10 +208,10 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                     })()}
                                     <Button variant={ `outline` } onClick={() => {
                                         document.dispatchEvent(new CustomEvent('recordDialogEditAction', {
-                                            bubbles: true,
+                                                bubbles: true,
                                             }
                                         ));
-                                    }}>
+                                    }} disabled>
                                         <i className={ `fa-solid fa-plus` }></i>
                                     </Button>
                                 </div>

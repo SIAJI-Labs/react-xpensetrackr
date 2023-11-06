@@ -28,6 +28,9 @@ Route::group([
 
     // Dashboard
     Route::get('dashboard', \App\Http\Controllers\System\DashboardController::class)->name('index');
+    
+    // Planned Payment
+    Route::get('planned-payment', [\App\Http\Controllers\System\PlannedPaymentController::class, 'index'])->name('planned-payment.index');
 
     // Record
     Route::get('record/{uuid}', [\App\Http\Controllers\System\RecordController::class, 'show'])->name('record.show');

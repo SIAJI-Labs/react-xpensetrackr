@@ -680,7 +680,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                             <div className={ `py-6 w-full lg:w-3/5` }>
                                 {/* Record Type */}
                                 <div className={ `form-group mb-4 ${errorRecordDialog?.type ? ` is--invalid` : ''}` }>
-                                    <div className={ ` flex flex-row gap-4 w-full border p-1 rounded-md ${errorRecordDialog?.type ? ` border-red-500` : ''}` } id={ `record_dialog-type` }>
+                                    <div className={ ` flex flex-row gap-1 w-full border p-1 rounded-md ${errorRecordDialog?.type ? ` border-red-500` : ''}` } id={ `record_dialog-type` }>
                                         {(() => {
                                             let recordType: any[] = [];
                                             ['income', 'transfer', 'expense'].map((value, index) => {

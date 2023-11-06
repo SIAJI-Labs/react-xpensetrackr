@@ -95,7 +95,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                             { name: 'Budget', icon: '', link: null },
                             { name: 'Debt', icon: '', link: null },
                             { name: 'Goals', icon: '', link: null },
-                            { name: 'Planned Payment', icon: '', link: null },
+                            { name: 'Planned Payment', icon: '', link: route('sys.planned-payment.index') },
                             { name: 'Record', icon: '', link: route('sys.record.index') },
                             { name: 'Record Template', icon: '', link: null },
                             { name: 'Shopping List', icon: '', link: null },

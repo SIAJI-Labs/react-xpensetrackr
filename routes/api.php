@@ -81,6 +81,27 @@ Route::group([
         });
     });
 
+    // Planned Payment
+    Route::group([
+        'prefix' => 'planned-payment',
+        'as' => 'planned-payment.'
+    ], function(){
+        // Summary
+        Route::group([
+            'prefix' => 'summary',
+            'as' => 'summary.'
+        ], function(){
+            // v1
+            Route::group([
+                'prefix' => 'v1',
+                'as' => 'v1.'
+            ], function(){
+                // List/Index
+                Route::get('list', [\App\Http\Controllers\Api\v1\PlannedPaymentSummaryController::class, 'index'])->name('list');
+            });
+        });
+    });
+
     // Record
     Route::group([
         'prefix' => 'record',
@@ -93,6 +114,7 @@ Route::group([
         ], function(){
             // Fetch Pending Count
             Route::get('count-pending', [\App\Http\Controllers\Api\v1\RecordController::class, 'countPending'])->name('count-pending');
+            
             // List/Index
             Route::get('list', [\App\Http\Controllers\Api\v1\RecordController::class, 'index'])->name('list');
             // Show

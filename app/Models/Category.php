@@ -71,6 +71,10 @@ class Category extends Model
     {
         return $this->hasMany(\App\Models\Record::class, 'category_id');
     }
+    public function plannedPayment()
+    {
+        return $this->hasMany(\App\Models\PlannedPayment::class, 'category_id');
+    }
 
     /**
      * Foreign Key Relation

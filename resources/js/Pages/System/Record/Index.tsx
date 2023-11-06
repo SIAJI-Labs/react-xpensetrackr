@@ -104,6 +104,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
         // Store the AbortController in state
         setRecordItemAbortController(abortController);
 
+        // Show skeleton
         setRecordIsLoading(true);
 
         // Build parameter
@@ -120,10 +121,10 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
 
         try {
             const response = await axios.get(`${route('api.record.v1.list')}?${query.join('&')}`, {
-              cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-              })
+                cancelToken: new axios.CancelToken(function executor(c) {
+                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                    abortController.abort = c;
+                })
             });
         
             // Use response.data instead of req.json() to get the JSON data
@@ -138,14 +139,13 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
             // setRefreshLoading(false);
             // Clear the AbortController from state
             setRecordItemAbortController(null);
-          } catch (error) {
-
+        } catch (error) {
             if (axios.isCancel(error)) {
-              // Handle the cancellation here if needed
-              console.log('Request was canceled', error);
+                // Handle the cancellation here if needed
+                console.log('Request was canceled', error);
             } else {
-              // Handle other errors
-              console.error('Error:', error);
+                // Handle other errors
+                console.error('Error:', error);
             }
         }
     }

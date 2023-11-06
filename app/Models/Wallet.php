@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -74,6 +75,14 @@ class Wallet extends Model
     public function recordRelated()
     {
         return $this->hasMany(\App\Models\Record::class, 'to_wallet_id');
+    }
+    public function plannedPayment()
+    {
+        return $this->hasMany(\App\Models\PlannedPayment::class, 'from_wallet_id');
+    }
+    public function plannedPaymentRelated()
+    {
+        return $this->hasMany(\App\Models\PlannedPayment::class, 'to_wallet_id');
     }
 
     /**
@@ -183,7 +192,7 @@ class Wallet extends Model
         $balance->orderBy('datetime', 'desc')
             ->orderBy('created_at', 'desc');
 
-        return $startingBalance + $balance->sum(\DB::raw('(amount + extra_amount) * IF(type = "expense", -1, 1)'));
+        return $startingBalance + $balance->sum(DB::raw('(amount + extra_amount) * IF(type = "expense", -1, 1)'));
     }
 
     /**
@@ -219,6 +228,208 @@ class Wallet extends Model
                 }
             }
         }
+    }
+
+    /**
+     * Scope
+     * 
+     * Get present or future projection
+     */
+    public function scopeGetExpectedProjection($query, $last_period)
+    {
+        $expected_planned_income = [];
+        $expected_planned_expense = [];
+        $expected_income = 0;
+        $expected_expense = 0;
+
+        // Loop through planned payment
+        foreach($this->plannedPayment as $planned){
+            $planned_period = $planned->date_start;
+
+            do {
+                $loop = false;
+                // Assume active period is May 2024, but current period still at May 2023, then add next period
+                if(in_array($planned->repeat_period, ['daily', 'weekly'])){
+                    // Daily / Weekly
+                    if(date('Y-m-d', strtotime($planned_period)) <= date('Y-m-t', strtotime($last_period))){
+                        $planned_period = date('Y-m-d', strtotime($planned_period.' +'.$planned->repeat_frequency.' '.$planned->getRepeatPeriod()));
+                    }
+                } else {
+                    // Monthly / Yearly
+                    if(date('Y-m-t', strtotime($planned_period)) < date('Y-m-t', strtotime($last_period))){
+                        $planned_period = date('Y-m-d', strtotime($planned_period.' +'.$planned->repeat_frequency.' '.$planned->getRepeatPeriod()));
+                    }
+                }
+
+
+                // If same month & year, include to list
+                if(date('m', strtotime($planned_period)) === date('m', strtotime($last_period)) && date('Y', strtotime($planned_period)) === date('Y', strtotime($last_period))){
+                    // Validate if data already exists in expected_planned variable
+                    if($planned->type === 'income'){
+                        $expected_income += $planned->getFinalAmount();
+                        $expected_planned_income[] = [
+                            'id' => $planned->id,
+                            'period' => $planned_period
+                        ];
+                    }
+                    if($planned->type === 'expense' || ($planned->type === 'transfer')){
+                        $expected_expense += $planned->getFinalAmount();
+                        $expected_planned_expense[] = [
+                            'id' => $planned->id,
+                            'period' => $planned_period
+                        ];
+                    }
+                }
+
+                // Loop if planned period is still below active period
+                if(in_array($planned->repeat_period, ['daily', 'weekly'])){
+                    // Daily / Weekly
+                    if(date('Y-m-d', strtotime($planned_period)) <= date('Y-m-t', strtotime($last_period))){
+                        // Current period is still below active period
+                        $loop = true;
+                    }
+                } else {
+                    // Monthly / Yearly
+                    if(date('Y-m-t', strtotime($planned_period)) < date('Y-m-t', strtotime($last_period))){
+                        // Current period is still below active period
+                        $loop = true;
+                    }
+                }
+            } while($loop);
+        }
+
+        // Loop through planned payment transfer income
+        foreach($this->plannedPaymentRelated as $planned){
+            $planned_period = $planned->date_start;
+
+            do {
+                $loop = false;
+                // Assume active period is May 2024, but current period still at May 2023, then add next period
+                if(in_array($planned->repeat_period, ['daily', 'weekly'])){
+                    // Daily / Weekly
+                    if(date('Y-m-d', strtotime($planned_period)) <= date('Y-m-t', strtotime($last_period))){
+                        $planned_period = date('Y-m-d', strtotime($planned_period.' +'.$planned->repeat_frequency.' '.$planned->getRepeatPeriod()));
+                    }
+                } else {
+                    // Monthly / Yearly
+                    if(date('m', strtotime($planned_period)) < date('m', strtotime($last_period)) && date('Y', strtotime($planned_period)) <= date('Y', strtotime($last_period))){
+                        $planned_period = date('Y-m-d', strtotime($planned_period.' +'.$planned->repeat_frequency.' '.$planned->getRepeatPeriod()));
+                    }
+                }
+
+                // If same month & year, include to list
+                if(date('m', strtotime($planned_period)) === date('m', strtotime($last_period)) && date('Y', strtotime($planned_period)) === date('Y', strtotime($last_period))){
+                    // Validate if data already exists in expected_planned variable
+                    $expected_income += $planned->amount;
+                    $expected_planned_income[] = [
+                        'id' => $planned->id,
+                        'period' => $planned_period
+                    ];
+                }
+
+                // Loop if planned period is still below active period
+                if(in_array($planned->repeat_period, ['daily', 'weekly'])){
+                    // Daily / Weekly
+                    if(date('Y-m-d', strtotime($planned_period)) <= date('Y-m-t', strtotime($last_period))){
+                        // Current period is still below active period
+                        $loop = true;
+                    }
+                } else {
+                    // Monthly / Yearly
+                    if(date('m', strtotime($planned_period)) < date('m', strtotime($last_period)) && date('Y', strtotime($planned_period)) <= date('Y', strtotime($last_period))){
+                        // Current period is still below active period
+                        $loop = true;
+                    }
+                }
+            } while($loop);
+        }
+
+        return [
+            'expected_planned_income' => $expected_planned_income,
+            'expected_planned_expense' => $expected_planned_expense,
+            'expected_income' => $expected_income,
+            'expected_expense' => $expected_expense,
+        ];
+    }
+
+    /**
+     * Scope
+     * 
+     * Get expected plannad payment
+     */
+    public function scopeGetExpectedPlannedPayment($query, $period, $type, $action = 'sum', $override_id = null)
+    {
+        $id = $this->id;
+        if(!empty($override_id)){
+            $id = $override_id;
+        }
+        $result = 0;
+        
+        if(date('Y-m-01') === $period){ // Current period
+            $base_query = \App\Models\PlannedPayment::whereMonth('date_start', date('m', strtotime($period)))
+                ->whereYear('date_start', date('Y', strtotime($period)))
+                ->where(function($q) use ($type, $id){
+                    if($type === 'expense'){
+                        return $q->where(function($q) use ($id){
+                                return $q->where('from_wallet_id', $id)
+                                    ->where('type', 'expense');
+                            })
+                            ->orWhere(function($q) use ($id){
+                                return $q->where('from_wallet_id', $id)
+                                    ->where('type', 'transfer')
+                                    ->where('to_wallet_id', '!=', $id);
+                            });
+                    } else if($type === 'income') {
+                        return $q->where(function($q) use ($id){
+                                return $q->where('from_wallet_id', $id)
+                                    ->where('type', 'income');
+                            })
+                            ->orWhere(function($q) use ($id){
+                                return $q->where('from_wallet_id', '!=', $id)
+                                    ->where('type', 'transfer')
+                                    ->where('to_wallet_id', $id);
+                            });
+                    }
+                });
+                
+            $result = $action === 'sum' ? $base_query->sum(DB::raw($type === 'expense' ? '(amount + extra_amount)' : 'amount')) : $base_query->count();
+        } else {
+            if($period < date('Y-m-01')){ // Previous period
+                // Query Builder - Income
+                $toIncome = [];
+                if($type === 'income'){
+                    $toIncome = \App\Models\Record::select((new \App\Models\Record())->getTable().'.*')
+                        ->where((new \App\Models\Record())->getTable().'.user_id', $this->user->id)
+                        // ->where((new \App\Models\Record())->getTable().'.type', 'income')
+                        ->where((new \App\Models\Record())->getTable().'.to_wallet_id', $id)
+                        ->join((new \App\Models\PlannedPaymentRecord())->getTable(), (new \App\Models\PlannedPaymentRecord())->getTable().'.record_id', '=', (new \App\Models\Record())->getTable().'.id')
+                        ->whereMonth((new \App\Models\PlannedPaymentRecord())->getTable().'.period', date('m', strtotime($period)))
+                        ->whereYear((new \App\Models\PlannedPaymentRecord())->getTable().'.period', date('Y', strtotime($period)))
+                        ->pluck((new \App\Models\Record())->getTable().'.id')
+                        ->toArray();
+                }
+                
+                // Query Builder
+                $record = \App\Models\Record::select((new \App\Models\Record())->getTable().'.*')
+                    ->where((new \App\Models\Record())->getTable().'.user_id', $this->user->id)
+                    ->where((new \App\Models\Record())->getTable().'.type', $type)
+                    ->where((new \App\Models\Record())->getTable().'.from_wallet_id', $id)
+                    ->join((new \App\Models\PlannedPaymentRecord())->getTable(), (new \App\Models\PlannedPaymentRecord())->getTable().'.record_id', '=', (new \App\Models\Record())->getTable().'.id')
+                    ->whereMonth((new \App\Models\PlannedPaymentRecord())->getTable().'.period', date('m', strtotime($period)))
+                    ->whereYear((new \App\Models\PlannedPaymentRecord())->getTable().'.period', date('Y', strtotime($period)))
+                    ->pluck((new \App\Models\Record())->getTable().'.id')
+                    ->toArray();
+
+                // Merge array
+                $array = array_unique(array_merge($toIncome, $record));
+
+                // Result
+                $base_query = \App\Models\Record::whereIn('id', $array);
+                $result = $action === 'sum' ? $base_query->sum(DB::raw($type === 'expense' ? '(amount + extra_amount)' : 'amount')) : $base_query->count();
+            }
+        }
+
+        return $result;
     }
 }
 

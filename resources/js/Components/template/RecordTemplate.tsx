@@ -39,7 +39,7 @@ export default function RecordTemplate({ record }: PropsWithChildren<RecordTempl
                         <div>
                             <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="link" className={ ` p-0 h-auto leading-none` } data-type="dropdown-trigger">
+                                    <Button variant="link" className={ ` p-0 h-auto leading-none dark:!text-white !text-black` } data-type="dropdown-trigger">
                                         <i className={ `fa-solid fa-ellipsis-vertical` }></i>
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -125,7 +125,7 @@ export default function RecordTemplate({ record }: PropsWithChildren<RecordTempl
                     // Type
                     if(record?.type){
                         information.push(
-                            <Badge className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_type-${record?.uuid}` }>
+                            <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_type-${record?.uuid}` }>
                                 <i className={ `fa-solid fa-flag leading-none text-xs` }></i>
                                 <span>{ucwords(record?.type)}</span>
                             </Badge>
@@ -142,7 +142,7 @@ export default function RecordTemplate({ record }: PropsWithChildren<RecordTempl
                         }
                         
                         information.push(
-                            <Badge className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_wallet-${record?.uuid}` }>
+                            <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_wallet-${record?.uuid}` }>
                                 <i className={ `fa-solid fa-wallet leading-none text-xs` }></i>
                                 <span className={ ` flex items-center gap-1` }>{ walletName }</span>
                             </Badge>
@@ -152,7 +152,7 @@ export default function RecordTemplate({ record }: PropsWithChildren<RecordTempl
                     // Notes
                     if(record?.note){
                         information.push(
-                            <Badge className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_notes-${record?.uuid}` }>
+                            <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_notes-${record?.uuid}` }>
                                 <i className={ `fa-solid fa-align-left leading-none text-xs` }></i>
                                 <span>Notes</span>
                             </Badge>

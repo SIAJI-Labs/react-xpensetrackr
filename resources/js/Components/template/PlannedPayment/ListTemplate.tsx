@@ -27,7 +27,7 @@ export default function ListTemplate({ plannedPayment }: PropsWithChildren<Plann
                     <div>
                         <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="link" className={ ` p-0 h-auto leading-none` } data-type="dropdown-trigger">
+                                <Button variant={ `link` } className={ ` p-0 h-auto leading-none dark:!text-white !text-black` } data-type="dropdown-trigger">
                                     <i className={ `fa-solid fa-ellipsis-vertical` }></i>
                                 </Button>
                             </DropdownMenuTrigger>

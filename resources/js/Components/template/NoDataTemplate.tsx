@@ -1,5 +1,5 @@
-import "../../../css/siaji.scss";
-export default function NoDataTemplate({hasBorder = true}: {hasBorder: boolean}){
+import "@/../css/siaji.scss";
+export default function NoDataTemplate({hasBorder = true}: {hasBorder?: boolean}){
     let r = (Math.random() + 1).toString(36).substring(7);
 
     return (

@@ -10,7 +10,7 @@
         "inertiajs/inertia-laravel": "^0.6.3",
         "laravel/breeze": "^1.25",
         "laravel/framework": "^10.10",
-        "laravel/sanctum": "^3.2",
+        "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "opcodesio/log-viewer": "^3.1",
         "tightenco/ziggy": "^1.0"

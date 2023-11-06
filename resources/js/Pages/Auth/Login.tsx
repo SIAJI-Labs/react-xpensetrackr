@@ -9,29 +9,29 @@ import InputError from '@/Components/InputError';
 // Shadcn
 import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import Checkbox from '@/Components/Checkbox';
 import { Button } from '@/Components/ui/button';
+import { Label } from '@/Components/ui/label';
 
 export default function Login({ status, canResetPassword }: { status?: string, canResetPassword: boolean }) {
+    // Forms
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
         remember: false,
     });
-
     useEffect(() => {
         return () => {
             reset('password');
         };
     }, []);
-
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
         post(route('login'));
     };
 
+    // Toggle Password Form
     let passwordIcon = 'fa-eye';
     const togglePasswordType = () => {
         let currentAttribute = document.getElementById('auth-password')?.getAttribute('type');

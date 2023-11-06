@@ -108,36 +108,38 @@ class Record extends Model
 
         // Listen to Saving Event
         static::saving(function ($model) {
-            // // Fetch timestamp data
-            // $datetime = $model->{'datetime'};
+            // Fetch timestamp data
+            $datetime = $model->{'datetime'};
 
-            // // Convert to UTC based on user timezone
+            // Convert to UTC based on user timezone
             // $timezone = $model->user->getPreference('timezone') ?? 'UTC';
-            // $updateDatetime = false;
+            $timezone = $model->timezone;
+            $updateDatetime = false;
 
-            // // Record is not pending, user using their timezone when adding new record. Adjust it's datetime to UTC timezone
+            // Record is not pending, user using their timezone when adding new record. Adjust it's datetime to UTC timezone
             // if(!empty($timezone) && !$model->{'is_pending'}){
-            //     $updateDatetime = true;
-            // }
+            if(!empty($timezone)){
+                $updateDatetime = true;
+            }
 
-            // // Final check, if model is target transfer
-            // if(!empty($model->to_wallet_id) && $model->type === 'income'){
-            //     $updateDatetime = false;
-            // }
+            // Final check, if model is target transfer
+            if(!empty($model->to_wallet_id) && $model->type === 'income'){
+                $updateDatetime = false;
+            }
 
-            // if($updateDatetime){
-            //     $formated = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $datetime, $timezone);
-            //     $datetime = $formated->setTimezone('UTC')->format('Y-m-d H:i:s');
-            // } else {
-            //     if(empty($timezone)){
-            //         $timezone = null;
-            //     }
-            // }
+            if($updateDatetime){
+                $formated = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $datetime, $timezone);
+                $datetime = $formated->setTimezone('UTC')->format('Y-m-d H:i:s');
+            } else {
+                if(empty($timezone)){
+                    $timezone = null;
+                }
+            }
 
-            // $model->date = date('Y-m-d', strtotime($datetime));
-            // $model->time = date('H:i:s', strtotime($datetime));
-            // $model->datetime = date('Y-m-d H:i:s', strtotime($datetime));
-            // $model->timezone = $timezone;
+            $model->date = date('Y-m-d', strtotime($datetime));
+            $model->time = date('H:i:s', strtotime($datetime));
+            $model->datetime = date('Y-m-d H:i:s', strtotime($datetime));
+            $model->timezone = $timezone;
         });
 
         // Listen to Create Event
@@ -233,15 +235,6 @@ class Record extends Model
                     $related->saveQuietly();
                 }
             }
-        });
-
-        // Listen to Deleted Event
-        static::deleting(function ($model) {
-            // if($model->shoppingList()->exists()){
-            //     $shopping_list = $model->shoppingList;
-            //     $shopping_list->record_id = null;
-            //     $shopping_list->save();
-            // }
         });
 
         // Listen to Deleted Event

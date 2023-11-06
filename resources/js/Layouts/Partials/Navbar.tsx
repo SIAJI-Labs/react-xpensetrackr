@@ -1,120 +1,310 @@
-import { useState, PropsWithChildren, ReactNode } from 'react';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import ApplicationLogo from '@/Components/ApplicationLogoMask';
-import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
+import { useState, PropsWithChildren, ReactNode, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import { User } from '@/types';
 
+// Partials
+import { useTheme, getCurrentTheme } from '@/Components/template/theme-provider';
+import ApplicationLogoMask from '@/Components/ApplicationLogoMask';
+import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
+import ApplicationLogo from '@/Components/ApplicationLogo';
+
+// Shadcn
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/Components/ui/command';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/Components/ui/sheet';
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import Dropdown from '@/Components/Dropdown';
+import NavLink from '@/Components/NavLink';
+
 export default function Navbar({ user, className = '' }: PropsWithChildren<{ user: User, className?: string }>) {
-    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const { setTheme } = useTheme();
+    const currentTheme = getCurrentTheme();
+
+    // Search Command
+    const [openSearchCommand, setOpenSearchCommand] = useState<boolean>(false)
+    useEffect(() => {
+        document.getElementById('navbar-search')?.addEventListener('click', () => {
+            setOpenSearchCommand(true);
+        });
+
+        const down = (e: KeyboardEvent) => {
+            if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault()
+                setOpenSearchCommand((openSearchCommand) => !openSearchCommand)
+            }
+        }
+        document.addEventListener("keydown", down)
+        return () => document.removeEventListener("keydown", down)
+    }, []);
 
     return (
-        <nav className="bg-white border-b border-gray-100">
-            {/* Navbar */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-16">
-                    <div className="flex">
-                        <div className="shrink-0 flex items-center">
-                            <Link href="/">
-                                {/* <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" /> */}
-                            </Link>
+        <>
+            {/* Command */}
+            <CommandDialog open={openSearchCommand} onOpenChange={setOpenSearchCommand}>
+                <CommandInput placeholder="Type a command or search..." className={ ` border-none focus:ring-0` }/>
+                <CommandList>
+                    <CommandEmpty>No results found.</CommandEmpty>
+
+                    {/* Feature */}
+                    {(() => {
+                        let el: any[] = []
+                        let suggestions: { name: string, icon?: string, link?: any}[] = [
+                            { name: 'Quick Action: Create new Record', icon: '', link: route('sys.quick-action.record') },
+                            { name: 'Quick Action: Planned Payment Summary', icon: '', link: null },
+                            { name: 'Quick Action: Show Pending Record', icon: '', link: null },
+                        ];
+
+                        suggestions.map((obj, index) => {
+                            if(obj.link){
+                                el.push(
+                                    <Link href={ obj.link } className={ `cursor-pointer` } key={ `command_item_suggestion-${index}` }>
+                                        <CommandItem className={ ` flex flex-row gap-2 !py-2 cursor-pointer` }>
+                                            <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
+                                            <span>{obj.name}</span>
+                                        </CommandItem>
+                                    </Link>
+                                );
+                            } else {
+                                el.push(
+                                    <CommandItem className={ ` flex flex-row gap-2 !py-2 opacity-50 cursor-not-allowed` } key={ `command_item_suggestion-${index}` }>
+                                        <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
+                                        <span>{obj.name}</span>
+                                    </CommandItem>
+                                );
+                            }
+                        });
+                        if(el.length > 0){
+                            return <>
+                                <CommandGroup heading="Suggestion">
+                                    {el}
+                                </CommandGroup>
+                            </>;
+                        }
+
+                        return <></>;
+                    })()}
+
+                    {/* Feature */}
+                    {(() => {
+                        let el: any[] = []
+                        let feature: { name: string, icon?: string, link?: any}[] = [
+                            { name: 'Dashboard', icon: '', link: route('sys.index') },
+                            { name: 'Budget', icon: '', link: null },
+                            { name: 'Debt', icon: '', link: null },
+                            { name: 'Goals', icon: '', link: null },
+                            { name: 'Planned Payment', icon: '', link: null },
+                            { name: 'Record', icon: '', link: route('sys.record.index') },
+                            { name: 'Record Template', icon: '', link: null },
+                            { name: 'Shopping List', icon: '', link: null },
+                            { name: 'Wallet', icon: '', link: null },
+                            { name: 'Wallet Group', icon: '', link: null },
+                            { name: 'Wallet Share', icon: '', link: null },
+                        ];
+                        feature.map((obj, index) => {
+                            if(obj.link){
+                                el.push(
+                                    <Link href={ obj.link } className={ `cursor-pointer` } key={ `command_item_feature-${index}` }>
+                                        <CommandItem className={ ` flex flex-row gap-2 !py-2 cursor-pointer` }>
+                                            <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
+                                            <span>{obj.name}</span>
+                                        </CommandItem>
+                                    </Link>
+                                );
+                            } else {
+                                el.push(
+                                    <CommandItem className={ ` flex flex-row gap-2 !py-2 opacity-50 cursor-not-allowed` } key={ `command_item_feature-${index}` }>
+                                        <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
+                                        <span>{obj.name}</span>
+                                    </CommandItem>
+                                );
+                            }
+                        });
+                        if(el.length > 0){
+                            // Generate random string as section-key
+                            let r = (Math.random() + 1).toString(36).substring(7);
+
+                            return <div key={ r }>
+                                <CommandGroup heading="Feature" key={ r }>
+                                    {el}
+                                </CommandGroup>
+                            </div>;
+                        }
+
+                        return <></>;
+                    })()}
+
+                    <CommandGroup heading="Settings" className={ ` !pb-2` }>
+                        <CommandItem className={ ` flex flex-row gap-2 !py-2` }>
+                            <i className={ ` w-4 text-center fa-solid fa-user` }></i>
+                            <span>Profile</span>
+                        </CommandItem>
+                        <CommandItem className={ ` flex flex-row gap-2 !py-2` }>
+                            <i className={ ` w-4 text-center fa-solid fa-cog` }></i>
+                            <span>Setting</span>
+                        </CommandItem>
+                    </CommandGroup>
+                </CommandList>
+            </CommandDialog>
+            
+            <nav className="bg-white dark:bg-background border-b fixed w-full z-10">
+                {/* Navbar */}
+                <div className="max-w-7xl mx-auto px-6 lg:px-8">
+                    <div className="flex justify-between h-16 relative">
+                        <div className="flex gap-2 items-center">
+                            {/* Sidebar - Dialog */}
+                            <div className={ `` }>
+                                <Sheet>
+                                    <SheetTrigger asChild>
+                                        <Button variant={ `ghost` } className={ ` dark:text-white` }><i className={ `fa-solid fa-toggle-off` }></i></Button>
+                                    </SheetTrigger>
+                                    <SheetContent side={ `left` }>
+                                        <SheetHeader className={ ` relative border-b pb-6 pointer-events-none select-none` }>
+                                            <SheetTitle>
+                                                <ApplicationLogo fontSizeMain={ ` text-2xl` } className={ ` !justify-start` }/>
+                                            </SheetTitle>
+                                            {/* <SheetDescription>
+                                                This action cannot be undone. This will permanently delete your account
+                                                and remove your data from our servers.
+                                            </SheetDescription> */}
+                                        </SheetHeader>
+
+                                        <div className={ `mt-4` }>
+                                            <ul>
+                                                <li>
+                                                    <a href="#" className=" transition-all flex items-center pl-0 hover:!pl-6 px-6 py-4 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                                                        <svg className="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 21">
+                                                            <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z"></path>
+                                                            <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z"></path>
+                                                        </svg>
+                                                        <span className="ml-3">Dashboard</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </SheetContent>
+                                </Sheet>
+                            </div>
+
+                            {/* Mask Logo */}
+                            <div className={ `hidden md:block` }>
+                                <Link href={ route('sys.index') }>
+                                    <ApplicationLogoMask className={ ` h-10` }/>
+                                </Link>
+                            </div>
                         </div>
 
-                        <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                            <NavLink href={route('dashboard')} active={route().current('sys.index')}>
-                                Dashboard
-                            </NavLink>
+                        {/* Search Command */}
+                        <div className={ ` h-full md:absolute md:left-1/2 md:-translate-x-1/2 items-center flex sm:max-w-[400px] w-full` }>
+                            <div className={ ` flex flex-row gap-4 w-full justify-between border h-10 rounded-md items-center px-4 cursor-pointer` } id={ `navbar-search` }>
+                                <div className={ ` flex flex-row items-center gap-4` }>
+                                    <i className={ `fa-solid fa-magnifying-glass dark:text-white` }></i>
+                                    <span className={ ` leading-none text-muted-foreground text-sm` }>Command <span className={ ` hidden lg:inline-flex` }> or Search...</span></span>
+                                </div>
+
+                                <kbd className=" hidden pointer-events-none lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                                    <span className=" text-xs leading-none">⌘</span><span></span>K
+                                    {/* <span>CTRL</span><span>+</span>K */}
+                                </kbd>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="hidden sm:flex sm:items-center sm:ml-6">
-                        <div className="ml-3 relative">
-                            <Dropdown>
-                                <Dropdown.Trigger>
-                                    <span className="inline-flex rounded-md">
-                                        <button
-                                            type="button"
-                                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
-                                        >
-                                            {user.name}
+                        <div className=" flex items-center gap-4">
+                            {/* Notification - Sheet */}
+                            <Sheet>
+                                <SheetTrigger asChild>
+                                    <Button variant={ `ghost` } className={ ` dark:text-white` }><i className={ `fa-regular fa-bell` }></i></Button>
+                                </SheetTrigger>
+                                <SheetContent side={ `right` }>
+                                    <SheetHeader>
+                                        <SheetTitle>Are you sure absolutely sure?</SheetTitle>
+                                        <SheetDescription>
+                                            This action cannot be undone. This will permanently delete your account
+                                            and remove your data from our servers.
+                                        </SheetDescription>
+                                    </SheetHeader>
+                                </SheetContent>
+                            </Sheet>
 
-                                            <svg
-                                                className="ml-2 -mr-0.5 h-4 w-4"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </span>
-                                </Dropdown.Trigger>
+                            {/* Avatar - Dropdown */}
+                            <div className="relative flex items-center">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Avatar className={ ` cursor-pointer rounded-lg` }>
+                                            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                                            <AvatarFallback className={ ` cursor-pointer rounded-lg` }>EX</AvatarFallback>
+                                        </Avatar>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-56" side={ `bottom` } align={ `end` }>
+                                        <DropdownMenuLabel>{user?.name}</DropdownMenuLabel>
 
-                                <Dropdown.Content>
-                                    <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
-                                    <Dropdown.Link href={route('logout')} method="post" as="button">
-                                        Log Out
-                                    </Dropdown.Link>
-                                </Dropdown.Content>
-                            </Dropdown>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem className={ ` flex flex-row gap-2` }>
+                                                <i className={ `fa-solid fa-user w-1/12` }></i>
+                                                <span className={ ` w-11/12` }>Profile</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className={ ` flex flex-row gap-2` }>
+                                                <i className={ `fa-solid fa-gear w-1/12` }></i>
+                                                <span className=' w-11/12'>Setting</span>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem className={ ` flex flex-row gap-2` }>
+                                                <i className={ `fa-solid fa-bookmark w-1/12` }></i>
+                                                <span className=' w-11/12'>Category</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className={ ` flex flex-row gap-2` }>
+                                                <i className={ `fa-solid fa-tags w-1/12` }></i>
+                                                <span className=' w-11/12'>Tags</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className={ ` flex flex-row gap-2` }>
+                                                <i className={ `fa-solid fa-wallet w-1/12` }></i>
+                                                <span className=' w-11/12'>Wallet</span>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup className={ ` flex flex-row gap-2 p-2` }>
+                                            <Button variant={ currentTheme === 'light' ? `default` : `ghost` } className={ ` py-2 w-full` } onClick={() => {
+                                                setTheme('light');
+                                            }}>
+                                                <i className={ `fa-solid fa-sun` }></i>
+                                            </Button>
+
+                                            <Button variant={ currentTheme === 'system' ? `default` : `ghost` } className={ ` py-2 w-full` } onClick={() => {
+                                                setTheme('system');
+                                            }}>
+                                                <i className={ `fa-solid fa-display` }></i>
+                                            </Button>
+
+                                            <Button variant={ currentTheme === 'dark' ? `default` : `ghost` } className={ ` py-2 w-full` } onClick={() => {
+                                                setTheme('dark');
+                                            }}>
+                                                <i className={ `fa-solid fa-moon` }></i>
+                                            </Button>
+                                        </DropdownMenuGroup>
+                                        <DropdownMenuSeparator />
+
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem className={ ` flex flex-row gap-2 text-red-500` }>
+                                                <Link href={route('logout')} method="post" as="button" className={ `flex flex-row gap-2 items-center` }>
+                                                    <i className={ `fa-solid fa-arrow-right-from-bracket leading-none w-1/12` }></i>
+                                                    <span className=' w-11/12'>Sign-out</span>
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
                         </div>
-                    </div>
-
-                    <div className="-mr-2 flex items-center sm:hidden">
-                        <button
-                            onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                            className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
-                        >
-                            <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                <path
-                                    className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M4 6h16M4 12h16M4 18h16"
-                                />
-                                <path
-                                    className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            </svg>
-                        </button>
                     </div>
                 </div>
-            </div>
-
-            {/* Content */}
-            <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
-                <div className="pt-2 pb-3 space-y-1">
-                    <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                        Dashboard
-                    </ResponsiveNavLink>
-                </div>
-
-                <div className="pt-4 pb-1 border-t border-gray-200">
-                    <div className="px-4">
-                        <div className="font-medium text-base text-gray-800">
-                            {user.name}
-                        </div>
-                        <div className="font-medium text-sm text-gray-500">{user.email}</div>
-                    </div>
-
-                    <div className="mt-3 space-y-1">
-                        <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
-                        <ResponsiveNavLink method="post" href={route('logout')} as="button">
-                            Log Out
-                        </ResponsiveNavLink>
-                    </div>
-                </div>
-            </div>
-        </nav>
+            </nav>
+        </>
     );
 }

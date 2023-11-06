@@ -17,7 +17,7 @@ export default function Guest({ children }: PropsWithChildren) {
                 <link rel="icon" type="image/x-icon" href="/assets/images/favicon.svg"></link>
             </Head>
 
-            <div className="min-h-screen w-full bg-slate-100">
+            <div className="min-h-screen w-full bg-slate-100 dark:bg-background">
                 {children}
 
                 <Toaster />

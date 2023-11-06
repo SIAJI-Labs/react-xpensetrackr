@@ -265,7 +265,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                         <CardFooter>
                             <Button
                                 variant={ `outline` }
-                                className={ `dark:border-white` }
+                                className={ `` }
                                 disabled={ !recordPaginateState }
                                 onClick={() => {
                                     setRecordPaginateState(false);

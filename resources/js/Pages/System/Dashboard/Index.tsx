@@ -246,7 +246,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                                         setRecordIsLoading(!recordIsLoading);
                                     }
                                 }}
-                                className={ ` dark:border-white` }
+                                className={ ` ` }
                             >Complete</Button>
 
                             <Button
@@ -257,7 +257,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                                         setRecordIsLoading(!recordIsLoading);
                                     }
                                 }}
-                                className={ ` flex flex-row gap-1 dark:border-white` }
+                                className={ ` flex flex-row gap-1 ` }
                             >
                                 <span>Pending</span>
                                 {(() => {
@@ -311,7 +311,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                             return <>
                                 <CardFooter>
                                     <Link href={ route('sys.record.index') }>
-                                        <Button variant={ `outline` } className={ `dark:border-white` }>Load all</Button>
+                                        <Button variant={ `outline` } className={ `` }>Load all</Button>
                                     </Link>
                                 </CardFooter>
                             </>;

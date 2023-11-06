@@ -57,7 +57,7 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 </div>
 
                 {/* Record Modal */}
-                <Button variant="outline" className={ ` fixed right-4 bottom-4 dark:text-white dark:border-white` } onClick={() => {
+                <Button variant="outline" className={ ` fixed right-4 bottom-4 dark:text-white` } onClick={() => {
                     setOpenRecordDialog(true);
                 }}>Add record</Button>
                 {/* Record Modal - Dialog */}

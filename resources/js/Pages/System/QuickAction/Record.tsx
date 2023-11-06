@@ -525,7 +525,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                 let recordType: any[] = [];
                                                                 ['income', 'transfer', 'expense'].map((value, index) => {
                                                                     recordType.push(
-                                                                        <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valueRecordType === value ? `bg-gray-200 hover:bg-gray-200` : ` dark:text-white dark:hover:text-black`} hover:bg-gray-100 transition` } onClick={() => {
+                                                                        <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valueRecordType === value ? `bg-primary ` : ` dark:text-white !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
                                                                             setValueRecordType(value);
                                                                         }} key={ `record_type-${value}` }>
                                                                             <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
@@ -868,7 +868,7 @@ export default function Record({ auth }: PageProps<Props>) {
                     </Card>
 
                     <div className={ ` mt-4 w-full text-center` }>
-                        <Link href={ route('sys.index') }>Go to Dashboard</Link>
+                        <Link href={ route('sys.index') } className={ `dark:text-white` }>Go to Dashboard</Link>
                     </div>
                 </main>
             </div>

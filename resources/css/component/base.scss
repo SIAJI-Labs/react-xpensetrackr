@@ -8,6 +8,12 @@ body {
     font-family: 'Signika', sans-serif !important;
     font-weight: 300;
 }
+.dark {
+    *, ::before, ::after {
+        @apply
+            border-[#3c4043];
+    }
+}
 
 // Logo
 .main-logo {

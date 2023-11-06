@@ -38,6 +38,7 @@ type RecordDialogProps = {
 export default function RecordDialog({ openState, setOpenState }: RecordDialogProps){
     const isFirstRender = useIsFirstRender();
     const { toast } = useToast();
+    const [recordItem, setRecordItem] = useState<RecordItem>();
 
     // extend style component
     const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
@@ -138,6 +139,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                     let minutes = String(moment(raw).get('minute'));
 
                     // Update State
+                    setRecordItem(data);
                     setValueRecordUuid(data.uuid)
                     setValueRecordType(data.to_wallet ? 'transfer' : data.type);
                     setValueRecordCategory(data.category ? data.category.uuid : '');
@@ -685,7 +687,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                             let recordType: any[] = [];
                                             ['income', 'transfer', 'expense'].map((value, index) => {
                                                 recordType.push(
-                                                    <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valueRecordType === value ? `bg-gray-200 hover:bg-gray-200` : ` dark:text-white dark:hover:text-black`} hover:bg-gray-100 transition` } onClick={() => {
+                                                    <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valueRecordType === value ? `bg-primary ` : ` dark:text-white !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
                                                         setValueRecordType(value);
                                                     }} key={ `record_type-${value}` }>
                                                         <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
@@ -902,13 +904,13 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                             {/* Extra Type */}
                                             <div id={ `record_dialog-extra_type` }>
                                                 <span className={ ` text-sm flex flex-row gap-1` }>
-                                                    <span className={ ` cursor-pointer ${valueRecordExtraType === 'amount' ? ` font-semibold` : ''}` } onClick={() => {
+                                                    <span className={ ` cursor-pointer ${valueRecordExtraType === 'amount' ? ` font-semibold dark:text-white dark:underline` : ' dark:text-white'}` } onClick={() => {
                                                         if(valueRecordExtraType !== 'amount'){
                                                             setValueRecordExtraType('amount');
                                                         }
                                                     }}>Amount</span>
-                                                    <span>/</span>
-                                                    <span className={ ` cursor-pointer ${valueRecordExtraType === 'percentage' ? ` font-semibold` : ''}` } onClick={() => {
+                                                    <span className={ `dark:text-white` }>/</span>
+                                                    <span className={ ` cursor-pointer ${valueRecordExtraType === 'percentage' ? ` font-semibold dark:text-white dark:underline` : ' dark:text-white'}` } onClick={() => {
                                                         if(valueRecordExtraType !== 'percentage'){
                                                             setValueRecordExtraType('percentage');
                                                         }
@@ -940,7 +942,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                 </div>
                             </div>
                             {/* Right */}
-                            <div className={ ` py-6 lg:p-6 lg:pr-0 w-full lg:w-2/5 lg:border-l lg:border-t-0 border-t dark:bg-gray-700/30` }>
+                            <div className={ ` py-6 lg:p-6 lg:pr-0 w-full lg:w-2/5 lg:border-l lg:border-t-0 border-t` }>
                                 {/* Timestamp */}
                                 <div className={ ` form--group` }>
                                     <div id={ `record_dialog-date` } className={ ` form--group !mb-0 ${errorRecordDialog?.date ? ` is--invalid` : ''}` }>

@@ -25,7 +25,7 @@ export default function ApplicationLogo(
         <>
             <div className={ 'flex justify-center gap-1 flex-col' }>
                 <div className={ cn('font-semibold flex items-center justify-center gap-4 main-logo', className) }>
-                    <span className={ (fontSizeMain ? fontSizeMain : ' text-5xl') }>eXpense</span>
+                    <span className={ cn(' dark:text-white', (fontSizeMain ? fontSizeMain : ' text-5xl')) }>eXpense</span>
                     <span className=" trackr">
                         <span className={ (fontSizeMain ? fontSizeMain : ' text-5xl') }>Trackr</span>
                     </span>

@@ -29,6 +29,8 @@ Route::group([
     // Dashboard
     Route::get('dashboard', \App\Http\Controllers\System\DashboardController::class)->name('index');
     
+    // Planned Payment - Summary
+    Route::get('planned-payment/summary/{wallet}', [\App\Http\Controllers\System\PlannedSummaryController::class, 'show'])->name('planned-payment.summary.show');
     // Planned Payment
     Route::get('planned-payment', [\App\Http\Controllers\System\PlannedPaymentController::class, 'index'])->name('planned-payment.index');
 

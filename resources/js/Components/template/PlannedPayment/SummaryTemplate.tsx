@@ -5,8 +5,10 @@ import { formatRupiah } from "@/function";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Button } from "@/Components/ui/button";
 import { WalletItem } from "@/types";
+import { Link } from "@inertiajs/react";
 
 interface plannedSummary {
+    uuid: string,
     name: string,
     expected_expense: number,
     expected_income: number,
@@ -45,9 +47,11 @@ export default function SummaryTemplate({ plannedPayment }: PropsWithChildren<Pl
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
-                                <DropdownMenuItem className={ ` cursor-pointer` }>
-                                    <span className={ ` text-blue-500` }>Detail</span>
-                                </DropdownMenuItem>
+                                <Link href={ plannedPayment ? route('sys.planned-payment.summary.show', plannedPayment.uuid) : '#' }>
+                                    <DropdownMenuItem className={ ` cursor-pointer` }>
+                                        <span className={ ` text-blue-500` }>Detail</span>
+                                    </DropdownMenuItem>
+                                </Link>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>

@@ -1,11 +1,14 @@
 import { PropsWithChildren, useState } from "react";
 import { formatRupiah } from "@/function";
+import { Link } from "@inertiajs/react";
+import { WalletItem } from "@/types";
+
+// Plugins
+import moment from "moment-timezone";
 
 // Shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Button } from "@/Components/ui/button";
-import { WalletItem } from "@/types";
-import { Link } from "@inertiajs/react";
 
 interface plannedSummary {
     uuid: string,
@@ -19,10 +22,11 @@ interface plannedSummary {
 }
 
 type PlannedPaymentSummaryTemplateProps = {
-    plannedPayment?: plannedSummary | undefined
+    plannedPayment?: plannedSummary | undefined,
+    period?: Date | undefined
 }
 
-export default function SummaryTemplate({ plannedPayment }: PropsWithChildren<PlannedPaymentSummaryTemplateProps> ){
+export default function SummaryTemplate({ plannedPayment, period }: PropsWithChildren<PlannedPaymentSummaryTemplateProps> ){
     // Generate random string as section-key
     let r = (Math.random() + 1).toString(36).substring(7);
 
@@ -47,7 +51,10 @@ export default function SummaryTemplate({ plannedPayment }: PropsWithChildren<Pl
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
-                                <Link href={ plannedPayment ? route('sys.planned-payment.summary.show', plannedPayment.uuid) : '#' }>
+                                <Link href={ plannedPayment ? route('sys.planned-payment.summary.show', {
+                                    wallet: plannedPayment.uuid,
+                                    period: period !== undefined ? moment(period).format('YYYY-MM') : null
+                                }) : '#' }>
                                     <DropdownMenuItem className={ ` cursor-pointer` }>
                                         <span className={ ` text-blue-500` }>Detail</span>
                                     </DropdownMenuItem>

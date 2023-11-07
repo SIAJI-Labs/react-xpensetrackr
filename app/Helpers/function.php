@@ -72,8 +72,7 @@ if(!(function_exists('camel2dashed'))){
 /**
  * Encryption
  */
-if(!(function_exists('saEncrypt')))
-{
+if(!(function_exists('saEncrypt'))){
     function saEncrypt($value, $encrypt = true)
     {
         $method = new \Illuminate\Encryption\Encrypter(env('PRIVATE_KEY'), config('app.cipher'));
@@ -103,8 +102,7 @@ if(!(function_exists('saEncrypt')))
  * @param integer $length
  * @return string
  */
-if(!(function_exists('generateRandomMixCharacter')))
-{
+if(!(function_exists('generateRandomMixCharacter'))){
     function generateRandomMixCharacter($length = 8, $range = [])
     {
         $useDefault = true;
@@ -145,5 +143,27 @@ if(!(function_exists('generateRandomMixCharacter')))
         }
         
         return $string;
+    }
+}
+
+/**
+ * Validate Date Format
+ * 
+ * @param string $date
+ * @return boolean
+ */
+if(!(function_exists('validateDateFormat'))){
+    function validateDateFormat($date, $format = 'Y-m-d')
+    {
+        $pattern = '/^\d{4}-\d{2}$/'; // Define the regex pattern for Y-m format
+
+        if (preg_match($pattern, $date) === 1) {
+            $parsedDate = date_create_from_format($format, $date);
+            if ($parsedDate !== false && date_format($parsedDate, $format) === $date) {
+                return true; // Valid date with the specified format
+            }
+        }
+
+        return false; // Invalid date or format
     }
 }

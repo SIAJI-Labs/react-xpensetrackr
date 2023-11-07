@@ -16,6 +16,7 @@ class PlannedPaymentSummaryController extends Controller
      */
     public function index(Request $request)
     {
+        // sleep(5);
         $user = $request->user();
         $response = [];
 
@@ -93,10 +94,69 @@ class PlannedPaymentSummaryController extends Controller
 
                 $response = [
                     'data' => $data,
+                    'has_more' => $hasMore,
+                ];
+            } else if(date('Y-m-01', strtotime($period)) < date('Y-m-01')){ // Previous Period
+                /**
+                 * Already passed
+                 */
+                // Pagination
+                $hasMore = false;
+                $perPage = 5;
+                if($request->has('per_page') && is_numeric($request->per_page)){
+                    $perPage = $request->per_page;
+                }
+
+                // Query Builder - Income
+                $toIncome = \App\Models\Wallet::select((new \App\Models\Wallet())->getTable().'.*')
+                    ->join((new \App\Models\PlannedPayment())->getTable(), (new \App\Models\PlannedPayment())->getTable().'.to_wallet_id', '=', (new \App\Models\Wallet())->getTable().'.id')
+                    ->join((new \App\Models\PlannedPaymentRecord())->getTable(), (new \App\Models\PlannedPaymentRecord())->getTable().'.planned_payment_id', '=', (new \App\Models\PlannedPayment())->getTable().'.id')
+                    ->where((new \App\Models\Wallet())->getTable().'.user_id', $user->id)
+                    ->whereNotNull((new \App\Models\PlannedPaymentRecord())->getTable().'.record_id')
+                    ->where((new \App\Models\PlannedPaymentRecord())->getTable().'.status', 'approve')
+                    ->whereMonth((new \App\Models\PlannedPaymentRecord())->getTable().'.period', date('m', strtotime($period)))
+                    ->whereYear((new \App\Models\PlannedPaymentRecord())->getTable().'.period', date('Y', strtotime($period)))
+                    ->pluck((new \App\Models\Wallet())->getTable().'.id')
+                    ->toArray();
+                // Query Builder
+                $wallet = \App\Models\Wallet::select((new \App\Models\Wallet())->getTable().'.*')
+                    ->join((new \App\Models\PlannedPayment())->getTable(), (new \App\Models\PlannedPayment())->getTable().'.from_wallet_id', '=', (new \App\Models\Wallet())->getTable().'.id')
+                    ->join((new \App\Models\PlannedPaymentRecord())->getTable(), (new \App\Models\PlannedPaymentRecord())->getTable().'.planned_payment_id', '=', (new \App\Models\PlannedPayment())->getTable().'.id')
+                    ->where((new \App\Models\Wallet())->getTable().'.user_id', $user->id)
+                    ->whereNotNull((new \App\Models\PlannedPaymentRecord())->getTable().'.record_id')
+                    ->where((new \App\Models\PlannedPaymentRecord())->getTable().'.status', 'approve')
+                    ->whereMonth((new \App\Models\PlannedPaymentRecord())->getTable().'.period', date('m', strtotime($period)))
+                    ->whereYear((new \App\Models\PlannedPaymentRecord())->getTable().'.period', date('Y', strtotime($period)))
+                    ->pluck((new \App\Models\Wallet())->getTable().'.id')
+                    ->toArray();
+
+                // Merge array
+                $array = array_unique(array_merge($toIncome, $wallet));
+
+                // Eloquent
+                $data = \App\Models\Wallet::whereIn('id', $array)
+                    ->orderBy('order_main', 'asc');
+
+                if($request->has('limit') && is_numeric($request->limit)){
+                    $raw = (clone $data);
+    
+                    // Apply limit (only if there's no paginate)
+                    $data = $data->limit($request->limit);
+    
+                    if($data->get()->count() < $raw->count()){
+                        $hasMore = true;
+                    }
+                }
+
+                $data = $data->get();
+                $data = collect($data)->filter(function($data, $period){
+                    return $data->getExpectedPlannedPayment($period, 'income', 'count', $data->id) > 0 || $data->getExpectedPlannedPayment($period, 'expense', 'count', $data->id) > 0;
+                });
+
+                $response = [
+                    'data' => $data,
                     'has_more' => $hasMore
                 ];
-            } else {
-                // Already passed
             }
         }
 
@@ -114,9 +174,23 @@ class PlannedPaymentSummaryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        //
+        $user = $request->user();
+        $response = [];
+
+        if($request->has('filter_period')){
+            $array = [];
+            $period = $request->filter_period;
+
+            if(date('Y-m-d', strtotime($period)) >= date('Y-m-01')){ //Current period
+            } else {
+                if(date('Y-m-d', strtotime($period)) < date('Y-m-01')){ // Previous period
+                }
+            }
+        }
+
+        return $this->formatedJsonResponse(200, 'Data Fetched', $response);
     }
 
     /**

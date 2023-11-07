@@ -12,6 +12,7 @@ import SummaryTemplate from "@/Components/template/PlannedPayment/SummaryTemplat
 import { Button } from "@/Components/ui/button";
 import SummarySkeleton from "@/Components/template/PlannedPayment/SummarySkeleton";
 import axios from "axios";
+import { useIsFirstRender } from "@/lib/utils";
 
 // Props
 type PlannedPaymentSummaryProps = {
@@ -19,9 +20,11 @@ type PlannedPaymentSummaryProps = {
 }
 
 export default function PlannedPaymentSummary({ auth, activeType }: PageProps<PlannedPaymentSummaryProps>) {
+    const isFirstRender = useIsFirstRender();
     useEffect(() => {
         fetchPlannedSummary();
     }, []);
+
     // Planned Payment Data
     const [plannedItemAbortController, setPlannedItemAbortController] = useState<AbortController | null>(null);
     const [plannedIsLoading, setPlannedIsLoading] = useState<boolean>(true);
@@ -30,9 +33,6 @@ export default function PlannedPaymentSummary({ auth, activeType }: PageProps<Pl
     let paginate_item = 5;
     const [plannedPaginate, setPlannedPaginate] = useState<number>(paginate_item);
     const [plannedPaginateState, setPlannedPaginateState] = useState<boolean>(false);
-    useEffect(() => {
-        fetchPlannedSummary();
-    }, [plannedPaginate]);
     const fetchPlannedSummary = async() => {
         // Show skeleton
         setPlannedIsLoading(true);
@@ -93,7 +93,7 @@ export default function PlannedPaymentSummary({ auth, activeType }: PageProps<Pl
 
     // Summary List Template
     let listTemplate = (obj?:undefined) => {
-        return <SummaryTemplate plannedPayment={obj}/>;
+        return <SummaryTemplate plannedPayment={obj} period={ moment(activePeriod).toDate() }/>;
     }
     // Summary List Skeleton
     const [plannedSkeletonCount, setPlannedSkeletonCount] = useState<number>(5);
@@ -128,6 +128,12 @@ export default function PlannedPaymentSummary({ auth, activeType }: PageProps<Pl
         setActivePeriod(moment(current).toDate());
     }
     
+    useEffect(() => {
+        if(!isFirstRender){
+            fetchPlannedSummary();
+        }
+    }, [plannedPaginate, activePeriod]);
+
     return (<>
         <div className={ `flex flex-col gap-6` }>
             {/* Period Navigation */}
@@ -145,7 +151,7 @@ export default function PlannedPaymentSummary({ auth, activeType }: PageProps<Pl
                     </div>
                     <Button variant={ `ghost` } onClick={() => {
                         navigatePeriod('next');
-                    }} disabled={ moment().format('YYYY-MM-DD') === moment(activePeriod).format('YYYY-MM-DD') }>
+                    }}>
                         <span><i className={ `fa-solid fa-angle-right` }></i></span>
                     </Button>
                 </div>

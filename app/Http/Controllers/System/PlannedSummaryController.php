@@ -42,8 +42,18 @@ class PlannedSummaryController extends Controller
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
 
+        $period = null;
+        if($request->has('period')){
+            if(validateDateFormat($request->period, 'Y-m')){
+                $period = $request->period.'-01';
+            } else {
+                return redirect()->route('sys.planned-payment.summary.show', $data->uuid);
+            }
+        }
+
         return Inertia::render('System/PlannedPayment/Summary/Show', [
-            'wallet' => $data
+            'wallet' => $data,
+            'period' => $period
         ]);
     }
 

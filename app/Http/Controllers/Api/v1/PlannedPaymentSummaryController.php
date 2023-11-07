@@ -177,13 +177,38 @@ class PlannedPaymentSummaryController extends Controller
     public function show(Request $request, string $id)
     {
         $user = $request->user();
-        $response = [];
+
+        $wallet = \App\Models\Wallet::with('parent')
+            ->where(\DB::raw('BINARY `uuid`'), $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+        $response = [
+            'wallet' => $wallet
+        ];
 
         if($request->has('filter_period')){
             $array = [];
             $period = $request->filter_period;
 
             if(date('Y-m-d', strtotime($period)) >= date('Y-m-01')){ //Current period
+                $projection = $wallet->getExpectedProjection($period);
+
+                $data = collect(array_merge($projection['expected_planned_income'], $projection['expected_planned_expense']))
+                    ->sortBy('period')
+                    ->map(function($data) use($user){
+                        $planned = \App\Models\PlannedPayment::with('fromWallet.parent', 'toWallet.parent', 'category.parent')
+                            ->where('id', $data['id'])
+                            ->where('user_id', $user->id)
+                            ->first();
+
+                        if(!empty($planned)){
+                            $data['planned'] = $planned;
+                        }
+                        return $data;
+                    })
+                    ->values();
+
+                $response['data'] = $data;
             } else {
                 if(date('Y-m-d', strtotime($period)) < date('Y-m-01')){ // Previous period
                 }

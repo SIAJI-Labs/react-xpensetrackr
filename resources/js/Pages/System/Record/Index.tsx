@@ -1,17 +1,17 @@
 import { PageProps, RecordItem } from '@/types';
 import { Head } from '@inertiajs/react';
+import axios from 'axios';
 
 // Partials
-import SystemLayout from '@/Layouts/SystemLayout';
 import RecordTemplate from '@/Components/template/RecordTemplate';
+import NoDataTemplate from '@/Components/template/NoDataTemplate';
+import SystemLayout from '@/Layouts/SystemLayout';
 import { useEffect, useState } from 'react';
 
 // Shadcn
-import { Skeleton } from '@/Components/ui/skeleton';
-import axios from 'axios';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Skeleton } from '@/Components/ui/skeleton';
 import { Button } from '@/Components/ui/button';
-import NoDataTemplate from '@/Components/template/NoDataTemplate';
 import { Input } from '@/Components/ui/input';
 
 // Props

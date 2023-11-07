@@ -32,6 +32,7 @@ Route::group([
     // Planned Payment - Summary
     Route::get('planned-payment/summary/{wallet}', [\App\Http\Controllers\System\PlannedSummaryController::class, 'show'])->name('planned-payment.summary.show');
     // Planned Payment
+    Route::get('planned-payment/{uuid}', [\App\Http\Controllers\System\PlannedPaymentController::class, 'show'])->name('planned-payment.show');
     Route::get('planned-payment', [\App\Http\Controllers\System\PlannedPaymentController::class, 'index'])->name('planned-payment.index');
 
     // Record

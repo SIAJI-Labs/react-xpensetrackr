@@ -56,7 +56,6 @@ export default function PlannedPaymentSummary({ auth, activeType }: PageProps<Pl
             // filter_status: recordFilterStatus,
             // keyword: recordFilterKeyword
         }
-        // } as { [key: string]: any };
         for (const key in obj) {
             query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
         }

@@ -44,9 +44,17 @@ class PlannedPaymentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        //
+        $user = $request->user();
+        $data = \App\Models\PlannedPayment::with('fromWallet.parent', 'toWallet.parent', 'category.parent')
+            ->where(\DB::raw('BINARY `uuid`'), $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        return Inertia::render('System/PlannedPayment/Show', [
+            'data' => $data
+        ]);
     }
 
     /**

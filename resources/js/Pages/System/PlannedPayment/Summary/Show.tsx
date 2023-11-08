@@ -1,5 +1,5 @@
 import { PageProps, WalletItem } from "@/types"
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -15,7 +15,7 @@ import NoDataTemplate from "@/Components/template/NoDataTemplate";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Separator } from "@/Components/ui/separator";
 import { Button } from "@/Components/ui/button";
 import { useIsFirstRender } from "@/lib/utils";
@@ -23,12 +23,15 @@ import { useIsFirstRender } from "@/lib/utils";
 // Props
 type PlannedSummaryShowProps = {
     wallet?: WalletItem;
-    period?: Date | null
+    period?: Date | null;
+    estimate_income?: number;
+    estimate_expense?: number;
 }
 
-export default function Show({ auth, wallet, period }: PageProps<PlannedSummaryShowProps>) {
+export default function Show({ auth, wallet, period, estimate_income = 0, estimate_expense = 0 }: PageProps<PlannedSummaryShowProps>) {
     const isFirstRender = useIsFirstRender();
     useEffect(() => {
+        console.log(wallet);
         fetchPlannedSummary();
     }, []);
 
@@ -137,6 +140,26 @@ export default function Show({ auth, wallet, period }: PageProps<PlannedSummaryS
 
         setActivePeriod(moment(current).toDate());
     }
+    useEffect(() => {
+        setPlannedPaginate(paginate_item);
+    }, [activePeriod]);
+    useEffect(() => {
+        if(!isFirstRender){
+            fetchPlannedSummary();
+        }
+    }, [plannedPaginate, activePeriod]);
+
+    // Listen to Record Dialog event
+    useEffect(() => {
+        const handleDialogRecord = (event: any) => {
+            router.reload();
+        }
+        document.addEventListener('dialogRecord', handleDialogRecord);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialogRecord', handleDialogRecord);
+        };
+    });
 
     return (
         <>
@@ -171,17 +194,17 @@ export default function Show({ auth, wallet, period }: PageProps<PlannedSummaryS
                             <div className={ ` border p-4 rounded-lg flex flex-col gap-3 mb-2` }>
                                 <div className={ ` flex flex-row justify-between` }>
                                     <span>Current Balance</span>
-                                    <span>{ formatRupiah(0) }</span>
+                                    <span>{ formatRupiah(wallet?.current_balance) }</span>
                                 </div>
                                 <Separator />
                                 <div className={ ` flex flex-row justify-between` }>
                                     <span>Estimate Income</span>
-                                    <span>{ formatRupiah(0) }</span>
+                                    <span className={ ` text-green-500` }>{ formatRupiah(estimate_income) }</span>
                                 </div>
                                 <Separator />
                                 <div className={ ` flex flex-row justify-between` }>
                                     <span>Estimate Expense</span>
-                                    <span>{ formatRupiah(0) }</span>
+                                    <span className={ ` text-red-500` }>{ formatRupiah(estimate_expense) }</span>
                                 </div>
                             </div>
 
@@ -265,6 +288,20 @@ export default function Show({ auth, wallet, period }: PageProps<PlannedSummaryS
                             })()}
                         </div>
                     </CardContent>
+                    <CardFooter>
+                        {/* Footer */}
+                        <div>
+                            <Button
+                                variant={ `outline` }
+                                className={ `dark:border-white` }
+                                disabled={ !plannedPaginateState }
+                                onClick={() => {
+                                    setPlannedPaginateState(false);
+                                    setPlannedPaginate(plannedPaginate + paginate_item);
+                                }}
+                            >Load more</Button>
+                        </div>
+                    </CardFooter>
                 </Card>
             </SystemLayout>
         </>

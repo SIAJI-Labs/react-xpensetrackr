@@ -41,6 +41,7 @@ class PlannedSummaryController extends Controller
         $data = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
+        $data->current_balance = $data->getBalance();
 
         $period = null;
         if($request->has('period')){
@@ -51,9 +52,16 @@ class PlannedSummaryController extends Controller
             }
         }
 
+        $projection = $data->getExpectedProjection($period);
+        // Fetch Estimate
+        $estimate_income = $projection['expected_income'];
+        $estimate_expense = $projection['expected_expense'];
+
         return Inertia::render('System/PlannedPayment/Summary/Show', [
             'wallet' => $data,
-            'period' => $period
+            'period' => $period,
+            'estimate_income' => $estimate_income,
+            'estimate_expense' => $estimate_expense,
         ]);
     }
 

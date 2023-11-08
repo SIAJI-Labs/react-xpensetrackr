@@ -21,6 +21,7 @@ export interface WalletItem {
     type: string;
     starting_balance?: number;
     name: string;
+    current_balance?: number;
 }
 export interface RecordItem {
     id: number;

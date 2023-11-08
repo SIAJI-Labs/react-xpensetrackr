@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use Illuminate\Support\Facades\DB;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -167,7 +169,7 @@ class PlannedPaymentSummaryController extends Controller
         }
 
         $wallet = \App\Models\Wallet::with('parent')
-            ->where(\DB::raw('BINARY `uuid`'), $id)
+            ->where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
         $response = [
@@ -188,6 +190,9 @@ class PlannedPaymentSummaryController extends Controller
                             ->where('id', $data['id'])
                             ->where('user_id', $user->id)
                             ->first();
+
+                        // Override Period
+                        $planned->date_start = $data['period'];
 
                         if(!empty($planned)){
                             $data['planned'] = $planned;

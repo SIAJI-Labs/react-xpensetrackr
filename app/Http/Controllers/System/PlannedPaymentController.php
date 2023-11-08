@@ -14,8 +14,7 @@ class PlannedPaymentController extends Controller
      */
     public function index(Request $request)
     {
-        // $type = 'list';
-        $type = 'summary';
+        $type = 'list';
         if($request->has('type') && in_array($request->type, ['list', 'summary'])){
             $type = $request->type;
         }

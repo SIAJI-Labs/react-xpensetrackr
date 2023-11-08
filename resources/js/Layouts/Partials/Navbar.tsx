@@ -23,6 +23,8 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
     const { setTheme } = useTheme();
     const currentTheme = getCurrentTheme();
 
+    console.log(user);
+
     // Search Command
     const [openSearchCommand, setOpenSearchCommand] = useState<boolean>(false)
     useEffect(() => {

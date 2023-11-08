@@ -70,7 +70,6 @@ class RecordController extends Controller
             ];
         }
 
-
         return $this->formatedJsonResponse(200, 'Data Fetched', $data);
     }
 

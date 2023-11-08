@@ -102,6 +102,17 @@ Route::group([
                 Route::get('{uuid}', [\App\Http\Controllers\Api\v1\PlannedPaymentSummaryController::class, 'show'])->name('show');
             });
         });
+
+        // v1
+        Route::group([
+            'prefix' => 'v1',
+            'as' => 'v1.'
+        ], function(){
+            // List/Index
+            Route::get('list', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'index'])->name('list');
+            // Show
+            Route::get('{uuid}', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'show'])->name('show');
+        });
     });
 
     // Record

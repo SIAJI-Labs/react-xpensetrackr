@@ -60,21 +60,18 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
     const [recordFilterKeyword, setRecordFilterKeyword] = useState<string>('');
     const [recordFilterStatus, setRecordFilterStatus] = useState<string>('complete');
     useEffect(() => {
-        if(recordFilterKeyword){
-            const timer = setTimeout(() => {
-                console.log('Filter');
-                setRecordPaginate(paginate_item);
-                fetchRecordList();
-            }, 500);
+        const timer = setTimeout(() => {
+            setRecordPaginate(paginate_item);
+            fetchRecordList();
+        }, 500);
 
-            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
-            return () => {
-                clearTimeout(timer);
-            };
-        }
+        // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+        return () => {
+            clearTimeout(timer);
+        };
     }, [recordFilterKeyword]);
     // Record List - Variable Init
-    let paginate_item = 1;
+    let paginate_item = 5;
     const [recordPaginate, setRecordPaginate] = useState<number>(paginate_item);
     const [recordPaginateState, setRecordPaginateState] = useState<boolean>(false);
     useEffect(() => {

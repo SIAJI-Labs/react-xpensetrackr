@@ -24,7 +24,7 @@ export default function ListTemplate({ plannedPayment }: PropsWithChildren<Plann
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
 
     return (
-        <section key={r}  onClick={($refs) => {
+        <section key={r} onClick={($refs) => {
             setOpenDropdown(true);
         }}>
             <div className={ ` flex flex-col gap-2 border rounded p-4 cursor-pointer` }>
@@ -65,7 +65,7 @@ export default function ListTemplate({ plannedPayment }: PropsWithChildren<Plann
 
                 {/* Icon, Category, Notes */}
                 <div className={ ` flex flex-row gap-4 items-center` }>
-                    <div className={ ` p-3 h-10 w-10 rounded-full ${plannedPayment && 'type' in plannedPayment ? (plannedPayment.type === 'income' ? ` bg-green-500` : (plannedPayment.type === 'expense' ? ` bg-red-500` : ` bg-secondary`)) : ``} flex items-center justify-center` }>
+                    <div className={ ` p-3 h-10 w-10 rounded-full ${plannedPayment && 'type' in plannedPayment ? (plannedPayment.type === 'income' ? ` bg-green-500` : (plannedPayment.type === 'expense' ? ` bg-red-500` : ` bg-gray-500 dark:bg-secondary`)) : ``} flex items-center justify-center` }>
                         <i className={ ` text-white fa-solid ${plannedPayment && 'type' in plannedPayment ? (plannedPayment.type === 'income' ? `fa-right-to-bracket rotate-90` : (plannedPayment.type === 'expense' ? `fa-right-from-bracket -rotate-90` : `fa-right-left rotate-90`)) : ``}` }></i>
                     </div>
 

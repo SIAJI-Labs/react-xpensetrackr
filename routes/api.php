@@ -112,6 +112,9 @@ Route::group([
             Route::get('list', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'index'])->name('list');
             // Show
             Route::get('{uuid}', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'show'])->name('show');
+            
+            // Store
+            Route::post('store', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'store'])->name('store');
         });
     });
 

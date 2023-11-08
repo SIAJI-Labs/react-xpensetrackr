@@ -8,10 +8,10 @@ import InputError from '@/Components/InputError';
 
 // Shadcn
 import { Card, CardContent } from '@/Components/ui/card';
-import { Input } from '@/Components/ui/input';
-import Checkbox from '@/Components/Checkbox';
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import Checkbox from '@/Components/Checkbox';
 
 export default function Login({ status, canResetPassword }: { status?: string, canResetPassword: boolean }) {
     // Forms

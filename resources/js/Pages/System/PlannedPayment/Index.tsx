@@ -6,6 +6,7 @@ import { Head } from "@inertiajs/react";
 import { useState } from "react";
 import PlannedPaymentSummary from "./Partials/Summary";
 import PlannedPaymentList from "./Partials/List";
+import { Button } from "@/Components/ui/button";
 
 // Props
 type PlannedPaymentIndexProps = {
@@ -14,6 +15,9 @@ type PlannedPaymentIndexProps = {
 
 export default function Index({ auth, type = 'list' }: PageProps<PlannedPaymentIndexProps>) {
     const [pageType, setPageType] = useState<string>(type);
+
+    const [plannedPaymentItemAbortController, setPlannedPaymentItemAbortController] = useState<AbortController | null>(null);
+
     return (
         <>
             <SystemLayout
@@ -32,6 +36,27 @@ export default function Index({ auth, type = 'list' }: PageProps<PlannedPaymentI
                                             <div>Planned Payment: { ucwords(pageType) }</div>
                                     </CardTitle>
                                     <CardDescription>See {pageType} of your Planned Payment</CardDescription>
+                                </div>
+                                <div className={ `flex items-center gap-2` }>
+                                    {(() => {
+                                        return <Button variant={ `outline` } onClick={() => {
+                                            // Cancel previous request
+                                            if(plannedPaymentItemAbortController instanceof AbortController){
+                                                plannedPaymentItemAbortController.abort();
+                                            }
+                                            
+                                            // Fetch Pending Count
+                                            // fetchRecordList();
+                                        }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
+                                    })()}
+                                    <Button variant={ `outline` } onClick={() => {
+                                        document.dispatchEvent(new CustomEvent('plannedPaymentDialogEditAction', {
+                                                bubbles: true,
+                                            }
+                                        ));
+                                    }}>
+                                        <i className={ `fa-solid fa-plus` }></i>
+                                    </Button>
                                 </div>
                             </div>
                         </CardHeader>

@@ -9,16 +9,18 @@ import '@/../plugins/fontawesome/all.scss';
 
 // Partials
 import Navbar from './Partials/Navbar';
-import RecordDialog from '@/Components/system/RecordDialog';
+import RecordDialog from '@/Components/system/Record/RecordDialog';
 
 // Shadcn Component
 import { ThemeProvider } from '@/Components/template/theme-provider';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
-import RecordDeleteDialog from '@/Components/system/RecordDeleteDialog';
+import RecordDeleteDialog from '@/Components/system/Record/RecordDeleteDialog';
+import PlannedPaymentDialog from '@/Components/system/PlannedPayment/PlannedPaymentDialog';
 
 
 export default function SystemLayout({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
+    // Record Dialog
     const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
     const handleOpenRecordDialog = (isOpen: boolean) => {
         setOpenRecordDialog(isOpen);
@@ -26,6 +28,12 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
     const [openRecordDeleteDialog, setOpenRecordDeleteDialog] = useState<boolean>(false);
     const handleOpenRecordDeleteDialog = (isOpen: boolean) => {
         setOpenRecordDeleteDialog(isOpen);
+    };
+
+    // Planned Payment Dialog
+    const [openPlannedPaymentDialog, setOpenPlannedPaymentDialog] = useState<boolean>(false);
+    const handleOpenPlannedPaymentDialog = (isOpen: boolean) => {
+        setOpenPlannedPaymentDialog(isOpen);
     };
 
     return (
@@ -64,6 +72,9 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 <RecordDialog openState={ openRecordDialog } setOpenState={ handleOpenRecordDialog }/>
                 {/* Record Modal - Delete Dialog */}
                 <RecordDeleteDialog openState={ openRecordDeleteDialog } setOpenState={ handleOpenRecordDeleteDialog }></RecordDeleteDialog>
+            
+                {/* Planned Payment Modal - Dialog */}
+                <PlannedPaymentDialog openState={ openPlannedPaymentDialog } setOpenState={ handleOpenPlannedPaymentDialog }/>
             </div>
 
             <Toaster />

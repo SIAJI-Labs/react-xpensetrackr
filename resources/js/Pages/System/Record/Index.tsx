@@ -1,4 +1,5 @@
 import { PageProps, RecordItem } from '@/types';
+import { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 
@@ -6,7 +7,6 @@ import axios from 'axios';
 import RecordTemplate from '@/Components/template/RecordTemplate';
 import NoDataTemplate from '@/Components/template/NoDataTemplate';
 import SystemLayout from '@/Layouts/SystemLayout';
-import { useEffect, useState } from 'react';
 
 // Shadcn
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -186,19 +186,12 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
 
                                 <div className={ `flex items-center gap-2` }>
                                     {(() => {
-                                        // if(refreshLoading){
-                                        //     return <Button disabled>
-                                        //         <Loader2 className="h-4 w-4 animate-spin" />
-                                        //     </Button>
-                                        // }
-
                                         return <Button variant={ `outline` } onClick={() => {
                                             // Cancel previous request
                                             if(recordItemAbortController instanceof AbortController){
                                                 recordItemAbortController.abort();
                                             }
                                             
-                                            console.log('Reload');
                                             // Fetch Pending Count
                                             fetchRecordList();
                                         }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
@@ -208,7 +201,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                                 bubbles: true,
                                             }
                                         ));
-                                    }} disabled>
+                                    }}>
                                         <i className={ `fa-solid fa-plus` }></i>
                                     </Button>
                                 </div>

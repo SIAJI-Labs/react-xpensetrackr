@@ -38,7 +38,7 @@ export default function ListRecordTemplate({ plannedPayment }: PropsWithChildren
                                     <span className={ ` font-medium w-full md:w-auto` }>{ momentFormated('MMM Do, YYYY', (plannedPayment && 'period' in plannedPayment ? moment(plannedPayment?.period) : moment())) }</span>
                                 
                                     <div className={ ` flex flex-row flex-1 md:flex-none justify-between gap-2 items-center` }>
-                                        <span className={ ` font-normal whitespace-nowrap ${plannedPayment && 'type' in plannedPayment.record ? (plannedPayment?.record.type === 'expense' ? ` text-red-500` : `text-green-500`) : ``}` }>{formatRupiah(plannedPayment && 'amount' in plannedPayment.record ? (plannedPayment?.record?.amount) : 0)}</span>
+                                        <span className={ ` font-normal whitespace-nowrap ${plannedPayment && 'type' in plannedPayment.record ? (plannedPayment?.record.type === 'expense' ? ` text-red-500` : `text-green-500`) : ``}` }>{formatRupiah(plannedPayment && 'amount' in plannedPayment.record && 'extra_amount' in plannedPayment.record ? (plannedPayment?.record?.amount + plannedPayment?.record?.extra_amount) : 0)}</span>
                                         
                                         <div>
                                             <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
@@ -51,7 +51,7 @@ export default function ListRecordTemplate({ plannedPayment }: PropsWithChildren
                                                     {(() => {
                                                         if(plannedPayment && 'uuid' in plannedPayment.record){
                                                             return <>
-                                                                <Link href={ route('sys.planned-payment.show', {
+                                                                <Link href={ route('sys.record.show', {
                                                                     uuid: plannedPayment.record.uuid
                                                                 }) }>
                                                                     <DropdownMenuItem className={ ` cursor-pointer` }>

@@ -105,15 +105,17 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
     // Record Filter
     const [plannedFilterKeyword, setPlannedFilterKeyword] = useState<string>('');
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setPlannedPaginate(paginate_item);
-            fetchPlannedSummary();
-        }, 500);
-
-        // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
-        return () => {
-            clearTimeout(timer);
-        };
+        if(!isFirstRender){
+            const timer = setTimeout(() => {
+                setPlannedPaginate(paginate_item);
+                fetchPlannedSummary();
+            }, 500);
+    
+            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+            return () => {
+                clearTimeout(timer);
+            };
+        }
     }, [plannedFilterKeyword]);
 
     useEffect(() => {
@@ -121,6 +123,23 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
             fetchPlannedSummary();
         }
     }, [plannedPaginate]);
+    useEffect(() => {
+        if(!isFirstRender){
+            // Listen to Record Dialog event
+            const handleDialogPlannedPayment = () => {
+                setTimeout(() => {
+                    console.log('Dialog Event');
+
+                    fetchPlannedSummary();
+                }, 100);
+            }
+            window.addEventListener('planned-payment.refresh', handleDialogPlannedPayment);
+            // Remove the event listener when the component unmounts
+            return () => {
+                window.removeEventListener('planned-payment.refresh', handleDialogPlannedPayment);
+            };
+        }
+    });
 
     return (<>
         <div className={ `flex flex-col gap-6` }>

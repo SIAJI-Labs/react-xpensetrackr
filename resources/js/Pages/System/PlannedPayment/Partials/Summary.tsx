@@ -132,6 +132,22 @@ export default function PlannedPaymentSummary({ auth, activeType }: PageProps<Pl
             fetchPlannedSummary();
         }
     }, [plannedPaginate, activePeriod]);
+    useEffect(() => {
+        if(!isFirstRender){
+            // Listen to Record Dialog event
+            const handleDialogPlannedPayment = () => {
+                console.log('ABC');
+                setTimeout(() => {
+                    fetchPlannedSummary();
+                }, 100);
+            }
+            document.addEventListener('planned-payment.refresh', handleDialogPlannedPayment);
+            // Remove the event listener when the component unmounts
+            return () => {
+                document.removeEventListener('planned-payment.refresh', handleDialogPlannedPayment);
+            };
+        }
+    });
 
     return (<>
         <div className={ `flex flex-col gap-6` }>

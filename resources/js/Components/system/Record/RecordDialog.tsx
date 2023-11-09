@@ -968,6 +968,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                                                     mode="single"
                                                     selected={valueRecordDate}
                                                     onSelect={setValueRecordDate}
+                                                    defaultMonth={valueRecordDate}
                                                     initialFocus
                                                 />
                                             </PopoverContent>

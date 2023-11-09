@@ -3,10 +3,11 @@ import SystemLayout from "@/Layouts/SystemLayout";
 import { ucwords } from "@/function";
 import { PageProps } from "@/types";
 import { Head } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PlannedPaymentSummary from "./Partials/Summary";
 import PlannedPaymentList from "./Partials/List";
 import { Button } from "@/Components/ui/button";
+import { useIsFirstRender } from "@/lib/utils";
 
 // Props
 type PlannedPaymentIndexProps = {
@@ -14,9 +15,22 @@ type PlannedPaymentIndexProps = {
 }
 
 export default function Index({ auth, type = 'list' }: PageProps<PlannedPaymentIndexProps>) {
-    const [pageType, setPageType] = useState<string>(type);
+    const isFirstRender = useIsFirstRender();
 
-    const [plannedPaymentItemAbortController, setPlannedPaymentItemAbortController] = useState<AbortController | null>(null);
+    const [pageType, setPageType] = useState<string>(type);
+    useEffect(() => {
+        if(!isFirstRender){
+            // Listen to Record Dialog event
+            const handleDialogPlannedPayment = () => {
+                document.dispatchEvent(new CustomEvent('planned-payment.refresh', {bubbles: true}));
+            }
+            document.addEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
+            // Remove the event listener when the component unmounts
+            return () => {
+                document.addEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
+            };
+        }
+    });
 
     return (
         <>
@@ -40,13 +54,7 @@ export default function Index({ auth, type = 'list' }: PageProps<PlannedPaymentI
                                 <div className={ `flex items-center gap-2` }>
                                     {(() => {
                                         return <Button variant={ `outline` } onClick={() => {
-                                            // Cancel previous request
-                                            if(plannedPaymentItemAbortController instanceof AbortController){
-                                                plannedPaymentItemAbortController.abort();
-                                            }
-                                            
-                                            // Fetch Pending Count
-                                            // fetchRecordList();
+                                            document.dispatchEvent(new CustomEvent('planned-payment.refresh', {bubbles: true}));
                                         }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
                                     })()}
                                     <Button variant={ `outline` } onClick={() => {

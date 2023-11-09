@@ -4,11 +4,11 @@ import { FormEventHandler, useEffect, useMemo, useState } from "react";
 // Shadcn
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { useToast } from "@/Components/ui/use-toast";
-import { ucwords } from "@/function";
+import { momentFormated, ucwords } from "@/function";
 import ErrorMessage from "@/Components/forms/ErrorMessage";
 import { Input } from "@/Components/ui/input";
 import axios, { AxiosError } from "axios";
-import { CategoryItem, WalletItem } from "@/types";
+import { CategoryItem, PlannedItem, WalletItem } from "@/types";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { Button } from "@/Components/ui/button";
 import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
@@ -529,6 +529,43 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
     }, [valuePlannedPaymentAmount, valuePlannedPaymentExtraAmount, valuePlannedPaymentExtraType]);
 
     // Document Ready
+    const [abortControllerPlannedPaymentItem, setAbortControllerPlannedPaymentItem] = useState<AbortController | null>(null);
+    const fetchPlannedPaymentData = async (uuid: string, action: string = 'detail') => {
+        // Cancel previous request
+        if(abortControllerPlannedPaymentItem instanceof AbortController){
+            abortControllerPlannedPaymentItem.abort();
+        }
+
+        // Create a new AbortController
+        const abortController = new AbortController();
+        // Store the AbortController in state
+        setAbortControllerPlannedPaymentItem(abortController);
+        
+        // Fetch
+        try {
+            const response = await axios.get(`${route('api.planned-payment.v1.show', uuid)}?action=${action}`, {
+                cancelToken: new axios.CancelToken(function executor(c) {
+                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                    abortController.abort = c;
+                })
+            });
+        
+            // Use response.data instead of req.json() to get the JSON data
+            let jsonResponse = response.data;
+
+            return jsonResponse.result.data;
+        } catch (error) {
+            if (axios.isCancel(error)) {
+                // Handle the cancellation here if needed
+                console.log('Request was canceled', error);
+            } else {
+                // Handle other errors
+                console.error('Error:', error);
+            }
+        }
+
+        return [];
+    }
     useEffect(() => {
         // Listen to Edit Action
         const plannedPaymentDialogEditAction = (event: any) => {
@@ -538,6 +575,43 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                 let uuid = event.detail.uuid;
 
                 // Fetch Data
+                fetchPlannedPaymentData(uuid, 'edit').then((data: PlannedItem) => {
+                    console.log(data);
+                    let raw = momentFormated('YYYY-MM-DD', data.date_start, moment.tz.guess());
+                    let date = moment(raw).toDate();
+
+                    // Update State
+                    setValuePlannedPaymentUuid(data.uuid)
+                    setValuePlannedPaymentName(data.name);
+                    setValuePlannedPaymentType(data.type);
+                    setValuePlannedPaymentCategory(data.category ? data.category.uuid : '');
+                    setValuePlannedPaymentFromWallet(data.from_wallet ? data.from_wallet.uuid : '');
+                    setValuePlannedPaymentToWallet(data.to_wallet ? data.to_wallet.uuid : '');
+                    setValuePlannedPaymentAmount(data.amount);
+                    setValuePlannedPaymentExtraAmount(data.extra_type === 'amount' ? data.extra_amount : data.extra_percentage);
+                    setValuePlannedPaymentExtraType(data.extra_type);
+                    setValuePlannedPaymentOccurence(data.repeat_type);
+                    setValuePlannedPaymentFrequency(data.repeat_frequency);
+                    setValuePlannedPaymentFrequencyType(data.repeat_period);
+                    setValuePlannedPaymentDate(date);
+                    setValuePlannedPaymentNotes(data.note ?? '');
+
+                    // Update Combobox Label
+                    if(data.category){
+                        setCategoryComboboxLabel(`${data.category.parent ? `${data.category.parent.name} - ` : ''}${data.category.name}`);
+                    }
+                    if(data.from_wallet){
+                        setFromWalletComboboxLabel(`${data.from_wallet.parent ? `${data.from_wallet.parent.name} - ` : ''}${data.from_wallet.name}`);
+                    }
+                    if(data.to_wallet){
+                        setToWalletComboboxLabel(`${data.to_wallet.parent ? `${data.to_wallet.parent.name} - ` : ''}${data.to_wallet.name}`);
+                    }
+                    
+                    // Open record-dialog
+                    setTimeout(() => {
+                        setOpenState(true);
+                    }, 100);
+                });
             } else {
                 setOpenState(true);
             }
@@ -931,6 +1005,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                                     mode="single"
                                                     selected={valuePlannedPaymentDate}
                                                     onSelect={setValuePlannedPaymentDate}
+                                                    defaultMonth={valuePlannedPaymentDate}
                                                     initialFocus
                                                 />
                                             </PopoverContent>

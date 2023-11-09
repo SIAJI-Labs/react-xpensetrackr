@@ -43,6 +43,7 @@ export default function ListTemplate({ plannedPayment }: PropsWithChildren<Plann
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
+                                    {/* Detail Action */}
                                     {(() => {
                                         if(plannedPayment && 'uuid' in plannedPayment){
                                             return <>
@@ -55,6 +56,40 @@ export default function ListTemplate({ plannedPayment }: PropsWithChildren<Plann
                                                 </Link>
                                             </>
                                         }
+                                        return <></>;
+                                    })()}
+                                    {/* Edit Action */}
+                                    {(() => {
+                                        // Check if record dialog form is exists
+                                        let plannedPaymentDialogSection = document.getElementById('plannedPaymentDialog-section');
+                                        if(plannedPaymentDialogSection){
+                                            return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
+                                                let el = $refs.target as HTMLElement;
+                                                if(el){
+                                                    let originalText = el.innerHTML;
+                                                    el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+
+                                                    const revertToOriginalText = () => {
+                                                        if(originalText){
+                                                            el.innerHTML = originalText;
+                                                        }
+
+                                                        document.removeEventListener('dialog.planned-payment.shown', revertToOriginalText);
+                                                    }
+                                                    document.addEventListener('dialog.planned-payment.shown', revertToOriginalText);
+                                                }
+
+                                                document.dispatchEvent(new CustomEvent('plannedPaymentDialogEditAction', {
+                                                    bubbles: true,
+                                                    detail: {
+                                                        uuid: plannedPayment && 'uuid' in plannedPayment ? plannedPayment?.uuid : null
+                                                    }
+                                                }));
+                                            }}>
+                                                <span className={ ` text-yellow-500` }>Edit</span>
+                                            </DropdownMenuItem>;
+                                        }
+
                                         return <></>;
                                     })()}
                                 </DropdownMenuContent>

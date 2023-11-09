@@ -246,6 +246,7 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                         </div>
                     </CardContent>
                 </Card>
+                
                 <Card className={ ` w-full` }>
                     <CardContent className={ ` flex flex-col gap-6 pt-6` }>
                         <div className={ ` flex flex-row justify-between` }>
@@ -295,7 +296,7 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                                     <span className={ ` font-medium w-full md:w-auto` }>{ momentFormated('MMM Do, YYYY', (data && 'date_start' in data ? moment(data?.date_start) : moment())) }</span>
                                                 
                                                     <div className={ ` flex flex-row flex-1 md:flex-none justify-between gap-2 items-center` }>
-                                                        <span className={ ` font-normal whitespace-nowrap ${data && 'type' in data ? (data?.type === 'expense' ? ` text-red-500` : ( data.type === 'income' ? `text-green-500` : ` dark:text-white`)) : ``}` }>{formatRupiah(data && 'amount' in data ? (data?.amount) : 0)}</span>
+                                                        <span className={ ` font-normal whitespace-nowrap ${data && 'type' in data ? (data?.type === 'expense' ? ` text-red-500` : ( data.type === 'income' ? `text-green-500` : ` dark:text-white`)) : ``}` }>{formatRupiah(data && 'amount' in data && 'extra_amount' in data ? (data?.amount + data?.extra_amount) : 0)}</span>
                                                     </div>
                                                 </div>
                                 

@@ -1,23 +1,27 @@
-import BackButton from "@/Components/template/BackButtonTemplate";
-import NoDataTemplate from "@/Components/template/NoDataTemplate";
+import { PageProps, PlannedItem } from "@/types";
+import { useIsFirstRender } from "@/lib/utils";
+import { Head, Link } from "@inertiajs/react";
+import { useEffect, useState } from "react";
+
+// Plugins
+import { formatRupiah, momentFormated, ucwords } from "@/function";
+import moment from "moment-timezone";
+import axios from "axios";
+
+// Partials
 import ListRecordTemplate from "@/Components/template/PlannedPayment/ListRecordTemplate";
 import ListSkeleton from "@/Components/template/PlannedPayment/ListSkeleton";
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
+import BackButton from "@/Components/template/BackButtonTemplate";
+import NoDataTemplate from "@/Components/template/NoDataTemplate";
+import SystemLayout from "@/Layouts/SystemLayout";
+
+// Shadcn
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import { DropdownMenu, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Separator } from "@/Components/ui/separator";
 import { Skeleton } from "@/Components/ui/skeleton";
-import SystemLayout from "@/Layouts/SystemLayout";
-import { formatRupiah, momentFormated, ucwords } from "@/function";
-import { useIsFirstRender } from "@/lib/utils";
-import { PageProps, PlannedItem } from "@/types";
-import { Head, Link } from "@inertiajs/react";
-import { DropdownMenuContent, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
-import axios from "axios";
-import moment from "moment-timezone";
-import { useEffect, useState } from "react";
-import { json } from "stream/consumers";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
 
 // Props
 type PlannedPaymentShowProps = {
@@ -27,6 +31,7 @@ type PlannedPaymentShowProps = {
 export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>) {
     const isFirstRender = useIsFirstRender();
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
+    // Document ready
     useEffect(() => {
         // Run on tab changed
         fetchPlannedItem();
@@ -135,12 +140,48 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                 <CardDescription>See your detailed Planned Payment</CardDescription>
                             </div>
                             <div>
-                                <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
+                            <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="link" className={ ` p-0 h-auto leading-none` } data-type="dropdown-trigger">
                                             <i className={ `fa-solid fa-ellipsis-vertical` }></i>
                                         </Button>
                                     </DropdownMenuTrigger>
+                                    <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
+                                        {/* Edit Action */}
+                                        {(() => {
+                                            // Check if record dialog form is exists
+                                            let recordDialogSection = document.getElementById('recordDialog-section');
+                                            if(recordDialogSection){
+                                                return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
+                                                    let el = $refs.target as HTMLElement;
+                                                    if(el){
+                                                        let originalText = el.innerHTML;
+                                                        el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+
+                                                        const revertToOriginalText = () => {
+                                                            if(originalText){
+                                                                el.innerHTML = originalText;
+                                                            }
+
+                                                            document.removeEventListener('dialog.planned-payment.shown', revertToOriginalText);
+                                                        }
+                                                        document.addEventListener('dialog.planned-payment.shown', revertToOriginalText);
+                                                    }
+
+                                                    document.dispatchEvent(new CustomEvent('plannedPaymentDialogEditAction', {
+                                                        bubbles: true,
+                                                        detail: {
+                                                            uuid: data?.uuid
+                                                        }
+                                                    }));
+                                                }}>
+                                                    <span className={ ` text-yellow-500` }>Edit</span>
+                                                </DropdownMenuItem>;
+                                            }
+
+                                            return <></>;
+                                        })()}
+                                    </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
                         </div>

@@ -1,6 +1,6 @@
 import { useEffect, FormEventHandler } from 'react';
 import PublicLayout from '@/Layouts/PublicLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 
 import ApplicationLogo from '@/Components/ApplicationLogo';
 // Forms
@@ -133,13 +133,28 @@ export default function Login({ status, canResetPassword }: { status?: string, c
                                     </div>
 
                                     {/* Forgot Password */}
-                                    <Link href={route('password.request')} className={ ` text-sm` }>Forgot Password</Link>
+                                    {/* <Link href={route('password.request')} className={ ` text-sm` }>Forgot Password</Link> */}
                                 </div>
 
                                 <div className={ ` w-full flex flex-col gap-2` }>
-                                    <Button type='submit' className=' w-full'>Sign In</Button>
+                                    <Button type='submit' className=' w-full' onClick={($refs) => {
+                                        let el = $refs.target as HTMLElement;
+                                        if(el){
+                                            let originalText = el.innerHTML;
+                                            el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
 
-                                    <span className={ ` text-sm` }>Didn't have an account yet? <strong><Link href={route('register')}>Sign up</Link></strong> now</span>
+                                            const revertToOriginalText = () => {
+                                                if(originalText){
+                                                    el.innerHTML = originalText;
+                                                }
+                                            }
+                                            router.on('finish', (event) => {
+                                                revertToOriginalText();
+                                            })
+                                        }
+                                    }}>Sign In</Button>
+
+                                    {/* <span className={ ` text-sm` }>Didn't have an account yet? <strong><Link href={route('register')}>Sign up</Link></strong> now</span> */}
                                 </div>
                             </div>
                         </CardContent>

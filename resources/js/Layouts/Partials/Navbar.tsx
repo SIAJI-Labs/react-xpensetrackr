@@ -53,7 +53,9 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                         let el: any[] = []
                         let suggestions: { name: string, icon?: string, link?: any}[] = [
                             { name: 'Quick Action: Create new Record', icon: '', link: route('sys.quick-action.record') },
-                            { name: 'Quick Action: Planned Payment Summary', icon: '', link: null },
+                            { name: 'Quick Action: Planned Payment Summary', icon: '', link: route('sys.planned-payment.index', {
+                                type: 'summary'
+                            }) },
                             { name: 'Quick Action: Show Pending Record', icon: '', link: null },
                         ];
 

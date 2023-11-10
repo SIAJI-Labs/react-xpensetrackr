@@ -618,10 +618,10 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                 setOpenState(true);
             }
         }
-        document.addEventListener('plannedPaymentDialogEditAction', plannedPaymentDialogEditAction);
+        document.addEventListener('planned-payment.edit-action', plannedPaymentDialogEditAction);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('plannedPaymentDialogEditAction', plannedPaymentDialogEditAction);
+            document.removeEventListener('planned-payment.edit-action', plannedPaymentDialogEditAction);
         };
     }, []);
 
@@ -690,25 +690,27 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                             <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                                 <Command shouldFilter={ false }>
                                                     <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={categoryComboboxInput} onValueChange={setCategoryComboboxInput}/>
-                                                    <ScrollArea className="h-40 p-0">
-                                                        <CommandEmpty>{categoryComboboxLoad ? `Loading...` : `No category found.`}</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {categoryComboboxList.map((options: CategoryItem) => (
-                                                                <CommandItem
-                                                                    value={options?.uuid}
-                                                                    key={options?.uuid}
-                                                                    onSelect={(currentValue) => {
-                                                                        setValuePlannedPaymentCategory(currentValue === valuePlannedPaymentCategory ? "" : currentValue)
-                                                                        setOpenRecordCategory(false)
-                                                                    }}
-                                                                >
-                                                                    <Check
-                                                                        className={ `mr-2 h-4 w-4 ${valuePlannedPaymentCategory === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                    />
-                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
+                                                    <ScrollArea className="p-0">
+                                                        <div className={ `max-h-[10rem]` }>
+                                                            <CommandEmpty>{categoryComboboxLoad ? `Loading...` : `No category found.`}</CommandEmpty>
+                                                            <CommandGroup>
+                                                                {categoryComboboxList.map((options: CategoryItem) => (
+                                                                    <CommandItem
+                                                                        value={options?.uuid}
+                                                                        key={options?.uuid}
+                                                                        onSelect={(currentValue) => {
+                                                                            setValuePlannedPaymentCategory(currentValue === valuePlannedPaymentCategory ? "" : currentValue)
+                                                                            setOpenRecordCategory(false)
+                                                                        }}
+                                                                    >
+                                                                        <Check
+                                                                            className={ `mr-2 h-4 w-4 ${valuePlannedPaymentCategory === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                        />
+                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                                    </CommandItem>
+                                                                ))}
+                                                            </CommandGroup>
+                                                        </div>
                                                     </ScrollArea>
                                                 </Command>
                                             </PopoverContent>
@@ -738,25 +740,27 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                                 <Command shouldFilter={ false }>
                                                     <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={fromWalletComboboxInput} onValueChange={setFromWalletComboboxInput}/>
                                                     
-                                                    <ScrollArea className="h-40 p-0">
-                                                        <CommandEmpty>{fromWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {fromWalletComboboxList.map((options: WalletItem) => (
-                                                                <CommandItem
-                                                                    value={options?.uuid}
-                                                                    key={options?.uuid}
-                                                                    onSelect={(currentValue) => {
-                                                                        setValuePlannedPaymentFromWallet(currentValue === valuePlannedPaymentFromWallet ? "" : currentValue)
-                                                                        setOpenRecordFromWallet(false)
-                                                                    }}
-                                                                >
-                                                                    <Check
-                                                                        className={ `mr-2 h-4 w-4 ${valuePlannedPaymentFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                    />
-                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
+                                                    <ScrollArea className="p-0">
+                                                        <div className={ `max-h-[10rem]` }>
+                                                            <CommandEmpty>{fromWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                            <CommandGroup>
+                                                                {fromWalletComboboxList.map((options: WalletItem) => (
+                                                                    <CommandItem
+                                                                        value={options?.uuid}
+                                                                        key={options?.uuid}
+                                                                        onSelect={(currentValue) => {
+                                                                            setValuePlannedPaymentFromWallet(currentValue === valuePlannedPaymentFromWallet ? "" : currentValue)
+                                                                            setOpenRecordFromWallet(false)
+                                                                        }}
+                                                                    >
+                                                                        <Check
+                                                                            className={ `mr-2 h-4 w-4 ${valuePlannedPaymentFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                        />
+                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                                    </CommandItem>
+                                                                ))}
+                                                            </CommandGroup>
+                                                        </div>
                                                     </ScrollArea>
                                                 </Command>
                                             </PopoverContent>
@@ -787,25 +791,27 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                                         <Command shouldFilter={ false }>
                                                             <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={toWalletComboboxInput} onValueChange={setToWalletComboboxInput}/>
-                                                            <ScrollArea className="h-40 p-0">
-                                                                <CommandEmpty>{toWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {toWalletComboboxList.map((options: WalletItem) => (
-                                                                        <CommandItem
-                                                                            value={options?.uuid}
-                                                                            key={options?.uuid}
-                                                                            onSelect={(currentValue) => {
-                                                                                setValuePlannedPaymentToWallet(currentValue === valuePlannedPaymentToWallet ? "" : currentValue)
-                                                                                setOpenRecordToWallet(false)
-                                                                            }}
-                                                                        >
-                                                                            <Check
-                                                                                className={ `mr-2 h-4 w-4 ${valuePlannedPaymentToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                            />
-                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
-                                                                        </CommandItem>
-                                                                    ))}
-                                                                </CommandGroup>
+                                                            <ScrollArea className="p-0">
+                                                                <div className={ `max-h-[10rem]` }>
+                                                                    <CommandEmpty>{toWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                                    <CommandGroup>
+                                                                        {toWalletComboboxList.map((options: WalletItem) => (
+                                                                            <CommandItem
+                                                                                value={options?.uuid}
+                                                                                key={options?.uuid}
+                                                                                onSelect={(currentValue) => {
+                                                                                    setValuePlannedPaymentToWallet(currentValue === valuePlannedPaymentToWallet ? "" : currentValue)
+                                                                                    setOpenRecordToWallet(false)
+                                                                                }}
+                                                                            >
+                                                                                <Check
+                                                                                    className={ `mr-2 h-4 w-4 ${valuePlannedPaymentToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                                />
+                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                                            </CommandItem>
+                                                                        ))}
+                                                                    </CommandGroup>
+                                                                </div>
                                                             </ScrollArea>
                                                         </Command>
                                                     </PopoverContent>

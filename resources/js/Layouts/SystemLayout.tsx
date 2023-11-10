@@ -17,6 +17,7 @@ import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
 import RecordDeleteDialog from '@/Components/system/Record/RecordDeleteDialog';
 import PlannedPaymentDialog from '@/Components/system/PlannedPayment/PlannedPaymentDialog';
+import PlannedPaymentDeleteDialog from '@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog';
 
 
 export default function SystemLayout({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
@@ -34,6 +35,10 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
     const [openPlannedPaymentDialog, setOpenPlannedPaymentDialog] = useState<boolean>(false);
     const handleOpenPlannedPaymentDialog = (isOpen: boolean) => {
         setOpenPlannedPaymentDialog(isOpen);
+    };
+    const [openPlannedPaymentDeleteDialog, setOpenPlannedPaymentDeleteDialog] = useState<boolean>(false);
+    const handleOpenPlannedPaymentDeleteDialog = (isOpen: boolean) => {
+        setOpenPlannedPaymentDeleteDialog(isOpen);
     };
 
     return (
@@ -75,6 +80,7 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
             
                 {/* Planned Payment Modal - Dialog */}
                 <PlannedPaymentDialog openState={ openPlannedPaymentDialog } setOpenState={ handleOpenPlannedPaymentDialog }/>
+                <PlannedPaymentDeleteDialog openState={ openPlannedPaymentDeleteDialog } setOpenState={ handleOpenPlannedPaymentDeleteDialog }/>
             </div>
 
             <Toaster />

@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 // Partials
-import RecordTemplate from '@/Components/template/RecordTemplate';
+import RecordTemplate from '@/Components/template/Record/RecordTemplate';
 import NoDataTemplate from '@/Components/template/NoDataTemplate';
 
 // Shadcn Component
@@ -162,14 +162,11 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
         }
     }
     useEffect(() => {
-        console.log("On load");
-
         // First fetch pending count
         fetchPending();
     }, []);
     useEffect(() => {
         if(!isFirstRender){
-            console.log("Handle record dialog");
             // Listen to Record Dialog event
             const handleDialogRecord = (event: any) => {
                 setTimeout(() => {
@@ -178,9 +175,12 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                 }, 100);
             }
             document.addEventListener('dialog.record.hidden', handleDialogRecord);
+            document.addEventListener('record.deleted-action', handleDialogRecord);
+
             // Remove the event listener when the component unmounts
             return () => {
                 document.removeEventListener('dialog.record.hidden', handleDialogRecord);
+                document.removeEventListener('record.deleted-action', handleDialogRecord);
             };
         }
     });

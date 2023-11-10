@@ -71,6 +71,7 @@ export interface PlannedItem {
     repeat_until: string,
     until_number: number,
     note: string,
+    deleted_at?: string,
 }
 export interface PlannedRecord {
     id: number,

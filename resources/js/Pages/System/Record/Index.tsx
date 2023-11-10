@@ -4,7 +4,7 @@ import { Head } from '@inertiajs/react';
 import axios from 'axios';
 
 // Partials
-import RecordTemplate from '@/Components/template/RecordTemplate';
+import RecordTemplate from '@/Components/template/Record/RecordTemplate';
 import NoDataTemplate from '@/Components/template/NoDataTemplate';
 import SystemLayout from '@/Layouts/SystemLayout';
 
@@ -157,10 +157,13 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                 setOpenRecordDialog(false);
             }, 100);
         }
-        window.addEventListener('dialog.record.hidden', handleDialogRecord);
+
+        document.addEventListener('dialog.record.hidden', handleDialogRecord);
+        document.addEventListener('record.deleted-action', handleDialogRecord);
         // Remove the event listener when the component unmounts
         return () => {
-            window.removeEventListener('dialog.record.hidden', handleDialogRecord);
+            document.removeEventListener('dialog.record.hidden', handleDialogRecord);
+            document.removeEventListener('record.deleted-action', handleDialogRecord);
         };
     });
 
@@ -176,7 +179,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                     {/* Record List */}
                     <Card className={ `` }>
                         <CardHeader>
-                            <div className={ ` flex flex-row justify-between items-center` }>
+                            <div className={ ` flex flex-row justify-between items-start` }>
                                 <div>
                                     <CardTitle>
                                             <div>Record: List</div>

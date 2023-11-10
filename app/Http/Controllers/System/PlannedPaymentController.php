@@ -46,7 +46,8 @@ class PlannedPaymentController extends Controller
     public function show(Request $request, string $id)
     {
         $user = $request->user();
-        $data = \App\Models\PlannedPayment::with('fromWallet.parent', 'toWallet.parent', 'category.parent')
+        $data = \App\Models\PlannedPayment::withTrashed()
+            ->with('fromWallet.parent', 'toWallet.parent', 'category.parent')
             ->where(\DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
             ->firstOrFail();

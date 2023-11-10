@@ -85,8 +85,8 @@ class PlannedPaymentController extends Controller
             'extra_amount' => ['nullable', 'numeric'],
             'extra_type' => ['nullable', 'string', 'in:amount,percentage'],
             'occurence' => ['required', 'string', 'in:recurring,once'],
-            'frequency' => ['required', 'numeric', 'min:1'],
-            'frequency_type' => ['required', 'string', 'in:daily,weekly,monthly,yearly'],
+            'frequency' => ['nullable', 'required_if:occurence,occureing', 'numeric', 'min:1'],
+            'frequency_type' => ['nullable', 'required_if:occurence,occureing', 'string', 'in:daily,weekly,monthly,yearly'],
             'date' => ['required', 'string'],
             'notes' => ['nullable', 'string']
         ]);
@@ -175,6 +175,7 @@ class PlannedPaymentController extends Controller
         }
 
         $data = \App\Models\PlannedPayment::query()
+            ->withTrashed()
             ->with('category.parent', 'fromWallet.parent', 'toWallet.parent')
             ->where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
@@ -299,10 +300,6 @@ class PlannedPaymentController extends Controller
      */
     public function destroy(Request $request, string $id)
     {
-        \Log::debug("Debug on Planned Payment Destroy", [
-            'request' => $request->all()
-        ]);
-
         $user = $request->user();
 
         $data = \App\Models\PlannedPayment::with('category.parent', 'fromWallet.parent', 'toWallet.parent')
@@ -319,9 +316,13 @@ class PlannedPaymentController extends Controller
                 $record->status = 'reject';
                 $record->period = $data->date_start;
                 $record->save();
+            } else if($request->action === 'delete'){
+                // Delete
+                $data->delete();
             }
         } else {
             // Delete
+            $data->delete();
         }
 
         return $this->formatedJsonResponse(200, 'Data Deleted', []);

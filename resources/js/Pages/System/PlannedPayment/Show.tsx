@@ -22,7 +22,7 @@ import { Separator } from "@/Components/ui/separator";
 import { Skeleton } from "@/Components/ui/skeleton";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
-import PlannedRecordSkipDialog from "@/Components/system/PlannedPayment/PlannedRecordSkipDialog";
+import PlannedPaymentDeleteDialog from "@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog";
 
 // Props
 type PlannedPaymentShowProps = {
@@ -34,25 +34,29 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
     useEffect(() => {
         // Listen to Record Dialog event
-        const handleDialogPlannedPayment = () => {
-            router.reload();
-            fetchPlannedItem();
+        const handleDialogPlannedPayment = (event: any) => {
+            if(event.detail?.action && event.detail?.action === 'delete'){
+                location.href = route('sys.planned-payment.index');
+            } else {
+                router.reload();
+                fetchPlannedItem();
+            }
         }
 
-        document.addEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
         document.addEventListener('dialog.record.hidden', handleDialogPlannedPayment);
-        document.addEventListener('planned-payment.record.skipped', handleDialogPlannedPayment);
+        document.addEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
+        document.addEventListener('planned-payment.deleted-action', handleDialogPlannedPayment);
 
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
             document.removeEventListener('dialog.record.hidden', handleDialogPlannedPayment);
-            document.removeEventListener('planned-payment.record.skipped', handleDialogPlannedPayment);
+            document.removeEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
+            document.removeEventListener('planned-payment.deleted-action', handleDialogPlannedPayment);
         };
     });
     // Document ready
     useEffect(() => {
-        // Run on tab changed
+        // Initial fetch
         fetchPlannedItem();
     }, []);
 
@@ -135,24 +139,20 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
         }
     }, [plannedItem]);
 
-    const [openPlannedRecordSkipDialog, setOpenPlannedRecordSkipDialog] = useState<boolean>(false);
-    const handleOpenRecordDeleteDialog = (isOpen: boolean) => {
-        setOpenPlannedRecordSkipDialog(isOpen);
-    };
-
     return <>
         <SystemLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Planned Detail: { `${data?.name}` }</h2>}
         >
             <Head title={ `Planned Detail: ${data?.name}` } />
-            <PlannedRecordSkipDialog openState={ openPlannedRecordSkipDialog } setOpenState={ handleOpenRecordDeleteDialog }/>
 
+            {/* Back button */}
             <div className="flex flex-col gap-6">
                 <BackButton className={ `px-0` }/>
             </div>
 
             <div className={ ` flex flex-col gap-6` }>
+                {/* Main Content */}
                 <Card className={ ` w-full` }>
                     <CardHeader>
                         <div className={ ` relative flex flex-row justify-between items-start cursor-pointer` } onClick={() => {
@@ -165,7 +165,7 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                 <CardDescription>See your detailed Planned Payment</CardDescription>
                             </div>
                             <div>
-                            <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
+                                <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="link" className={ ` p-0 h-auto leading-none dark:!text-white !text-black` } data-type="dropdown-trigger">
                                             <i className={ `fa-solid fa-ellipsis-vertical` }></i>
@@ -193,7 +193,7 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                                         document.addEventListener('dialog.planned-payment.shown', revertToOriginalText);
                                                     }
 
-                                                    document.dispatchEvent(new CustomEvent('plannedPaymentDialogEditAction', {
+                                                    document.dispatchEvent(new CustomEvent('planned-payment.edit-action', {
                                                         bubbles: true,
                                                         detail: {
                                                             uuid: data?.uuid
@@ -201,6 +201,27 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                                     }));
                                                 }}>
                                                     <span className={ ` text-yellow-500` }>Edit</span>
+                                                </DropdownMenuItem>;
+                                            }
+
+                                            return <></>;
+                                        })()}
+
+                                        {/* Delete Action */}
+                                        {(() => {
+                                            // Check if record dialog form is exists
+                                            let deleteSection = document.getElementById('plannedPaymentDeleteDialog-section');
+                                            if(deleteSection){
+                                                return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
+                                                    document.dispatchEvent(new CustomEvent('planned-payment.delete-action', {
+                                                        bubbles: true,
+                                                        detail: {
+                                                            uuid: data?.uuid,
+                                                            action: 'delete'
+                                                        }
+                                                    }));
+                                                }}>
+                                                    <span className={ ` text-red-500` }>Delete</span>
                                                 </DropdownMenuItem>;
                                             }
 
@@ -216,6 +237,31 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                         <div className={ ` flex flex-row gap-2` }>
                             <span className={ ` font-medium text-xl` }>{ data.name }</span>
                         </div>
+
+                        {/* Archive alert */}
+                        {(() => {
+                            if(data && 'deleted_at' in data && data.deleted_at){
+                                return (
+                                    <>
+                                        <div className=" w-full p-4 rounded-lg border-2 border-dashed border-red-500">
+                                            <span className=" flex items-center gap-2 text-sm font-normal">
+                                                <i className="fa-solid fa-triangle-exclamation"></i>
+                                                <span className={ `font-normal` }>Archive</span>
+                                            </span>
+                                            <span className=" block mt-2">{(() => {
+                                                return (
+                                                    <>
+                                                        <span>This data is archived at <u>{momentFormated('MMM Do, YYYY / HH:mm', data.deleted_at, moment.tz.guess())}</u></span>
+                                                    </>
+                                                )
+                                            })()}</span>
+                                        </div>
+                                    </>
+                                );
+                            }
+
+                            return <></>;
+                        })()}
 
                         {/* Type, Category, and Wallet */}
                         <div className={ ` flex gap-4` }>
@@ -313,12 +359,13 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                     </CardContent>
                 </Card>
                 
+                {/* Planned Record */}
                 <Card className={ ` w-full` }>
                     <CardContent className={ ` flex flex-col gap-6 pt-6` }>
                         <div className={ ` flex flex-row justify-between` }>
                             <div className={ ` flex flex-col gap-1` }>
-                                <span className={ ` font-normal` }>{ucwords(data.repeat_type)}</span>
-                                <Badge>{ucwords(data.repeat_period)}</Badge>
+                                <span className={ ` font-normal` }>Occurence</span>
+                                <Badge className={ ` text-center flex justify-center` }>{ucwords(data.repeat_type)}</Badge>
                             </div>
 
                             {(() => {
@@ -353,89 +400,92 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                 let plannedElement: any[] = [];
                                 let defaultContent = <NoDataTemplate></NoDataTemplate>;
             
-                                plannedElement.push(
-                                    <div key={ `planned_prompt-0` }>
-                                        <section>
-                                            <div className={ ` flex flex-col gap-2 border rounded-lg p-4 cursor-pointer` }>
-                                                {/* Date, amount and action */}
-                                                <div className={ ` flex flex-row gap-6 justify-between` }>
-                                                    <span className={ ` font-medium w-full md:w-auto` }>{ momentFormated('MMM Do, YYYY', (data && 'date_start' in data ? moment(data?.date_start) : moment())) }</span>
-                                                
-                                                    <div className={ ` flex flex-row flex-1 md:flex-none justify-between gap-2 items-center` }>
-                                                        <span className={ ` font-normal whitespace-nowrap ${data && 'type' in data ? (data?.type === 'expense' ? ` text-red-500` : ( data.type === 'income' ? `text-green-500` : ` dark:text-white`)) : ``}` }>{formatRupiah(data && 'amount' in data && 'extra_amount' in data ? (data?.amount + data?.extra_amount) : 0)}</span>
+                                if(data && ('deleted_at' in data) && !data.deleted_at){
+                                    plannedElement.push(
+                                        <div key={ `planned_prompt-0` }>
+                                            <section>
+                                                <div className={ ` flex flex-col gap-2 border rounded-lg p-4 cursor-pointer` }>
+                                                    {/* Date, amount and action */}
+                                                    <div className={ ` flex flex-row gap-6 justify-between` }>
+                                                        <span className={ ` font-medium w-full md:w-auto` }>{ momentFormated('MMM Do, YYYY', (data && 'date_start' in data ? moment(data?.date_start) : moment())) }</span>
+                                                    
+                                                        <div className={ ` flex flex-row flex-1 md:flex-none justify-between gap-2 items-center` }>
+                                                            <span className={ ` font-normal whitespace-nowrap ${data && 'type' in data ? (data?.type === 'expense' ? ` text-red-500` : ( data.type === 'income' ? `text-green-500` : ` dark:text-white`)) : ``}` }>{formatRupiah(data && 'amount' in data && 'extra_amount' in data ? (data?.amount + data?.extra_amount) : 0)}</span>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                
-                                                {/* Icon, Category, Notes */}
-                                                <div className={ ` flex flex-row gap-4 items-center` }>
-                                                    <div className={ ` p-3 h-10 w-10 rounded-full ${data && 'type' in data ? (data.type === 'income' ? ` bg-green-500` : (data.type === 'expense' ? ` bg-red-500` : ` bg-gray-500 dark:bg-secondary`)) : ``} flex items-center justify-center` }>
-                                                        <i className={ ` text-white fa-solid ${data && 'type' in data ? (data.type === 'income' ? `fa-right-to-bracket rotate-90` : (data.type === 'expense' ? `fa-right-from-bracket -rotate-90` : `fa-right-left rotate-90`)) : ``}` }></i>
-                                                    </div>
-
-                                                    <div className={ ` w-full flex flex-col overflow-hidden` }>
-                                                        <span className={ ` whitespace-nowrap overflow-hidden text-ellipsis font-medium` }>
-                                                            {(() => {
-                                                                if(data && 'category_id' in data){
-                                                                    if(data.category){
-                                                                        return <>{ `${data.category.parent ? `${data.category.parent.name} - ` : ''}${data.category.name}` }</>;
+                                    
+                                                    {/* Icon, Category, Notes */}
+                                                    <div className={ ` flex flex-row gap-4 items-center` }>
+                                                        <div className={ ` p-3 h-10 w-10 rounded-full ${data && 'type' in data ? (data.type === 'income' ? ` bg-green-500` : (data.type === 'expense' ? ` bg-red-500` : ` bg-gray-500 dark:bg-secondary`)) : ``} flex items-center justify-center` }>
+                                                            <i className={ ` text-white fa-solid ${data && 'type' in data ? (data.type === 'income' ? `fa-right-to-bracket rotate-90` : (data.type === 'expense' ? `fa-right-from-bracket -rotate-90` : `fa-right-left rotate-90`)) : ``}` }></i>
+                                                        </div>
+    
+                                                        <div className={ ` w-full flex flex-col overflow-hidden` }>
+                                                            <span className={ ` whitespace-nowrap overflow-hidden text-ellipsis font-medium` }>
+                                                                {(() => {
+                                                                    if(data && 'category_id' in data){
+                                                                        if(data.category){
+                                                                            return <>{ `${data.category.parent ? `${data.category.parent.name} - ` : ''}${data.category.name}` }</>;
+                                                                        }
                                                                     }
+    
+                                                                    return <>Uncategorized</>;
+                                                                })()}
+                                                            </span>
+                                                            <span className={ ` whitespace-nowrap text-sm overflow-hidden text-ellipsis` }>{ data && 'name' in data ? data.name : `Planned Name` }</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    {/* Action */}
+                                                    <div className={ ` mt-4 flex flex-row gap-4` }>
+                                                        {(() => {
+                                                            // Check if delete dialog form is exists
+                                                            let plannedPaymentDeleteSection = document.getElementById('plannedPaymentDeleteDialog-section');
+                                                            if(plannedPaymentDeleteSection){
+                                                                return <Button className={ `w-full` } variant={ `outline` } onClick={() => {
+                                                                    document.dispatchEvent(new CustomEvent('planned-payment.delete-action', {
+                                                                        bubbles: true,
+                                                                        detail: {
+                                                                            uuid: data?.uuid,
+                                                                            action: 'skip'
+                                                                        }
+                                                                    }));
+                                                                }}>
+                                                                    <span className={ ` text-red-500` }>Skip</span>
+                                                                </Button>;
+                                                            }
+    
+                                                            return <></>;
+                                                        })()}
+                                                        <Button className={ `w-full` } onClick={($refs) => {
+                                                            let el = $refs.target as HTMLElement;
+                                                            if(el){
+                                                                let originalText = el.innerHTML;
+                                                                el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+            
+                                                                const revertToOriginalText = () => {
+                                                                    if(originalText){
+                                                                        el.innerHTML = originalText;
+                                                                    }
+            
+                                                                    document.removeEventListener('dialog.record.shown', revertToOriginalText);
                                                                 }
-
-                                                                return <>Uncategorized</>;
-                                                            })()}
-                                                        </span>
-                                                        <span className={ ` whitespace-nowrap text-sm overflow-hidden text-ellipsis` }>{ data && 'name' in data ? data.name : `Planned Name` }</span>
+                                                                document.addEventListener('dialog.record.shown', revertToOriginalText);
+                                                            }
+    
+                                                            document.dispatchEvent(new CustomEvent('record-dialog.planned-payment.confirmation', {
+                                                                bubbles: true, 
+                                                                detail: {
+                                                                    uuid: data && 'uuid' in data ? data.uuid : null
+                                                                }
+                                                            }))
+                                                        }}>Confirm</Button>
                                                     </div>
                                                 </div>
-
-                                                {/* Action */}
-                                                <div className={ ` mt-4 flex flex-row gap-4` }>
-                                                    {(() => {
-                                                        // Check if record dialog form is exists
-                                                        let plannedRecordSkipSection = document.getElementById('plannedRecordSkipDialog-section');
-                                                        if(plannedRecordSkipSection){
-                                                            return <Button className={ `w-full` } variant={ `outline` } onClick={() => {
-                                                                document.dispatchEvent(new CustomEvent('planned-payment.record.skip', {
-                                                                    bubbles: true,
-                                                                    detail: {
-                                                                        uuid: data?.uuid
-                                                                    }
-                                                                }));
-                                                            }}>
-                                                                <span className={ ` text-red-500` }>Skip</span>
-                                                            </Button>;
-                                                        }
-
-                                                        return <></>;
-                                                    })()}
-                                                    <Button className={ `w-full` } onClick={($refs) => {
-                                                        let el = $refs.target as HTMLElement;
-                                                        if(el){
-                                                            let originalText = el.innerHTML;
-                                                            el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
-        
-                                                            const revertToOriginalText = () => {
-                                                                if(originalText){
-                                                                    el.innerHTML = originalText;
-                                                                }
-        
-                                                                document.removeEventListener('dialog.record.shown', revertToOriginalText);
-                                                            }
-                                                            document.addEventListener('dialog.record.shown', revertToOriginalText);
-                                                        }
-
-                                                        document.dispatchEvent(new CustomEvent('record-dialog.planned-payment.confirmation', {
-                                                            bubbles: true, 
-                                                            detail: {
-                                                                uuid: data && 'uuid' in data ? data.uuid : null
-                                                            }
-                                                        }))
-                                                    }}>Confirm</Button>
-                                                </div>
-                                            </div>
-                                        </section>
-                                    </div>
-                                );
+                                            </section>
+                                        </div>
+                                    );
+                                }
                                 // Loop through response
                                 if(plannedItem && plannedItem.length > 0){
                                     plannedItem.map((val, index) => {

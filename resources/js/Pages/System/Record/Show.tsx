@@ -114,7 +114,7 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                             let recordDialogSection = document.getElementById('recordDeleteDialog-section');
                                             if(recordDialogSection){
                                                 return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                                    document.dispatchEvent(new CustomEvent('recordDialogDeleteAction', {
+                                                    document.dispatchEvent(new CustomEvent('record.deleted-action', {
                                                         bubbles: true,
                                                         detail: {
                                                             uuid: record?.uuid

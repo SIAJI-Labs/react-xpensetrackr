@@ -4,19 +4,24 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import axios, { AxiosError } from 'axios';
 
-type RecordDialogProps = {
-    openState: boolean;
+type PlannedDialogProps = {
+    openState?: boolean;
     setOpenState?: (isOpen: boolean) => void;
 };
 
-export default function RecordDeleteDialog({ openState, setOpenState }: RecordDialogProps){
-    const [recordUuid, setRecordUuid] = useState<string>();
+export default function PlannedPaymentDeleteDialog({ openState, setOpenState }: PlannedDialogProps){
+    const [plannedUuid, setPlannedUuid] = useState<string>();
+    const [plannedAction, setPlannedAction] = useState<string>('delete');
     useEffect(() => {
         // Listen to Record Dialog event
-        const handleDeleteDialogRecord = (event: any) => {
+        const handlePlannedPaymentDelete = (event: any) => {
+            console.log(event);
+            if(event?.detail?.action){
+                setPlannedAction(event.detail.action);
+            }
             if(event?.detail?.uuid){
                 let uuid = event.detail.uuid;
-                setRecordUuid(uuid);
+                setPlannedUuid(uuid);
                 
                 // Open record-dialog
                 if(setOpenState){
@@ -26,14 +31,14 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
                 }
             }
         }
-        window.addEventListener('record.deleted-action', handleDeleteDialogRecord);
+        window.addEventListener('planned-payment.delete-action', handlePlannedPaymentDelete);
         // Remove the event listener when the component unmounts
         return () => {
-            window.removeEventListener('record.deleted-action', handleDeleteDialogRecord);
+            window.removeEventListener('planned-payment.delete-action', handlePlannedPaymentDelete);
         };
     }, []);
 
-    const [recordDeleteAbortController, setRecordDeleteAbortController] = useState<AbortController | null>(null);
+    const [plannedDeleteAbortController, setPlannedDeleteAbortController] = useState<AbortController | null>(null);
     const confirmDelete = ($refs: any) => {
         let el = $refs.target as HTMLElement;
         if(el){
@@ -43,15 +48,22 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
             el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
         }
 
-        if(recordUuid){
+        if(plannedUuid){
+            if(plannedDeleteAbortController instanceof AbortController){
+                plannedDeleteAbortController.abort();
+            }
+
             // Create a new AbortController for the new request.
             const abortController = new AbortController();
-            setRecordDeleteAbortController(abortController);
+            setPlannedDeleteAbortController(abortController);
 
             let formData = new FormData();
             formData.append('_method', 'DELETE');
             // Make delete request
-            axios.post(route('api.record.v1.destroy', recordUuid), formData, {
+            axios.post(route('api.planned-payment.v1.destroy', {
+                uuid: plannedUuid,
+                action: plannedAction
+            }), formData, {
                 cancelToken: new axios.CancelToken(function executor(c) {
                     // Create a CancelToken using Axios, which is equivalent to AbortController.signal
                     abortController.abort = c;
@@ -70,10 +82,10 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
                             }
             
                             // Announce Dialog Global Event
-                            document.dispatchEvent(new CustomEvent('dialogRecord', {
+                            document.dispatchEvent(new CustomEvent('planned-payment.deleted-action', {
                                 bubbles: true,
                                 detail: {
-                                    action: 'delete'
+                                    action: plannedAction
                                 }
                             }));
                             setOpenState(false);
@@ -87,13 +99,13 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
     };
 
     return (
-        <section id={ `recordDeleteDialog-section` }>
+        <section id={ `plannedPaymentDeleteDialog-section` }>
             <AlertDialog open={ openState } onOpenChange={ setOpenState }>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle className={ `dark:text-white` }>Are you sure want to delete related data?</AlertDialogTitle>
+                        <AlertDialogTitle className={ `dark:text-white` }>Are you sure want to {plannedAction === 'delete' ? `delete related data` : `skip this period`}?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            <span>This action cannot be undone. This will affect your Wallet Balance</span>
+                            <span>This action cannot be undone</span>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -101,8 +113,8 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
                             if(setOpenState){
                                 setOpenState(false);
                             }
-                            if(recordDeleteAbortController instanceof AbortController){
-                                recordDeleteAbortController.abort();
+                            if(plannedDeleteAbortController instanceof AbortController){
+                                plannedDeleteAbortController.abort();
                             }
                         } }>
                             Cancel

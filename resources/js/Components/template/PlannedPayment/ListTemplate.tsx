@@ -79,7 +79,7 @@ export default function ListTemplate({ plannedPayment }: PropsWithChildren<Plann
                                                     document.addEventListener('dialog.planned-payment.shown', revertToOriginalText);
                                                 }
 
-                                                document.dispatchEvent(new CustomEvent('plannedPaymentDialogEditAction', {
+                                                document.dispatchEvent(new CustomEvent('planned-payment.edit-action', {
                                                     bubbles: true,
                                                     detail: {
                                                         uuid: plannedPayment && 'uuid' in plannedPayment ? plannedPayment?.uuid : null
@@ -87,6 +87,25 @@ export default function ListTemplate({ plannedPayment }: PropsWithChildren<Plann
                                                 }));
                                             }}>
                                                 <span className={ ` text-yellow-500` }>Edit</span>
+                                            </DropdownMenuItem>;
+                                        }
+
+                                        return <></>;
+                                    })()}
+                                    {(() => {
+                                        // Check if record dialog form is exists
+                                        let deleteSection = document.getElementById('plannedPaymentDeleteDialog-section');
+                                        if(deleteSection){
+                                            return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
+                                                document.dispatchEvent(new CustomEvent('planned-payment.delete-action', {
+                                                    bubbles: true,
+                                                    detail: {
+                                                        uuid: plannedPayment && 'uuid' in plannedPayment ? plannedPayment?.uuid : null,
+                                                        action: 'delete'
+                                                    }
+                                                }));
+                                            }}>
+                                                <span className={ ` text-red-500` }>Delete</span>
                                             </DropdownMenuItem>;
                                         }
 

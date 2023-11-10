@@ -81,6 +81,47 @@ Route::group([
         });
     });
 
+    // Planned Payment
+    Route::group([
+        'prefix' => 'planned-payment',
+        'as' => 'planned-payment.'
+    ], function(){
+        // Summary
+        Route::group([
+            'prefix' => 'summary',
+            'as' => 'summary.'
+        ], function(){
+            // v1
+            Route::group([
+                'prefix' => 'v1',
+                'as' => 'v1.'
+            ], function(){
+                // List/Index
+                Route::get('list', [\App\Http\Controllers\Api\v1\PlannedPaymentSummaryController::class, 'index'])->name('list');
+                // Show
+                Route::get('{uuid}', [\App\Http\Controllers\Api\v1\PlannedPaymentSummaryController::class, 'show'])->name('show');
+            });
+        });
+
+        // v1
+        Route::group([
+            'prefix' => 'v1',
+            'as' => 'v1.'
+        ], function(){
+            // List/Index
+            Route::get('list', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'index'])->name('list');
+            // Show
+            Route::get('{uuid}', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'show'])->name('show');
+            
+            // Store
+            Route::post('store', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'store'])->name('store');
+            // Update
+            Route::put('{uuid}', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'update'])->name('update');
+            // Delete
+            Route::delete('{uuid}', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'destroy'])->name('destroy');
+        });
+    });
+
     // Record
     Route::group([
         'prefix' => 'record',
@@ -93,6 +134,7 @@ Route::group([
         ], function(){
             // Fetch Pending Count
             Route::get('count-pending', [\App\Http\Controllers\Api\v1\RecordController::class, 'countPending'])->name('count-pending');
+            
             // List/Index
             Route::get('list', [\App\Http\Controllers\Api\v1\RecordController::class, 'index'])->name('list');
             // Show

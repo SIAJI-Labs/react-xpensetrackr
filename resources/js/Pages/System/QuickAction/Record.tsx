@@ -22,6 +22,7 @@ import { Badge } from "@/Components/ui/badge";
 import { Input } from "@/Components/ui/input";
 import { IMaskMixin } from "react-imask";
 import ApplicationLogo from "@/Components/ApplicationLogo";
+import { ScrollArea } from "@/Components/ui/scroll-area";
 
 type Props = {
 }
@@ -150,6 +151,12 @@ export default function Record({ auth }: PageProps<Props>) {
             let quickItem = quickActionContent.querySelector('.quick-action-item.active') as HTMLElement;
             if(quickItem){
                 quickActionContent.style.height = `calc(${quickItem.clientHeight + 'px'} + 1.5rem)`;
+
+                // Set container height
+                let contentContainer = document.getElementById('quick-action-container');
+                if(contentContainer){
+                    contentContainer.style.height = `calc(${quickItem.clientHeight + 'px'})`;
+                }
             }
 
             // Match item Width with Container width
@@ -510,7 +517,7 @@ export default function Record({ auth }: PageProps<Props>) {
                             </div>
                         </CardHeader> */}
                         <CardContent className={ ` pb-2` }>
-                            <div className={ ` transition-all duration-300 ease-in-out py-6 relative overflow-hidden` } id={ `quick-action-wrapper` }>
+                            <div className={ ` transition-all duration-300 ease-in-out py-6 relative overflow-x-clip` } id={ `quick-action-wrapper` }>
                                 <div className={ ` absolute flex flex-row flex-nowrap gap-12 transition-all duration-300 ease-in-out` } id={ `quick-action-container` }>
                                     {(() => {
                                         let step = [
@@ -525,7 +532,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                 let recordType: any[] = [];
                                                                 ['income', 'transfer', 'expense'].map((value, index) => {
                                                                     recordType.push(
-                                                                        <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valueRecordType === value ? `bg-gray-200 hover:bg-gray-200` : ` dark:text-white dark:hover:text-black`} hover:bg-gray-100 transition` } onClick={() => {
+                                                                        <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valueRecordType === value ? `bg-primary ` : ` dark:text-white !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
                                                                             setValueRecordType(value);
                                                                         }} key={ `record_type-${value}` }>
                                                                             <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
@@ -560,27 +567,31 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                                     </Button>
                                                                 </PopoverTrigger>
-                                                                <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                                                <PopoverContent className=" w-[250px] lg:w-[350px] p-0 z-[1000]" align={ `start` } side={ `bottom` }>
                                                                     <Command shouldFilter={ false }>
                                                                         <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={fromWalletComboboxInput} onValueChange={setFromWalletComboboxInput}/>
-                                                                        <CommandEmpty>{fromWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                                                        <CommandGroup>
-                                                                            {fromWalletComboboxList.map((options: WalletItem) => (
-                                                                                <CommandItem
-                                                                                    value={options?.uuid}
-                                                                                    key={options?.uuid}
-                                                                                    onSelect={(currentValue) => {
-                                                                                        setValueRecordFromWallet(currentValue === valueRecordFromWallet ? "" : currentValue)
-                                                                                        setOpenRecordFromWallet(false)
-                                                                                    }}
-                                                                                >
-                                                                                    <Check
-                                                                                        className={ `mr-2 h-4 w-4 ${valueRecordFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                                    />
-                                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
-                                                                                </CommandItem>
-                                                                            ))}
-                                                                        </CommandGroup>
+                                                                        <ScrollArea className="p-0">
+                                                                            <div className={ `max-h-[10rem]` }>
+                                                                                <CommandEmpty>{fromWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                                                <CommandGroup>
+                                                                                    {fromWalletComboboxList.map((options: WalletItem) => (
+                                                                                        <CommandItem
+                                                                                            value={options?.uuid}
+                                                                                            key={options?.uuid}
+                                                                                            onSelect={(currentValue) => {
+                                                                                                setValueRecordFromWallet(currentValue === valueRecordFromWallet ? "" : currentValue)
+                                                                                                setOpenRecordFromWallet(false)
+                                                                                            }}
+                                                                                        >
+                                                                                            <Check
+                                                                                                className={ `mr-2 h-4 w-4 ${valueRecordFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                                            />
+                                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                                                        </CommandItem>
+                                                                                    ))}
+                                                                                </CommandGroup>
+                                                                            </div>
+                                                                        </ScrollArea>
                                                                     </Command>
                                                                 </PopoverContent>
                                                             </Popover>
@@ -607,27 +618,31 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                                             </Button>
                                                                         </PopoverTrigger>
-                                                                        <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                                                        <PopoverContent className=" w-[250px] lg:w-[350px] p-0 z-[1000]" align={ `start` } side={ `bottom` }>
                                                                             <Command shouldFilter={ false }>
                                                                                 <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={toWalletComboboxInput} onValueChange={setToWalletComboboxInput}/>
-                                                                                <CommandEmpty>{toWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                                                                <CommandGroup>
-                                                                                    {toWalletComboboxList.map((options: WalletItem) => (
-                                                                                        <CommandItem
-                                                                                            value={options?.uuid}
-                                                                                            key={options?.uuid}
-                                                                                            onSelect={(currentValue) => {
-                                                                                                setValueRecordToWallet(currentValue === valueRecordToWallet ? "" : currentValue)
-                                                                                                setOpenRecordToWallet(false)
-                                                                                            }}
-                                                                                        >
-                                                                                            <Check
-                                                                                                className={ `mr-2 h-4 w-4 ${valueRecordToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                                            />
-                                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
-                                                                                        </CommandItem>
-                                                                                    ))}
-                                                                                </CommandGroup>
+                                                                                <ScrollArea className="p-0">
+                                                                                    <div className={ `max-h-[10rem]` }>
+                                                                                        <CommandEmpty>{toWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                                                        <CommandGroup>
+                                                                                            {toWalletComboboxList.map((options: WalletItem) => (
+                                                                                                <CommandItem
+                                                                                                    value={options?.uuid}
+                                                                                                    key={options?.uuid}
+                                                                                                    onSelect={(currentValue) => {
+                                                                                                        setValueRecordToWallet(currentValue === valueRecordToWallet ? "" : currentValue)
+                                                                                                        setOpenRecordToWallet(false)
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <Check
+                                                                                                        className={ `mr-2 h-4 w-4 ${valueRecordToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                                                    />
+                                                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                                                                </CommandItem>
+                                                                                            ))}
+                                                                                        </CommandGroup>
+                                                                                    </div>
+                                                                                </ScrollArea>
                                                                             </Command>
                                                                         </PopoverContent>
                                                                     </Popover>
@@ -834,7 +849,7 @@ export default function Record({ auth }: PageProps<Props>) {
                         </CardContent>
                         <CardFooter>
                             <div className={ ` flex justify-between w-full gap-4` }>
-                                <Button variant={ `outline` } disabled={ formIndex === 0 } onClick={($refs) => {
+                                <Button variant={ `outline` } className={ formIndex === 0 ? ` !opacity-0` : `` } disabled={ formIndex === 0 } onClick={($refs) => {
                                     wizardPagination('prev', $refs);
                                 }}>Prev</Button>
                                 
@@ -868,7 +883,7 @@ export default function Record({ auth }: PageProps<Props>) {
                     </Card>
 
                     <div className={ ` mt-4 w-full text-center` }>
-                        <Link href={ route('sys.index') }>Go to Dashboard</Link>
+                        <Link href={ route('sys.index') } className={ `dark:text-white` }>Go to Dashboard</Link>
                     </div>
                 </main>
             </div>

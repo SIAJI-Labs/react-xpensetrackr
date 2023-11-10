@@ -1,17 +1,17 @@
 import { PageProps, RecordItem } from '@/types';
+import { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
+import axios from 'axios';
 
 // Partials
+import RecordTemplate from '@/Components/template/Record/RecordTemplate';
+import NoDataTemplate from '@/Components/template/NoDataTemplate';
 import SystemLayout from '@/Layouts/SystemLayout';
-import RecordTemplate from '@/Components/template/RecordTemplate';
-import { useEffect, useState } from 'react';
 
 // Shadcn
-import { Skeleton } from '@/Components/ui/skeleton';
-import axios from 'axios';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Skeleton } from '@/Components/ui/skeleton';
 import { Button } from '@/Components/ui/button';
-import NoDataTemplate from '@/Components/template/NoDataTemplate';
 import { Input } from '@/Components/ui/input';
 
 // Props
@@ -60,21 +60,18 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
     const [recordFilterKeyword, setRecordFilterKeyword] = useState<string>('');
     const [recordFilterStatus, setRecordFilterStatus] = useState<string>('complete');
     useEffect(() => {
-        if(recordFilterKeyword){
-            const timer = setTimeout(() => {
-                console.log('Filter');
-                setRecordPaginate(paginate_item);
-                fetchRecordList();
-            }, 500);
+        const timer = setTimeout(() => {
+            setRecordPaginate(paginate_item);
+            fetchRecordList();
+        }, 500);
 
-            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
-            return () => {
-                clearTimeout(timer);
-            };
-        }
+        // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+        return () => {
+            clearTimeout(timer);
+        };
     }, [recordFilterKeyword]);
     // Record List - Variable Init
-    let paginate_item = 1;
+    let paginate_item = 5;
     const [recordPaginate, setRecordPaginate] = useState<number>(paginate_item);
     const [recordPaginateState, setRecordPaginateState] = useState<boolean>(false);
     useEffect(() => {
@@ -104,6 +101,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
         // Store the AbortController in state
         setRecordItemAbortController(abortController);
 
+        // Show skeleton
         setRecordIsLoading(true);
 
         // Build parameter
@@ -120,10 +118,10 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
 
         try {
             const response = await axios.get(`${route('api.record.v1.list')}?${query.join('&')}`, {
-              cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-              })
+                cancelToken: new axios.CancelToken(function executor(c) {
+                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                    abortController.abort = c;
+                })
             });
         
             // Use response.data instead of req.json() to get the JSON data
@@ -138,14 +136,13 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
             // setRefreshLoading(false);
             // Clear the AbortController from state
             setRecordItemAbortController(null);
-          } catch (error) {
-
+        } catch (error) {
             if (axios.isCancel(error)) {
-              // Handle the cancellation here if needed
-              console.log('Request was canceled', error);
+                // Handle the cancellation here if needed
+                console.log('Request was canceled', error);
             } else {
-              // Handle other errors
-              console.error('Error:', error);
+                // Handle other errors
+                console.error('Error:', error);
             }
         }
     }
@@ -160,10 +157,13 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                 setOpenRecordDialog(false);
             }, 100);
         }
-        window.addEventListener('dialogRecord', handleDialogRecord);
+
+        document.addEventListener('dialog.record.hidden', handleDialogRecord);
+        document.addEventListener('record.deleted-action', handleDialogRecord);
         // Remove the event listener when the component unmounts
         return () => {
-            window.removeEventListener('dialogRecord', handleDialogRecord);
+            document.removeEventListener('dialog.record.hidden', handleDialogRecord);
+            document.removeEventListener('record.deleted-action', handleDialogRecord);
         };
     });
 
@@ -179,7 +179,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                     {/* Record List */}
                     <Card className={ `` }>
                         <CardHeader>
-                            <div className={ ` flex flex-row justify-between items-center` }>
+                            <div className={ ` flex flex-row justify-between items-start` }>
                                 <div>
                                     <CardTitle>
                                             <div>Record: List</div>
@@ -189,19 +189,12 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
 
                                 <div className={ `flex items-center gap-2` }>
                                     {(() => {
-                                        // if(refreshLoading){
-                                        //     return <Button disabled>
-                                        //         <Loader2 className="h-4 w-4 animate-spin" />
-                                        //     </Button>
-                                        // }
-
                                         return <Button variant={ `outline` } onClick={() => {
                                             // Cancel previous request
                                             if(recordItemAbortController instanceof AbortController){
                                                 recordItemAbortController.abort();
                                             }
                                             
-                                            console.log('Reload');
                                             // Fetch Pending Count
                                             fetchRecordList();
                                         }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
@@ -211,7 +204,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                                 bubbles: true,
                                             }
                                         ));
-                                    }} disabled>
+                                    }}>
                                         <i className={ `fa-solid fa-plus` }></i>
                                     </Button>
                                 </div>
@@ -265,7 +258,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                         <CardFooter>
                             <Button
                                 variant={ `outline` }
-                                className={ `dark:border-white` }
+                                className={ `` }
                                 disabled={ !recordPaginateState }
                                 onClick={() => {
                                     setRecordPaginateState(false);

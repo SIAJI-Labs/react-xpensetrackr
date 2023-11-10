@@ -9,16 +9,19 @@ import '@/../plugins/fontawesome/all.scss';
 
 // Partials
 import Navbar from './Partials/Navbar';
-import RecordDialog from '@/Components/system/RecordDialog';
+import RecordDialog from '@/Components/system/Record/RecordDialog';
 
 // Shadcn Component
 import { ThemeProvider } from '@/Components/template/theme-provider';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
-import RecordDeleteDialog from '@/Components/system/RecordDeleteDialog';
+import RecordDeleteDialog from '@/Components/system/Record/RecordDeleteDialog';
+import PlannedPaymentDialog from '@/Components/system/PlannedPayment/PlannedPaymentDialog';
+import PlannedPaymentDeleteDialog from '@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog';
 
 
 export default function SystemLayout({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
+    // Record Dialog
     const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
     const handleOpenRecordDialog = (isOpen: boolean) => {
         setOpenRecordDialog(isOpen);
@@ -26,6 +29,16 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
     const [openRecordDeleteDialog, setOpenRecordDeleteDialog] = useState<boolean>(false);
     const handleOpenRecordDeleteDialog = (isOpen: boolean) => {
         setOpenRecordDeleteDialog(isOpen);
+    };
+
+    // Planned Payment Dialog
+    const [openPlannedPaymentDialog, setOpenPlannedPaymentDialog] = useState<boolean>(false);
+    const handleOpenPlannedPaymentDialog = (isOpen: boolean) => {
+        setOpenPlannedPaymentDialog(isOpen);
+    };
+    const [openPlannedPaymentDeleteDialog, setOpenPlannedPaymentDeleteDialog] = useState<boolean>(false);
+    const handleOpenPlannedPaymentDeleteDialog = (isOpen: boolean) => {
+        setOpenPlannedPaymentDeleteDialog(isOpen);
     };
 
     return (
@@ -57,13 +70,17 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 </div>
 
                 {/* Record Modal */}
-                <Button variant="outline" className={ ` fixed right-4 bottom-4 dark:text-white dark:border-white` } onClick={() => {
+                <Button variant="outline" className={ ` fixed right-4 bottom-4 dark:text-white` } onClick={() => {
                     setOpenRecordDialog(true);
                 }}>Add record</Button>
                 {/* Record Modal - Dialog */}
                 <RecordDialog openState={ openRecordDialog } setOpenState={ handleOpenRecordDialog }/>
                 {/* Record Modal - Delete Dialog */}
                 <RecordDeleteDialog openState={ openRecordDeleteDialog } setOpenState={ handleOpenRecordDeleteDialog }></RecordDeleteDialog>
+            
+                {/* Planned Payment Modal - Dialog */}
+                <PlannedPaymentDialog openState={ openPlannedPaymentDialog } setOpenState={ handleOpenPlannedPaymentDialog }/>
+                <PlannedPaymentDeleteDialog openState={ openPlannedPaymentDeleteDialog } setOpenState={ handleOpenPlannedPaymentDeleteDialog }/>
             </div>
 
             <Toaster />

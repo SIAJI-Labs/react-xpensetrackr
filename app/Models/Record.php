@@ -68,6 +68,10 @@ class Record extends Model
      * 
      * @return model
      */
+    public function plannedPaymentRecord()
+    {
+        return $this->hasOne(\App\Models\PlannedPaymentRecord::class, 'record_id');
+    }
     
     /**
      * Foreign Key Relation

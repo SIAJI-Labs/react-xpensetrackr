@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Traits\JsonResponseTrait;
+use Illuminate\Support\Facades\DB;
 
 class RecordController extends Controller
 {
@@ -70,7 +71,6 @@ class RecordController extends Controller
             ];
         }
 
-
         return $this->formatedJsonResponse(200, 'Data Fetched', $data);
     }
 
@@ -96,7 +96,7 @@ class RecordController extends Controller
         ]);
 
         // Store to database
-        \DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request) {
             $user = $request->user();
             $data = new \App\Models\Record();
 
@@ -114,7 +114,7 @@ class RecordController extends Controller
             // Fetch Category
             $category_id = null;
             if($request->has('category') && !empty($request->category)){
-                $fetchCategory = \App\Models\Category::where(\DB::raw('BINARY `uuid`'), $request->category)
+                $fetchCategory = \App\Models\Category::where(DB::raw('BINARY `uuid`'), $request->category)
                     ->where('user_id', $user->id)
                     ->first();
                 if(!empty($fetchCategory)){
@@ -125,7 +125,7 @@ class RecordController extends Controller
             // Fetch From Wallet
             $fromWallet_id = null;
             if($request->has('from_wallet') && !empty($request->from_wallet)){
-                $fetchFromWallet = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $request->from_wallet)
+                $fetchFromWallet = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->from_wallet)
                     ->where('user_id', $user->id)
                     ->first();
                 if(!empty($fetchFromWallet)){
@@ -136,7 +136,7 @@ class RecordController extends Controller
             // Fetch To Wallet
             $toWallet_id = null;
             if($request->has('to_wallet') && !empty($request->to_wallet)){
-                $fetchToWallet = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $request->to_wallet)
+                $fetchToWallet = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->to_wallet)
                     ->where('user_id', $user->id)
                     ->first();
                 if(!empty($fetchToWallet)){
@@ -169,6 +169,21 @@ class RecordController extends Controller
             $data->is_pending = false;
             $data->timezone = $timezone;
             $data->save();
+
+            // Handle Planned Payment Confirmation
+            if($request->has('planned_payment_uuid') && !empty($request->planned_payment_uuid)){
+                // Fetch Planned Payment Data
+                $plannedPayment = \App\Models\PlannedPayment::where(\DB::raw('BINARY `uuid`'), $request->planned_payment_uuid)
+                    ->firstOrFail();
+
+                // Create record
+                $plannedRecord = new \App\Models\PlannedPaymentRecord();
+                $plannedRecord->planned_payment_id = $plannedPayment->id;
+                $plannedRecord->record_id = $data->id;
+                $plannedRecord->status = 'approve';
+                $plannedRecord->period = $plannedPayment->date_start;
+                $plannedRecord->save();
+            }
         });
 
         // \Log::debug("Debug on Record API Controller", [
@@ -186,7 +201,7 @@ class RecordController extends Controller
         $user = $request->user();
 
         $data = \App\Models\Record::with('category.parent', 'fromWallet.parent', 'toWallet.parent')
-            ->where(\DB::raw('BINARY `uuid`'), $id)
+            ->where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
 
@@ -229,11 +244,11 @@ class RecordController extends Controller
 
         $user = $request->user();
         $data = \App\Models\Record::with('category.parent', 'fromWallet.parent', 'toWallet.parent')
-            ->where(\DB::raw('BINARY `uuid`'), $id)
+            ->where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        \DB::transaction(function () use ($request, $data, $user) {
+        DB::transaction(function () use ($request, $data, $user) {
             // Handle Timestamp
             $date = date('Y-m-d', strtotime($request->date));
             $seconds = date('s', strtotime($request->date));
@@ -248,7 +263,7 @@ class RecordController extends Controller
             // Fetch Category
             $category_id = null;
             if($request->has('category') && !empty($request->category)){
-                $fetchCategory = \App\Models\Category::where(\DB::raw('BINARY `uuid`'), $request->category)
+                $fetchCategory = \App\Models\Category::where(DB::raw('BINARY `uuid`'), $request->category)
                     ->where('user_id', $user->id)
                     ->first();
                 if(!empty($fetchCategory)){
@@ -259,7 +274,7 @@ class RecordController extends Controller
             // Fetch From Wallet
             $fromWallet_id = null;
             if($request->has('from_wallet') && !empty($request->from_wallet)){
-                $fetchFromWallet = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $request->from_wallet)
+                $fetchFromWallet = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->from_wallet)
                     ->where('user_id', $user->id)
                     ->first();
                 if(!empty($fetchFromWallet)){
@@ -270,7 +285,7 @@ class RecordController extends Controller
             // Fetch To Wallet
             $toWallet_id = null;
             if($request->type === 'transfer' && $request->has('to_wallet') && !empty($request->to_wallet)){
-                $fetchToWallet = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $request->to_wallet)
+                $fetchToWallet = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->to_wallet)
                     ->where('user_id', $user->id)
                     ->first();
                 if(!empty($fetchToWallet)){
@@ -315,13 +330,13 @@ class RecordController extends Controller
         $user = $request->user();
 
         $data = \App\Models\Record::with('category.parent', 'fromWallet.parent', 'toWallet.parent')
-            ->where(\DB::raw('BINARY `uuid`'), $id)
+            ->where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        \DB::transaction(function () use ($request, $data) {
+        DB::transaction(function () use ($request, $data) {
             // Remove data
-            // $data->delete();
+            $data->delete();
         });
 
         return $this->formatedJsonResponse(200, 'Data Deleted', []);

@@ -83,3 +83,31 @@ export function momentFormated(format: string, date: string | Moment | null = nu
 
     return result;
 }
+
+/**
+ * Fetch period based on key
+ * 
+ */
+export function fetchPeriod(string: string){
+    let result = '';
+    switch(string){
+        case 'daily': {
+            result = 'day(s)';
+            break;
+        }
+        case 'weekly': {
+            result = 'week(s)';
+            break;
+        }
+        case 'monthly': {
+            result = 'month(s)';
+            break;
+        }
+        case 'yearly': {
+            result = 'year(s)';
+            break;
+        }
+    }
+
+    return result;
+}

@@ -1,10 +1,10 @@
 import { PageProps, PlannedItem } from "@/types";
 import { useIsFirstRender } from "@/lib/utils";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
 // Plugins
-import { formatRupiah, momentFormated, ucwords } from "@/function";
+import { fetchPeriod, formatRupiah, momentFormated, ucwords } from "@/function";
 import moment from "moment-timezone";
 import axios from "axios";
 
@@ -22,6 +22,7 @@ import { Separator } from "@/Components/ui/separator";
 import { Skeleton } from "@/Components/ui/skeleton";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
+import PlannedRecordSkipDialog from "@/Components/system/PlannedPayment/PlannedRecordSkipDialog";
 
 // Props
 type PlannedPaymentShowProps = {
@@ -31,6 +32,24 @@ type PlannedPaymentShowProps = {
 export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>) {
     const isFirstRender = useIsFirstRender();
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
+    useEffect(() => {
+        // Listen to Record Dialog event
+        const handleDialogPlannedPayment = () => {
+            router.reload();
+            fetchPlannedItem();
+        }
+
+        document.addEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
+        document.addEventListener('dialog.record.hidden', handleDialogPlannedPayment);
+        document.addEventListener('planned-payment.record.skipped', handleDialogPlannedPayment);
+
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
+            document.removeEventListener('dialog.record.hidden', handleDialogPlannedPayment);
+            document.removeEventListener('planned-payment.record.skipped', handleDialogPlannedPayment);
+        };
+    });
     // Document ready
     useEffect(() => {
         // Run on tab changed
@@ -116,12 +135,18 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
         }
     }, [plannedItem]);
 
+    const [openPlannedRecordSkipDialog, setOpenPlannedRecordSkipDialog] = useState<boolean>(false);
+    const handleOpenRecordDeleteDialog = (isOpen: boolean) => {
+        setOpenPlannedRecordSkipDialog(isOpen);
+    };
+
     return <>
         <SystemLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Planned Detail: { `${data?.name}` }</h2>}
         >
             <Head title={ `Planned Detail: ${data?.name}` } />
+            <PlannedRecordSkipDialog openState={ openPlannedRecordSkipDialog } setOpenState={ handleOpenRecordDeleteDialog }/>
 
             <div className="flex flex-col gap-6">
                 <BackButton className={ `px-0` }/>
@@ -142,7 +167,7 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                             <div>
                             <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="link" className={ ` p-0 h-auto leading-none` } data-type="dropdown-trigger">
+                                        <Button variant="link" className={ ` p-0 h-auto leading-none dark:!text-white !text-black` } data-type="dropdown-trigger">
                                             <i className={ `fa-solid fa-ellipsis-vertical` }></i>
                                         </Button>
                                     </DropdownMenuTrigger>
@@ -150,8 +175,8 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                         {/* Edit Action */}
                                         {(() => {
                                             // Check if record dialog form is exists
-                                            let recordDialogSection = document.getElementById('recordDialog-section');
-                                            if(recordDialogSection){
+                                            let plannedDialogSection = document.getElementById('plannedPaymentDialog-section');
+                                            if(plannedDialogSection){
                                                 return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
                                                     let el = $refs.target as HTMLElement;
                                                     if(el){
@@ -301,7 +326,7 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                     return <>
                                         <div className={ ` flex flex-col gap-1 text-right` }>
                                             <span className={ ` font-normal` }>Every</span>
-                                            <span className={ `` }>{data.repeat_frequency}</span>
+                                            <span className={ `` }>{data.repeat_frequency} {fetchPeriod(data.repeat_period)}</span>
                                         </div>
                                     </>;
                                 }
@@ -365,8 +390,47 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
 
                                                 {/* Action */}
                                                 <div className={ ` mt-4 flex flex-row gap-4` }>
-                                                    <Button className={ `w-full` } variant={ `outline` }>Skip</Button>
-                                                    <Button className={ `w-full` }>Confirm</Button>
+                                                    {(() => {
+                                                        // Check if record dialog form is exists
+                                                        let plannedRecordSkipSection = document.getElementById('plannedRecordSkipDialog-section');
+                                                        if(plannedRecordSkipSection){
+                                                            return <Button className={ `w-full` } variant={ `outline` } onClick={() => {
+                                                                document.dispatchEvent(new CustomEvent('planned-payment.record.skip', {
+                                                                    bubbles: true,
+                                                                    detail: {
+                                                                        uuid: data?.uuid
+                                                                    }
+                                                                }));
+                                                            }}>
+                                                                <span className={ ` text-red-500` }>Skip</span>
+                                                            </Button>;
+                                                        }
+
+                                                        return <></>;
+                                                    })()}
+                                                    <Button className={ `w-full` } onClick={($refs) => {
+                                                        let el = $refs.target as HTMLElement;
+                                                        if(el){
+                                                            let originalText = el.innerHTML;
+                                                            el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+        
+                                                            const revertToOriginalText = () => {
+                                                                if(originalText){
+                                                                    el.innerHTML = originalText;
+                                                                }
+        
+                                                                document.removeEventListener('dialog.record.shown', revertToOriginalText);
+                                                            }
+                                                            document.addEventListener('dialog.record.shown', revertToOriginalText);
+                                                        }
+
+                                                        document.dispatchEvent(new CustomEvent('record-dialog.planned-payment.confirmation', {
+                                                            bubbles: true, 
+                                                            detail: {
+                                                                uuid: data && 'uuid' in data ? data.uuid : null
+                                                            }
+                                                        }))
+                                                    }}>Confirm</Button>
                                                 </div>
                                             </div>
                                         </section>

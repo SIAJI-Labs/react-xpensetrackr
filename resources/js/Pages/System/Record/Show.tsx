@@ -35,10 +35,10 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
 
             // setOpenDropdown(false);
         }
-        document.addEventListener('dialogRecord', handleDialogRecord);
+        document.addEventListener('dialog.record.hidden', handleDialogRecord);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialogRecord', handleDialogRecord);
+            document.removeEventListener('dialog.record.hidden', handleDialogRecord);
         };
     });
 
@@ -69,7 +69,7 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                             <div>
                                 <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="link" className={ ` p-0 h-auto leading-none` } data-type="dropdown-trigger">
+                                        <Button variant="link" className={ ` p-0 h-auto leading-none dark:!text-white !text-black` } data-type="dropdown-trigger">
                                             <i className={ `fa-solid fa-ellipsis-vertical` }></i>
                                         </Button>
                                     </DropdownMenuTrigger>
@@ -90,9 +90,9 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                                                 el.innerHTML = originalText;
                                                             }
 
-                                                            document.removeEventListener('dialogRecordOpened', revertToOriginalText);
+                                                            document.removeEventListener('dialog.record.shown', revertToOriginalText);
                                                         }
-                                                        document.addEventListener('dialogRecordOpened', revertToOriginalText);
+                                                        document.addEventListener('dialog.record.shown', revertToOriginalText);
                                                     }
 
                                                     document.dispatchEvent(new CustomEvent('recordDialogEditAction', {
@@ -133,6 +133,34 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                         </div>
                     </CardHeader>
                     <CardContent className={ ` flex flex-col gap-6` }>
+                        {(() => {
+                            if(record && 'planned_payment_record' in record){
+                                return (
+                                    <>
+                                        <div className=" w-full p-4 rounded-lg border-2 border-dashed">
+                                            <span className=" flex items-center gap-2 text-sm font-normal">
+                                                <i className="fa-solid fa-triangle-exclamation"></i>
+                                                <span className={ `font-normal` }>Part of Planned Payment</span>
+                                            </span>
+                                            <span className=" block mt-2">{(() => {
+                                                if(record.planned_payment_record && record.planned_payment_record.planned_payment){
+                                                    return (
+                                                        <>
+                                                            <span>This record are part of <u><Link href={ route('sys.planned-payment.show', record.planned_payment_record.planned_payment.uuid) } className={ `text-primary` }>{record.planned_payment_record.planned_payment.name}</Link></u></span>
+                                                        </>
+                                                    )
+                                                }
+
+                                                return <></>;
+                                            })()}</span>
+                                        </div>
+                                    </>
+                                );
+                            }
+
+                            return <></>;
+                        })()}
+
                         {/* Timestamp */}
                         <div className={ ` flex flex-row gap-2` }>
                             <span><i className={ `fa-solid fa-clock` }></i></span>

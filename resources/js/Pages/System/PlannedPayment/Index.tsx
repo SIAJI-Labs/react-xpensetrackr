@@ -19,17 +19,20 @@ export default function Index({ auth, type = 'list' }: PageProps<PlannedPaymentI
 
     const [pageType, setPageType] = useState<string>(type);
     useEffect(() => {
-        if(!isFirstRender){
-            // Listen to Record Dialog event
-            const handleDialogPlannedPayment = () => {
-                document.dispatchEvent(new CustomEvent('planned-payment.refresh', {bubbles: true}));
-            }
-            document.addEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
-            // Remove the event listener when the component unmounts
-            return () => {
-                document.addEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
-            };
+        // Listen to Record Dialog event
+        const handleDialogPlannedPayment = () => {
+            console.log('Trigger Refresh');
+            document.dispatchEvent(new CustomEvent('planned-payment.refresh', {bubbles: true}));
         }
+
+        document.addEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
+        document.addEventListener('dialog.record.hidden', handleDialogPlannedPayment);
+
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
+            document.removeEventListener('dialog.record.hidden', handleDialogPlannedPayment);
+        };
     });
 
     return (

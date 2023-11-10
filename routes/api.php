@@ -117,6 +117,8 @@ Route::group([
             Route::post('store', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'store'])->name('store');
             // Update
             Route::put('{uuid}', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'update'])->name('update');
+            // Delete
+            Route::delete('{uuid}', [\App\Http\Controllers\Api\v1\PlannedPaymentController::class, 'destroy'])->name('destroy');
         });
     });
 

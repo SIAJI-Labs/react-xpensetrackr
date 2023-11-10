@@ -43,7 +43,8 @@ export interface RecordItem {
     date: string,
     time: string,
     datetime: string,
-    note: string
+    note: string,
+    planned_payment_record: PlannedRecord
 }
 export interface PlannedItem {
     id: number,

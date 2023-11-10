@@ -169,6 +169,21 @@ class RecordController extends Controller
             $data->is_pending = false;
             $data->timezone = $timezone;
             $data->save();
+
+            // Handle Planned Payment Confirmation
+            if($request->has('planned_payment_uuid') && !empty($request->planned_payment_uuid)){
+                // Fetch Planned Payment Data
+                $plannedPayment = \App\Models\PlannedPayment::where(\DB::raw('BINARY `uuid`'), $request->planned_payment_uuid)
+                    ->firstOrFail();
+
+                // Create record
+                $plannedRecord = new \App\Models\PlannedPaymentRecord();
+                $plannedRecord->planned_payment_id = $plannedPayment->id;
+                $plannedRecord->record_id = $data->id;
+                $plannedRecord->status = 'approve';
+                $plannedRecord->period = $plannedPayment->date_start;
+                $plannedRecord->save();
+            }
         });
 
         // \Log::debug("Debug on Record API Controller", [

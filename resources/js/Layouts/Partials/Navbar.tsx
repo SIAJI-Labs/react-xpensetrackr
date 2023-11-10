@@ -160,7 +160,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                     <SheetTrigger asChild>
                                         <Button variant={ `ghost` } className={ ` dark:text-white` }><i className={ `fa-solid fa-toggle-off` }></i></Button>
                                     </SheetTrigger>
-                                    <SheetContent side={ `left` }>
+                                    <SheetContent side={ `left` } className={ ` w-72` }>
                                         <SheetHeader className={ ` relative border-b pb-6 pointer-events-none select-none` }>
                                             <SheetTitle>
                                                 <ApplicationLogo fontSizeMain={ ` text-2xl` } className={ ` !justify-start` }/>

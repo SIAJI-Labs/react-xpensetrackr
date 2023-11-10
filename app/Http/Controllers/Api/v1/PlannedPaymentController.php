@@ -297,8 +297,33 @@ class PlannedPaymentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        \Log::debug("Debug on Planned Payment Destroy", [
+            'request' => $request->all()
+        ]);
+
+        $user = $request->user();
+
+        $data = \App\Models\PlannedPayment::with('category.parent', 'fromWallet.parent', 'toWallet.parent')
+            ->where(DB::raw('BINARY `uuid`'), $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        if($request->has('action')){
+            if($request->action === 'skip'){
+                // Create record
+                $record = new \App\Models\PlannedPaymentRecord();
+                $record->planned_payment_id = $data->id;
+                $record->record_id = null;
+                $record->status = 'reject';
+                $record->period = $data->date_start;
+                $record->save();
+            }
+        } else {
+            // Delete
+        }
+
+        return $this->formatedJsonResponse(200, 'Data Deleted', []);
     }
 }

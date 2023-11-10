@@ -376,6 +376,8 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
         if(openState){
             document.dispatchEvent(new CustomEvent('dialog.planned-payment.shown', { bubbles: true }));
         } else {
+            console.log('Hidden');
+            
             resetPlannedPaymentDialog();
             setKeepOpenPlannedPaymentDialog(false);
 

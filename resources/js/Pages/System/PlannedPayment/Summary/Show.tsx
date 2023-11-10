@@ -154,10 +154,10 @@ export default function Show({ auth, wallet, period, estimate_income = 0, estima
         const handleDialogRecord = (event: any) => {
             router.reload();
         }
-        document.addEventListener('dialogRecord', handleDialogRecord);
+        document.addEventListener('dialog.record.hidden', handleDialogRecord);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialogRecord', handleDialogRecord);
+            document.removeEventListener('dialog.record.hidden', handleDialogRecord);
         };
     });
 

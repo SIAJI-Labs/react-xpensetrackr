@@ -157,10 +157,10 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                 setOpenRecordDialog(false);
             }, 100);
         }
-        window.addEventListener('dialogRecord', handleDialogRecord);
+        window.addEventListener('dialog.record.hidden', handleDialogRecord);
         // Remove the event listener when the component unmounts
         return () => {
-            window.removeEventListener('dialogRecord', handleDialogRecord);
+            window.removeEventListener('dialog.record.hidden', handleDialogRecord);
         };
     });
 

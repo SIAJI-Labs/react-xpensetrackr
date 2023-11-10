@@ -1,6 +1,6 @@
 import { FormEventHandler, useEffect, useMemo, useState } from 'react';
 import { format } from "date-fns"
-import { CategoryItem, WalletItem, User, RecordItem } from '@/types';
+import { CategoryItem, WalletItem, User, RecordItem, PlannedItem } from '@/types';
 import axios, { AxiosError } from 'axios';
 
 // Script
@@ -29,6 +29,7 @@ import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { useIsFirstRender } from '@/lib/utils';
+import { Link } from '@inertiajs/react';
 
 type RecordDialogProps = {
     openState: boolean;
@@ -61,7 +62,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                 
                 // Handle when record dialog is opened
                 if(openState){
-                    if(!valueRecordUuid){
+                    if(!valueRecordDate){
                         // Update timestamp
                         let now = moment();
                         let hours = now.get('hour');
@@ -74,13 +75,13 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                     }
     
                     // Announce Dialog Global Event
-                    document.dispatchEvent(new CustomEvent('dialogRecordOpened', { bubbles: true }));
+                    document.dispatchEvent(new CustomEvent('dialog.record.shown', { bubbles: true }));
                 } else {
                     resetRecordDialog();
                     setKeepOpenRecordDialog(false);
     
                     // Announce Dialog Global Event
-                    document.dispatchEvent(new CustomEvent('dialogRecord', { bubbles: true }));
+                    document.dispatchEvent(new CustomEvent('dialog.record.hidden', { bubbles: true }));
                 }
             }, 100);
         }
@@ -180,8 +181,115 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
         };
     }, []);
 
+    // Handle Planned Payment
+    const [abortControllerPlannedItem, setAbortControllerPlannedItem] = useState<AbortController | null>(null);
+    const fetchPlannedPaymentData = async(uuid: string) => {
+        // Cancel previous request
+        if(abortControllerPlannedItem instanceof AbortController){
+            abortControllerPlannedItem.abort();
+        }
+
+        // Create a new AbortController
+        const abortController = new AbortController();
+        // Store the AbortController in state
+        setAbortControllerPlannedItem(abortController);
+
+        // Fetch
+        try {
+            const response = await axios.get(`${route('api.planned-payment.v1.show', uuid)}`, {
+                cancelToken: new axios.CancelToken(function executor(c) {
+                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                    abortController.abort = c;
+                })
+            });
+        
+            // Use response.data instead of req.json() to get the JSON data
+            let jsonResponse = response.data;
+
+            return jsonResponse.result.data;
+        } catch (error) {
+            if (axios.isCancel(error)) {
+                // Handle the cancellation here if needed
+                console.log('Request was canceled', error);
+            } else {
+                // Handle other errors
+                console.error('Error:', error);
+            }
+        }
+
+        return [];
+    }
+    useEffect(() => {
+        // Listen to Trigger Action
+        const recordDialogPlannedPaymentAction = (event: any) => {
+            console.log('Planned Payment Confirmation', event);
+
+            if(event?.detail?.uuid){
+                let uuid = event.detail.uuid;
+
+                // Fetch Data
+                fetchPlannedPaymentData(uuid).then((data: PlannedItem) => {
+                    setValuePlannedPaymentUuid(data.uuid);
+                    setValuePlannedPaymentName(data.name);
+
+                    let raw = momentFormated('YYYY-MM-DD HH:mm:ss', `${data.date_start} 00:00:00`);
+                    let rawTime = moment();
+                    let date = moment(raw).toDate();
+                    let hours = String(moment(rawTime).get('hour'));
+                    let minutes = String(moment(rawTime).get('minute'));
+                    // Set Record Data
+                    setValueRecordType(data.type);
+                    setValueRecordCategory(data.category ? data.category.uuid : '');
+                    setValueRecordFromWallet(data.from_wallet ? data.from_wallet.uuid : '');
+                    setValueRecordToWallet(data.to_wallet ? data.to_wallet.uuid : '');
+                    setValueRecordAmount(data.amount);
+                    setValueRecordExtraAmount(data.extra_type === 'amount' ? data.extra_amount : data.extra_percentage);
+                    setValueRecordExtraType(data.extra_type);
+                    setValueRecordDate(date);
+                    setValueRecordHours(hours);
+                    setValueRecordMinutes(minutes);
+                    setValueRecordNotes(data.note ?? '');
+
+                    // Update Combobox Label
+                    if(data.category){
+                        console.log(`${data.category.parent ? `${data.category.parent.name} - ` : ''}${data.category.name}`);
+                        setCategoryComboboxLabel(`${data.category.parent ? `${data.category.parent.name} - ` : ''}${data.category.name}`);
+                    }
+                    if(data.from_wallet){
+                        setFromWalletComboboxLabel(`${data.from_wallet.parent ? `${data.from_wallet.parent.name} - ` : ''}${data.from_wallet.name}`);
+                    }
+                    if(data.to_wallet){
+                        setToWalletComboboxLabel(`${data.to_wallet.parent ? `${data.to_wallet.parent.name} - ` : ''}${data.to_wallet.name}`);
+                    }
+
+                    // Open record-dialog
+                    setTimeout(() => {
+                        console.log(raw);
+                        console.log(date);
+
+                        setOpenState(true);
+                    }, 100);
+                });
+            }
+            setTimeout(() => {
+                setOpenState(true);
+            }, 1000);
+        }
+
+        document.addEventListener('record-dialog.planned-payment.confirmation', recordDialogPlannedPaymentAction);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('record-dialog.planned-payment.confirmation', recordDialogPlannedPaymentAction);
+        };
+    });
+
     // Record Dialog - Forms
     const resetRecordDialog = () => {
+        // Planned Payment
+        setValuePlannedPaymentUuid('');
+        setValuePlannedPaymentName('');
+
+        // Record
         setValueRecordUuid('');
         setValueRecordType('expense');
         setValueRecordCategory('');
@@ -229,6 +337,10 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
         formData.append('minutes', String(valueRecordMinutes ?? ''));
         formData.append('notes', String(valueRecordNotes ?? ''));
         formData.append('timezone', moment.tz.guess());
+
+        if(valuePlannedPaymentUuid){
+            formData.append('planned_payment_uuid', valuePlannedPaymentUuid);
+        }
 
         // Adjust route target
         let actionRoute = route('api.record.v1.store');
@@ -316,6 +428,9 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
         });
     }
 
+    // Planned Payment
+    const [valuePlannedPaymentUuid, setValuePlannedPaymentUuid] = useState<string>('');
+    const [valuePlannedPaymentName, setValuePlannedPaymentName] = useState<string>('');
     // Record UUID
     const [valueRecordUuid, setValueRecordUuid] = useState<string>('');
     // Record Type
@@ -423,7 +538,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                 setCategoryComboboxLabel(`Select an option`);
             }
         } else {
-            if(!valueRecordUuid){
+            if(valueRecordFromWallet === ''){
                 setCategoryComboboxLabel(`Select an option`);
             }
         }
@@ -528,7 +643,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                 setFromWalletComboboxLabel(`Select an option`);
             }
         } else {
-            if(!valueRecordUuid){
+            if(valueRecordFromWallet === ''){
                 setFromWalletComboboxLabel(`Select an option`);
             }
         }
@@ -633,7 +748,7 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
                 setToWalletComboboxLabel(`Select an option`);
             }
         } else {
-            if(!valueRecordUuid){
+            if(valueRecordFromWallet === ''){
                 setToWalletComboboxLabel(`Select an option`);
             }
         }
@@ -673,13 +788,29 @@ export default function RecordDialog({ openState, setOpenState }: RecordDialogPr
             <Dialog open={openState} onOpenChange={setOpenState}>
                 <DialogContent className=" h-full md:h-auto lg:min-w-[800px] max-md:!max-h-[85vh] p-0" data-type="record-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
-                        <DialogTitle className={ ` dark:text-white` }>{ valueRecordUuid ? `Edit` : `Add new` } Record</DialogTitle>
+                        <DialogTitle className={ ` dark:text-white` }>{ valuePlannedPaymentUuid ? `Planned Payment: Confirmation` : (valueRecordUuid ? `Edit` : `Add new`) } Record</DialogTitle>
                     </DialogHeader>
 
                     <form onSubmit={handleRecordDialogSubmit} id={ `recordDialog-forms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh]` }>
                         <div className={ ` flex gap-0 lg:gap-6 flex-col lg:flex-row px-6` }>
                             {/* Left */}
                             <div className={ `py-6 w-full lg:w-3/5` }>
+                                {(() => {
+                                    if(valuePlannedPaymentUuid && valuePlannedPaymentName){
+                                        return (
+                                            <div className=" w-full p-4 mb-6 rounded-lg border-2 border-dashed">
+                                                <span className=" flex items-center gap-2 text-sm font-normal">
+                                                    <i className="fa-solid fa-clock"></i>
+                                                    <span className={ `font-normal` }>Planned Payment(s)</span>
+                                                </span>
+                                                <span className=" block mt-2">You'll create a record for related planned payment (<u><Link href={ route('sys.planned-payment.show', valuePlannedPaymentUuid) }>{valuePlannedPaymentName}</Link></u>)</span>
+                                            </div>
+                                        );
+                                    }
+
+                                    return <></>;
+                                })()}
+                                
                                 {/* Record Type */}
                                 <div className={ `form-group mb-4 ${errorRecordDialog?.type ? ` is--invalid` : ''}` }>
                                     <div className={ ` flex flex-row gap-1 w-full border p-1 rounded-md ${errorRecordDialog?.type ? ` !border-red-500` : ''}` } id={ `record_dialog-type` }>

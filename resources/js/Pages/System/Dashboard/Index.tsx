@@ -177,10 +177,10 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                     fetchPending();
                 }, 100);
             }
-            document.addEventListener('dialogRecord', handleDialogRecord);
+            document.addEventListener('dialog.record.hidden', handleDialogRecord);
             // Remove the event listener when the component unmounts
             return () => {
-                document.removeEventListener('dialogRecord', handleDialogRecord);
+                document.removeEventListener('dialog.record.hidden', handleDialogRecord);
             };
         }
     });

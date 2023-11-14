@@ -18,11 +18,13 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
+import { handleUserAvatar } from '@/function';
 
 export default function Navbar({ user, className = '' }: PropsWithChildren<{ user: User, className?: string }>) {
     const { setTheme } = useTheme();
     const currentTheme = getCurrentTheme();
 
+    const [avatar, setAvatar] = useState<string>();
     // Search Command
     const [openSearchCommand, setOpenSearchCommand] = useState<boolean>(false)
     useEffect(() => {
@@ -39,6 +41,10 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
         document.addEventListener("keydown", down)
         return () => document.removeEventListener("keydown", down)
     }, []);
+    useEffect(() => {
+        let avatar = handleUserAvatar(user);
+        setAvatar(avatar);
+    });
 
     return (
         <>
@@ -235,7 +241,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Avatar className={ ` cursor-pointer rounded-lg` }>
-                                            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                                            <AvatarImage src={avatar} alt="avatar" />
                                             <AvatarFallback className={ ` cursor-pointer rounded-lg` }>EX</AvatarFallback>
                                         </Avatar>
                                     </DropdownMenuTrigger>
@@ -244,11 +250,13 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
 
                                         <DropdownMenuSeparator />
                                         <DropdownMenuGroup>
-                                            <DropdownMenuItem className={ ` flex flex-row gap-2` }>
-                                                <i className={ `fa-solid fa-user w-1/12` }></i>
-                                                <span className={ ` w-11/12` }>Profile</span>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem className={ ` flex flex-row gap-2` }>
+                                            <Link href={ route('sys.profile.index') }>
+                                                <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-pointer` }>
+                                                    <i className={ `fa-solid fa-user w-1/12` }></i>
+                                                    <span className={ ` w-11/12` }>Profile</span>
+                                                </DropdownMenuItem>
+                                            </Link>
+                                            <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-not-allowed opacity-50` }>
                                                 <i className={ `fa-solid fa-gear w-1/12` }></i>
                                                 <span className=' w-11/12'>Setting</span>
                                             </DropdownMenuItem>

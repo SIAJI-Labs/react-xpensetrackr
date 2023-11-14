@@ -927,7 +927,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
 
                                     <Select onValueChange={(value) => {
                                         setValuePlannedPaymentOccurence(value);
-                                    }} defaultValue={valuePlannedPaymentOccurence}>
+                                    }} value={valuePlannedPaymentOccurence}>
                                         <SelectTrigger className={ `dark:text-white ${errorPlannedPaymentDialog?.occurence ? ` !border-red-500` : ''}` }>
                                             <SelectValue placeholder="Select an option" className={ `dark:text-white` }/>
                                         </SelectTrigger>
@@ -972,7 +972,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                         <div className={ ` w-3/5` }>
                                             <Select onValueChange={(value) => {
                                                 setValuePlannedPaymentFrequencyType(value);
-                                            }} defaultValue={valuePlannedPaymentFrequencyType}>
+                                            }} value={valuePlannedPaymentFrequencyType}>
                                                 <SelectTrigger className={ `dark:text-white ${errorPlannedPaymentDialog?.frequency_type ? ` !border-red-500` : ''}` }>
                                                     <SelectValue placeholder="Select an option" className={ `dark:text-white` }/>
                                                 </SelectTrigger>

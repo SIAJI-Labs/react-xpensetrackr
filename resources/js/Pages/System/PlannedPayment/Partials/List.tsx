@@ -10,7 +10,7 @@ import NoDataTemplate from "@/Components/template/NoDataTemplate";
 // Shadcn
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
-import SummarySkeleton from "@/Components/template/PlannedPayment/SummarySkeleton";
+import ListSkeleton from "@/Components/template/PlannedPayment/ListSkeleton";
 
 // Props
 type PlannedPaymentListProps = {
@@ -89,7 +89,7 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
     // Summary List Skeleton
     const [plannedSkeletonCount, setPlannedSkeletonCount] = useState<number>(5);
     let listSkeleton = () => {
-        return <SummarySkeleton/>
+        return <ListSkeleton/>
     }
     // Summary List Template
     let listTemplate = (obj?:any[]) => {

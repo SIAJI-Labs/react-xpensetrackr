@@ -31,7 +31,6 @@ type PlannedSummaryShowProps = {
 export default function Show({ auth, wallet, period, estimate_income = 0, estimate_expense = 0 }: PageProps<PlannedSummaryShowProps>) {
     const isFirstRender = useIsFirstRender();
     useEffect(() => {
-        console.log(wallet);
         fetchPlannedSummary();
     }, []);
 
@@ -102,7 +101,7 @@ export default function Show({ auth, wallet, period, estimate_income = 0, estima
 
     // Summary List Template
     let listTemplate = (obj?: any[] | any | undefined) => {
-        return <ListTemplate plannedPayment={obj?.planned}/>;
+        return <ListTemplate plannedPayment={obj?.planned} deleteAction={ false }/>;
     }
     // Summary List Skeleton
     const [plannedSkeletonCount, setPlannedSkeletonCount] = useState<number>(5);
@@ -115,6 +114,26 @@ export default function Show({ auth, wallet, period, estimate_income = 0, estima
             setPlannedSkeletonCount(plannedItem.length > 0 ? plannedItem.length : 3);
         }
     }, [plannedItem]);
+
+    useEffect(() => {
+        // Listen to Record Dialog event
+        const handleDialogPlannedPayment = () => {
+            router.reload();
+            fetchPlannedSummary();
+        }
+
+        document.addEventListener('dialog.record.hidden', handleDialogPlannedPayment);
+        document.addEventListener('planned-payment.summary.refresh', handleDialogPlannedPayment);
+        document.addEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
+        
+
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.record.hidden', handleDialogPlannedPayment);
+            document.removeEventListener('planned-payment.summary.refresh', handleDialogPlannedPayment);
+            document.removeEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
+        };
+    });
 
     const [activePeriod, setActivePeriod] = useState<Date>();
     // Set active
@@ -184,6 +203,7 @@ export default function Show({ auth, wallet, period, estimate_income = 0, estima
                             </div>
                             {(() => {
                                 return <Button variant={ `outline` } onClick={() => {
+                                    document.dispatchEvent(new CustomEvent('planned-payment.summary.refresh', {bubbles: true}));
                                 }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
                             })()}
                         </div>

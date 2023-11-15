@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import ListSkeleton from '@/Components/template/Record/ListSkeleton';
 
 // Props
 type RecordIndexProps = {
@@ -27,34 +28,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
         return <RecordTemplate record={obj}></RecordTemplate>;
     }
     // Record List - Skeleton
-    let skeletonTemplate = <>
-        <div className={ ` flex flex-col gap-2 border rounded p-4` }>
-            <div className={ ` flex flex-row justify-between` }>
-                <Skeleton className="w-[100px] h-[20px] rounded-full" />
-
-                <div className={ ` flex flex-row gap-2` }>
-                    <Skeleton className="w-[75px] h-[20px] rounded-full" />
-                    <Skeleton className="w-[10px] h-[20px] rounded-full" />
-                </div>
-            </div>
-
-            <div className={ ` flex flex-row gap-4 items-center` }>
-                <div className={ `` }>
-                    <Skeleton className="w-[50px] h-[50px] rounded-full" />
-                </div>
-                <div className={ ` flex flex-col gap-2` }>
-                    <Skeleton className="w-[150px] h-[15px] rounded-full" />
-                    <Skeleton className="w-[75px] h-[10px] rounded-full" />
-                </div>
-            </div>
-
-            <div className={ ` flex flex-row gap-4` }>
-                <Skeleton className="w-[50px] h-[20px] rounded-full" />
-                <Skeleton className="w-[50px] h-[20px] rounded-full" />
-                <Skeleton className="w-[50px] h-[20px] rounded-full" />
-            </div>
-        </div>
-    </>;
+    let skeletonTemplate = <ListSkeleton/>;
 
     // Record Filter
     const [recordFilterKeyword, setRecordFilterKeyword] = useState<string>('');

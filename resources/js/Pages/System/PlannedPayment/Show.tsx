@@ -365,7 +365,7 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                         <div className={ ` flex flex-row justify-between` }>
                             <div className={ ` flex flex-col gap-1` }>
                                 <span className={ ` font-normal` }>Occurence</span>
-                                <Badge className={ ` text-center flex justify-center` }>{ucwords(data.repeat_type)}</Badge>
+                                <Badge variant={ data.repeat_type === 'recurring' ? `default` : `secondary` } className={ ` text-center flex justify-center` }>{ucwords(data.repeat_type)}</Badge>
                             </div>
 
                             {(() => {

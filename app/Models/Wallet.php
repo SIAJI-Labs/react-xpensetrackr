@@ -261,7 +261,6 @@ class Wallet extends Model
                     }
                 }
 
-
                 // If same month & year, include to list
                 if(date('m', strtotime($planned_period)) === date('m', strtotime($last_period)) && date('Y', strtotime($planned_period)) === date('Y', strtotime($last_period))){
                     // Validate if data already exists in expected_planned variable
@@ -294,6 +293,11 @@ class Wallet extends Model
                         // Current period is still below active period
                         $loop = true;
                     }
+                }
+
+                // Override loop if occurence happening once
+                if($planned->repeat_type === 'once'){
+                    $loop = false;
                 }
             } while($loop);
         }

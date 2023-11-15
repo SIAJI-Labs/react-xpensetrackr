@@ -58,7 +58,7 @@ class PlannedSummaryController extends Controller
         $estimate_expense = $projection['expected_expense'];
 
         return Inertia::render('System/PlannedPayment/Summary/Show', [
-            'wallet' => $data,
+            'wallet' => $data->load('parent'),
             'period' => $period,
             'estimate_income' => $estimate_income,
             'estimate_expense' => $estimate_expense,

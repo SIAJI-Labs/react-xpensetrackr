@@ -41,14 +41,22 @@ class PlannedPaymentSummaryController extends Controller
                  */
                 // Query Builder - Income
                 $toIncome = \App\Models\Wallet::select((new \App\Models\Wallet())->getTable().'.*')
-                    ->join((new \App\Models\PlannedPayment())->getTable(), (new \App\Models\PlannedPayment())->getTable().'.to_wallet_id', '=', (new \App\Models\Wallet())->getTable().'.id')
+                    ->join(
+                        (new \App\Models\PlannedPayment())->getTable(),
+                        (new \App\Models\PlannedPayment())->getTable().'.to_wallet_id',
+                        '=',
+                        (new \App\Models\Wallet())->getTable().'.id')
                     ->where((new \App\Models\Wallet())->getTable().'.user_id', $user->id)
                     // ->where((new \App\Models\Wallet())->getTable().'.type', 'expense')
                     ->pluck((new \App\Models\Wallet())->getTable().'.id')
                     ->toArray();
                 // Query Builder
                 $wallet = \App\Models\Wallet::select((new \App\Models\Wallet())->getTable().'.*')
-                    ->join((new \App\Models\PlannedPayment())->getTable(), (new \App\Models\PlannedPayment())->getTable().'.from_wallet_id', '=', (new \App\Models\Wallet())->getTable().'.id')
+                    ->join(
+                        (new \App\Models\PlannedPayment())->getTable(),
+                        (new \App\Models\PlannedPayment())->getTable().'.from_wallet_id',
+                        '=',
+                        (new \App\Models\Wallet())->getTable().'.id')
                     ->where((new \App\Models\Wallet())->getTable().'.user_id', $user->id)
                     ->pluck((new \App\Models\Wallet())->getTable().'.id')
                     ->toArray();;

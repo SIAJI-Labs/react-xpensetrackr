@@ -17,6 +17,7 @@ class PlannedPaymentController extends Controller
      */
     public function index(Request $request)
     {
+        // sleep(30);
         $user = $request->user();
 
         $data = \App\Models\PlannedPayment::query()

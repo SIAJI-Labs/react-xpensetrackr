@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Traits\JsonResponseTrait;
+use Illuminate\Support\Facades\DB;
 
 class WalletController extends Controller
 {
@@ -40,24 +41,24 @@ class WalletController extends Controller
                 $child = ltrim(implode('', $explode));
 
                 // Apply search
-                $parent = \App\Models\Wallet::where(\DB::raw('LOWER(name)'), 'like', '%'.strtolower($parent).'%')
+                $parent = \App\Models\Wallet::where(DB::raw('LOWER(name)'), 'like', '%'.strtolower($parent).'%')
                     ->whereNull('parent_id')
                     ->pluck('id')
                     ->toArray();
 
                 $data = $data->where(function($q) use ($child, $parent){
-                    return $q->where(\DB::raw('LOWER(name)'), 'like', '%'.strtolower($child).'%')
+                    return $q->where(DB::raw('LOWER(name)'), 'like', '%'.strtolower($child).'%')
                         ->whereIn('parent_id', $parent);
                     });
             } else {
                 // Search on Parent
-                $parent = \App\Models\Wallet::where(\DB::raw('LOWER(name)'), 'like', '%'.strtolower($request->keyword).'%')
+                $parent = \App\Models\Wallet::where(DB::raw('LOWER(name)'), 'like', '%'.strtolower($request->keyword).'%')
                     ->whereNull('parent_id')
                     ->pluck('id')
                     ->toArray();
     
                 $data = $data->where(function($q) use ($parent, $request){
-                    return $q->where(\DB::raw('LOWER(name)'), 'like', '%'.strtolower($request->keyword).'%')
+                    return $q->where(DB::raw('LOWER(name)'), 'like', '%'.strtolower($request->keyword).'%')
                         ->orWhereIn('parent_id', $parent);
                     });
             }
@@ -90,7 +91,11 @@ class WalletController extends Controller
 
             // Fetch Data
             $data = [
-                'data' => $data->get()
+                'data' => $data->get()->map(function($data){
+                    $data->balance = $data->getBalance();
+                    
+                    return $data;
+                })
             ];
         }
 
@@ -116,11 +121,11 @@ class WalletController extends Controller
             'name' => ['required', 'string', 'max:191']
         ]);
 
-        \DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request) {
             $user = $request->user();
             $parent_id = null;
             if($request->has('parent_id') && !empty($request->parent_id)){
-                $parent = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $request->parent_id)
+                $parent = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->parent_id)
                     ->where('user_id', $user->id)
                     ->firstOrFail();
 
@@ -162,15 +167,15 @@ class WalletController extends Controller
             'name' => ['required', 'string', 'max:191']
         ]);
 
-        \DB::transaction(function () use ($request, $id) {
+        DB::transaction(function () use ($request, $id) {
             $user = $request->user();
             
-            $data = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $id)
+            $data = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $id)
                 ->where('user_id', $user->id)
                 ->firstOrFail();
             $parent_id = $data->parent_id;
             if($request->has('parent_id') && !empty($request->parent_id)){
-                $parent = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $request->parent_id)
+                $parent = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->parent_id)
                     ->where('user_id', $user->id)
                     ->firstOrFail();
 

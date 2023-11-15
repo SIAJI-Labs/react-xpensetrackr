@@ -21,10 +21,12 @@ export interface WalletItem {
     user_id: number;
     parent_id: number,
     parent: WalletItem,
+    child?: WalletItem,
     type: string,
     name: string,
     starting_balance?: number,
-    current_balance?: number
+    current_balance?: number,
+    balance?: number
 }
 export interface RecordItem {
     id: number,

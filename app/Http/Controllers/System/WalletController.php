@@ -36,9 +36,20 @@ class WalletController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        //
+        $user = $request->user();
+        $data = \App\Models\Wallet::withTrashed()
+            ->with('parent', 'child')
+            ->where(\DB::raw('BINARY `uuid`'), $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        $data->balance = $data->getBalance();
+
+        return Inertia::render('System/Wallet/Show', [
+            'data' => $data
+        ]);
     }
 
     /**

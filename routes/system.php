@@ -39,6 +39,10 @@ Route::group([
     Route::get('record/{uuid}', [\App\Http\Controllers\System\RecordController::class, 'show'])->name('record.show');
     Route::get('record', [\App\Http\Controllers\System\RecordController::class, 'index'])->name('record.index');
 
+    // Wallet
+    Route::get('wallet/{uuid}', [\App\Http\Controllers\System\WalletController::class, 'show'])->name('wallet.show');
+    Route::get('wallet', [\App\Http\Controllers\System\WalletController::class, 'index'])->name('wallet.index');
+
     // Profile
     Route::get('profile', [\App\Http\Controllers\System\ProfileController::class, 'index'])->name('profile.index');
 });

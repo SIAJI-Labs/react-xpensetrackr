@@ -107,7 +107,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                             { name: 'Record', icon: '', link: route('sys.record.index') },
                             { name: 'Record Template', icon: '', link: null },
                             { name: 'Shopping List', icon: '', link: null },
-                            { name: 'Wallet', icon: '', link: null },
+                            { name: 'Wallet', icon: '', link: route('sys.wallet.index') },
                             { name: 'Wallet Group', icon: '', link: null },
                             { name: 'Wallet Share', icon: '', link: null },
                         ];
@@ -272,10 +272,12 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                                 <i className={ `fa-solid fa-tags w-1/12` }></i>
                                                 <span className=' w-11/12'>Tags</span>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem className={ ` flex flex-row gap-2` }>
-                                                <i className={ `fa-solid fa-wallet w-1/12` }></i>
-                                                <span className=' w-11/12'>Wallet</span>
-                                            </DropdownMenuItem>
+                                            <Link href={ route('sys.wallet.index') }>
+                                                <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-pointer` }>
+                                                    <i className={ `fa-solid fa-wallet w-1/12` }></i>
+                                                    <span className=' w-11/12'>Wallet</span>
+                                                </DropdownMenuItem>
+                                            </Link>
                                         </DropdownMenuGroup>
 
                                         <DropdownMenuSeparator />

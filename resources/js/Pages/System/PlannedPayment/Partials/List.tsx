@@ -86,12 +86,12 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
         }
     }
 
-    // Summary List Skeleton
+    // List Skeleton
     const [plannedSkeletonCount, setPlannedSkeletonCount] = useState<number>(5);
     let listSkeleton = () => {
         return <ListSkeleton/>
     }
-    // Summary List Template
+    // List Template
     let listTemplate = (obj?:any[]) => {
         return <ListTemplate plannedPayment={obj}/>;
     }

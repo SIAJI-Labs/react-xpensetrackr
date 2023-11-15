@@ -111,7 +111,29 @@ class WalletController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'parent_id' => ['nullable', 'string', 'exists:'.(new \App\Models\Wallet())->getTable().',uuid'],
+            'name' => ['required', 'string', 'max:191']
+        ]);
+
+        \DB::transaction(function () use ($request) {
+            $user = $request->user();
+            $parent_id = null;
+            if($request->has('parent_id') && !empty($request->parent_id)){
+                $parent = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $request->parent_id)
+                    ->where('user_id', $user->id)
+                    ->firstOrFail();
+
+                $parent_id = $parent->id;
+            }
+
+            $data = new \App\Models\Wallet();
+            $data->parent_id = $parent_id;
+            $data->name = $request->name;
+            $data->save();
+        });
+
+        return $this->formatedJsonResponse(200, 'Data Stored', []);
     }
 
     /**
@@ -135,7 +157,32 @@ class WalletController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'parent_id' => ['nullable', 'string', 'exists:'.(new \App\Models\Wallet())->getTable().',uuid'],
+            'name' => ['required', 'string', 'max:191']
+        ]);
+
+        \DB::transaction(function () use ($request, $id) {
+            $user = $request->user();
+            
+            $data = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $id)
+                ->where('user_id', $user->id)
+                ->firstOrFail();
+            $parent_id = $data->parent_id;
+            if($request->has('parent_id') && !empty($request->parent_id)){
+                $parent = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $request->parent_id)
+                    ->where('user_id', $user->id)
+                    ->firstOrFail();
+
+                $parent_id = $parent->id;
+            }
+
+            $data->parent_id = $parent_id;
+            $data->name = $request->name;
+            $data->save();
+        });
+
+        return $this->formatedJsonResponse(200, 'Data Stored', []);
     }
 
     /**

@@ -163,4 +163,22 @@ Route::group([
             Route::get('list', [\App\Http\Controllers\Api\v1\WalletController::class, 'index'])->name('list');
         });
     });
+
+    // Profile
+    Route::group([
+        'prefix' => 'profile',
+        'as' => 'profile.'
+    ], function(){
+        // v1
+        Route::group([
+            'prefix' => 'v1',
+            'as' => 'v1.'
+        ], function(){
+            // List
+            Route::get('list', [\App\Http\Controllers\Api\v1\ProfileController::class, 'index'])->name('list');
+
+            // Update
+            Route::put('{uuid}', [\App\Http\Controllers\Api\v1\ProfileController::class, 'update'])->name('update');
+        });
+    });
 });

@@ -1,5 +1,8 @@
 "use strict";
 import moment, { Moment } from 'moment-timezone';
+import { User } from './types';
+import { createAvatar } from '@dicebear/core';
+import * as diceCollection from '@dicebear/collection';
 
 /**
  * Print Indonesia default amount format
@@ -110,4 +113,68 @@ export function fetchPeriod(string: string){
     }
 
     return result;
+}
+
+/**
+ * Fetch User Avatar
+ * 
+ */
+type DiceCollectionMapping = {
+    [key in keyof typeof diceCollection]: typeof diceCollection[key];
+};
+function getAvatar<T extends keyof DiceCollectionMapping>(value: T): DiceCollectionMapping[T] {
+    return diceCollection[value];
+}
+export const getDicebearAvatar = (style: any = 'initials', name?: string) => {
+    let result = '';
+    if(!name){
+        name = import.meta.env.VITE_APP_NAME;
+    }
+
+    if(style in diceCollection){
+        let avatarConf = getAvatar(style)
+        const avatar = createAvatar(avatarConf, {
+            seed: name,
+            // ... other options
+        });
+        result = avatar.toDataUriSync();
+    }
+
+    return result;
+}
+export const handleUserAvatar = (user?: User, avatarStyle: any = 'initials', userName: string = import.meta.env.VITE_APP_NAME) => {
+    if(user){
+        if(user !== undefined){
+            // Override name of the user
+            if(user.name){
+                userName = user.name;
+            }
+
+            // Override default avatar of the user
+            if(user.avatar){
+                avatarStyle = user.avatar;
+            }
+        }
+    }
+
+    let result = '';
+    if(avatarStyle in diceCollection){
+        result = getDicebearAvatar(avatarStyle, userName); 
+    } else {
+        result = `/${avatarStyle}`;
+    }
+    
+    return result;
+}
+
+/**
+ * Convert CamelCase to Title
+ */
+export function camel2title(camelCase: string){
+    const string = camelCase
+        .replace(/([A-Z])/g, (match) => ` ${match}`)
+        .replace(/^./, (match) => match.toUpperCase())
+        .trim();
+
+    return string;
 }

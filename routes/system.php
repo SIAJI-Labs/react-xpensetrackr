@@ -38,4 +38,7 @@ Route::group([
     // Record
     Route::get('record/{uuid}', [\App\Http\Controllers\System\RecordController::class, 'show'])->name('record.show');
     Route::get('record', [\App\Http\Controllers\System\RecordController::class, 'index'])->name('record.index');
+
+    // Profile
+    Route::get('profile', [\App\Http\Controllers\System\ProfileController::class, 'index'])->name('profile.index');
 });

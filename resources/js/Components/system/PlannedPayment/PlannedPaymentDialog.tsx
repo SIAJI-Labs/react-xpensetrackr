@@ -1033,7 +1033,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                     <ErrorMessage message={ errorPlannedPaymentDialog?.notes }/>
                                 </div>
 
-                                {/* Keep open record dialog? */}
+                                {/* Keep open Planned Payment dialog? */}
                                 <div className={ `form-group` }>
                                     <div className={ `flex items-center space-x-2` }>
                                     <Checkbox id="record_dialog-keep_open" checked={ keepOpenPlannedPaymentDialog } onCheckedChange={(value) => {

@@ -46,9 +46,19 @@ class WalletController extends Controller
             ->firstOrFail();
 
         $data->balance = $data->getBalance();
+        $data->children = [];
+
+        // Manipulate child data
+        if($data->child()->exists()){
+            $data->children = $data->child()->get()->map(function($data){
+                $data->balance = $data->getBalance();
+                return $data;
+            });
+        }
 
         return Inertia::render('System/Wallet/Show', [
-            'data' => $data
+            'data' => $data,
+            'related' => $data->children
         ]);
     }
 

@@ -27,6 +27,19 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
 
     // Record Filter
     const [filterKeyword, setFilterKeyword] = useState<string>('');
+    useEffect(() => {
+        if(!isFirstRender){
+            const timer = setTimeout(() => {
+                setPaginate(paginate_item);
+                fetchWalletData();
+            }, 500);
+    
+            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+            return () => {
+                clearTimeout(timer);
+            };
+        }
+    }, [filterKeyword]);
 
     // Wallet Data
     const [walletItemAbortController, setWalletItemAbortController] = useState<AbortController | null>(null);
@@ -89,6 +102,11 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
             }
         }
     }
+    useEffect(() => {
+        if(!isFirstRender){
+            fetchWalletData();
+        }
+    }, [paginate]);
 
     // List Skeleton
     const [skeletonCount, setSkeletonCount] = useState<number>(5);
@@ -149,7 +167,7 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                                     setFilterKeyword(event.target.value);
                                 }}/>
 
-                                <Button>
+                                <Button disabled>
                                     <i className={ `fa-solid fa-filter` }></i>
                                 </Button>
                             </div>

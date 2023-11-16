@@ -63,6 +63,9 @@ class WalletController extends Controller
                     });
             }
         }
+        if($request->has('only_parent') && ($request->only_parent || $request->only_parent == 'true')){
+            $data->whereNull('parent_id');
+        }
 
         // Apply ordering
         $sort_type = 'asc';
@@ -76,6 +79,7 @@ class WalletController extends Controller
         }
 
         // Pagination
+        $hasMore = false;
         $perPage = 5;
         if($request->has('per_page') && is_numeric($request->per_page)){
             $perPage = $request->per_page;
@@ -85,8 +89,14 @@ class WalletController extends Controller
             $data = $data->simplePaginate($perPage);
         } else {
             if($request->has('limit') && is_numeric($request->limit)){
+                $raw = (clone $data);
+
                 // Apply limit (only if there's no paginate)
                 $data = $data->limit($request->limit);
+
+                if($data->get()->count() < $raw->count()){
+                    $hasMore = true;
+                }
             }
 
             // Fetch Data
@@ -95,7 +105,8 @@ class WalletController extends Controller
                     $data->balance = $data->getBalance();
                     
                     return $data;
-                })
+                }),
+                'has_more' => $hasMore
             ];
         }
 

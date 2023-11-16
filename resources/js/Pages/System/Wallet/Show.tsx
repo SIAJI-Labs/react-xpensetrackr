@@ -1,4 +1,6 @@
 import BackButton from "@/Components/template/BackButtonTemplate";
+import NoDataTemplate from "@/Components/template/NoDataTemplate";
+import ListTemplate from "@/Components/template/Wallet/ListTemplate";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
@@ -11,10 +13,16 @@ import { Head, Link } from "@inertiajs/react";
 // Props
 type WalletShow = {
     data: WalletItem
+    related: WalletItem
 }
 
-export default function Show({ auth, data }: PageProps<WalletShow>) {
+export default function Show({ auth, data, related }: PageProps<WalletShow>) {
     const isFirstRender = useIsFirstRender();
+
+    // List Template
+    let listTemplate = (obj?:any[]) => {
+        return <ListTemplate wallet={obj}/>;
+    }
 
     return (
         <>
@@ -83,9 +91,7 @@ export default function Show({ auth, data }: PageProps<WalletShow>) {
                 </Card>
 
                 {(() => {
-                    console.log(data.child);
-
-                    if(data.child && Object.keys(data.child).length > 0){
+                    if(related && Object.keys(related).length > 0){
                         return <>
                             <Card className={ ` w-full mt-6` }>
                                 <CardHeader>
@@ -98,6 +104,24 @@ export default function Show({ auth, data }: PageProps<WalletShow>) {
                                     </div>
                                 </CardHeader>
                                 <CardContent>
+                                    <div className={ `flex flex-col gap-6` }>
+                                        {(() => {
+                                            let relatedElement: any = [];
+                                            let defaultContent = <NoDataTemplate></NoDataTemplate>;
+
+                                            Object.values(related).forEach((val, index) => {
+                                                console.log(val);
+
+                                                relatedElement.push(
+                                                    <div key={ `related_item-${index}` }>
+                                                        {listTemplate(val)}
+                                                    </div>
+                                                );
+                                            });
+
+                                            return relatedElement.length > 0 ? relatedElement : defaultContent;
+                                        })()}
+                                    </div>
                                 </CardContent>
                             </Card>
                         </>;

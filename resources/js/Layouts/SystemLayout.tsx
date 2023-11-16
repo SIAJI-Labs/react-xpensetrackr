@@ -10,14 +10,15 @@ import '@/../plugins/fontawesome/all.scss';
 // Partials
 import Navbar from './Partials/Navbar';
 import RecordDialog from '@/Components/system/Record/RecordDialog';
+import RecordDeleteDialog from '@/Components/system/Record/RecordDeleteDialog';
+import PlannedPaymentDialog from '@/Components/system/PlannedPayment/PlannedPaymentDialog';
+import PlannedPaymentDeleteDialog from '@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog';
+import WalletDialog from '@/Components/system/Wallet/WalletDialog';
 
 // Shadcn Component
 import { ThemeProvider } from '@/Components/template/theme-provider';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
-import RecordDeleteDialog from '@/Components/system/Record/RecordDeleteDialog';
-import PlannedPaymentDialog from '@/Components/system/PlannedPayment/PlannedPaymentDialog';
-import PlannedPaymentDeleteDialog from '@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog';
 
 
 export default function SystemLayout({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
@@ -39,6 +40,16 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
     const [openPlannedPaymentDeleteDialog, setOpenPlannedPaymentDeleteDialog] = useState<boolean>(false);
     const handleOpenPlannedPaymentDeleteDialog = (isOpen: boolean) => {
         setOpenPlannedPaymentDeleteDialog(isOpen);
+    };
+
+    // Wallet Dialog
+    const [openWalletDialog, setOpenWalletDialog] = useState<boolean>(false);
+    const handleOpenWalletDialog = (isOpen: boolean) => {
+        setOpenWalletDialog(isOpen);
+    };
+    const [openWalletDeleteDialog, setOpenWalletDeleteDialog] = useState<boolean>(false);
+    const handleOpenWalletDeleteDialog = (isOpen: boolean) => {
+        setOpenWalletDeleteDialog(isOpen);
     };
 
     return (
@@ -64,7 +75,7 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 )} */}
 
                 <div className={ ` flex justify-center p-6` }>
-                    <main className={ ` w-full md:max-w-[400px] md:min-w-[400px] py-[calc(64px)]` }>
+                    <main className={ ` w-full md:max-w-[420px] md:min-w-[420px] py-[calc(64px)]` }>
                         {children}
                     </main>
                 </div>
@@ -81,6 +92,9 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 {/* Planned Payment Modal - Dialog */}
                 <PlannedPaymentDialog openState={ openPlannedPaymentDialog } setOpenState={ handleOpenPlannedPaymentDialog }/>
                 <PlannedPaymentDeleteDialog openState={ openPlannedPaymentDeleteDialog } setOpenState={ handleOpenPlannedPaymentDeleteDialog }/>
+
+                {/* Wallet Modal - Dialog */}
+                <WalletDialog openState={ openWalletDialog } setOpenState={ setOpenWalletDialog }/>
             </div>
 
             <Toaster />

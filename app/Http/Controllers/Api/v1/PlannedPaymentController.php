@@ -64,7 +64,8 @@ class PlannedPaymentController extends Controller
             // Fetch Data
             $data = [
                 'data' => $data->get(),
-                'has_more' => $hasMore
+                'has_more' => $hasMore,
+                'total' => $raw->count()
             ];
         }
 

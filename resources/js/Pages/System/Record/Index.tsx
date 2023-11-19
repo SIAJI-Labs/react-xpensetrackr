@@ -46,6 +46,8 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
     }, [recordFilterKeyword]);
     // Record List - Variable Init
     let paginate_item = 5;
+    const [recordCountShown, setRalletCountShown] = useState<number>(0);
+    const [recordCountTotal, setRalletCountTotal] = useState<number>(0);
     const [recordPaginate, setRecordPaginate] = useState<number>(paginate_item);
     const [recordPaginateState, setRecordPaginateState] = useState<boolean>(false);
     useEffect(() => {
@@ -104,6 +106,11 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
             setRecordItem(jsonResponse.result.data);
             // Update load more state
             setRecordPaginateState(jsonResponse.result.has_more);
+            // Update shown
+            setRalletCountShown((jsonResponse.result.data).length);
+            if('total' in jsonResponse.result){
+                setRalletCountTotal(jsonResponse.result.total);
+            }
 
             // Remove loading state
             setRecordIsLoading(false);
@@ -229,7 +236,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                 })()}
                             </div>
                         </CardContent>
-                        <CardFooter>
+                        <CardFooter className={ `flex justify-between items-center` }>
                             <Button
                                 variant={ `outline` }
                                 className={ `` }
@@ -239,6 +246,16 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                     setRecordPaginate(recordPaginate + paginate_item);
                                 }}
                             >Load more</Button>
+
+                            {(() => {
+                                if(recordCountShown > 0 && recordCountTotal > 0){
+                                    return <>
+                                        <span className={ `text-sm` }>Showing {recordCountShown} of {recordCountTotal} entries</span>
+                                    </>;
+                                }
+
+                                return <></>
+                            })()}
                         </CardFooter>
                     </Card>
                 </div>

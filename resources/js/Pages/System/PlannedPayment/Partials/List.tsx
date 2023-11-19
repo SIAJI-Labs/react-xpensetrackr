@@ -30,6 +30,8 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
     const [plannedItem, setPlannedItem] = useState<any[]>();
     // Paginaton
     let paginate_item = 5;
+    const [plannedCountShown, setPlannedCountShown] = useState<number>(0);
+    const [plannedCountTotal, setPlannedCountTotal] = useState<number>(0);
     const [plannedPaginate, setPlannedPaginate] = useState<number>(paginate_item);
     const [plannedPaginateState, setPlannedPaginateState] = useState<boolean>(false);
     const fetchPlannedSummary = async() => {
@@ -69,6 +71,11 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
             setPlannedItem(jsonResponse.result.data);
             // Update load more state
             setPlannedPaginateState(jsonResponse.result.has_more);
+            // Update shown
+            setPlannedCountShown((jsonResponse.result.data).length);
+            if('total' in jsonResponse.result){
+                setPlannedCountTotal(jsonResponse.result.total);
+            }
 
             // Remove loading state
             setPlannedIsLoading(false);
@@ -187,7 +194,7 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
             })()}
 
             {/* Footer */}
-            <div>
+            <div className={ `flex justify-between items-center` }>
                 <Button
                     variant={ `outline` }
                     className={ `dark:border-white` }
@@ -197,6 +204,16 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
                         setPlannedPaginate(plannedPaginate + paginate_item);
                     }}
                 >Load more</Button>
+
+                {(() => {
+                    if(plannedCountShown > 0 && plannedCountTotal > 0){
+                        return <>
+                            <span className={ `text-sm` }>Showing {plannedCountShown} of {plannedCountTotal} entries</span>
+                        </>;
+                    }
+
+                    return <></>
+                })()}
             </div>
         </div>
     </>);

@@ -160,7 +160,15 @@ Route::group([
             'as' => 'v1.'
         ], function(){
             // List
-            Route::get('list', [\App\Http\Controllers\Api\v1\WalletController::class, 'index'])->name('list');
+            Route::get('list', [\App\Http\Controllers\Api\v1\WalletController::class, 'index'])->name('list');// Show
+            Route::get('{uuid}', [\App\Http\Controllers\Api\v1\WalletController::class, 'show'])->name('show');
+            
+            // Store
+            Route::post('store', [\App\Http\Controllers\Api\v1\WalletController::class, 'store'])->name('store');
+            // Update
+            Route::put('{uuid}', [\App\Http\Controllers\Api\v1\WalletController::class, 'update'])->name('update');
+            // Delete
+            Route::delete('{uuid}', [\App\Http\Controllers\Api\v1\WalletController::class, 'destroy'])->name('destroy');
         });
     });
 

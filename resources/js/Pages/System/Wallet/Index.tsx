@@ -47,6 +47,8 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
     const [walletItem, setWalletItem] = useState<any[]>();
     // Paginaton
     let paginate_item = 5;
+    const [walletCountShown, setWalletCountShown] = useState<number>(0);
+    const [walletCountTotal, setWalletCountTotal] = useState<number>(0);
     const [paginate, setPaginate] = useState<number>(paginate_item);
     const [paginateState, setPaginateState] = useState<boolean>(false);
     const fetchWalletData = async() => {
@@ -86,6 +88,11 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
             setWalletItem(jsonResponse.result.data);
             // Update load more state
             setPaginateState(jsonResponse.result.has_more);
+            // Update shown
+            setWalletCountShown((jsonResponse.result.data).length);
+            if('total' in jsonResponse.result){
+                setWalletCountTotal(jsonResponse.result.total);
+            }
 
             // Remove loading state
             setContentIsLoading(false);
@@ -124,11 +131,29 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
         return <ListTemplate wallet={obj}/>;
     }
 
+    useEffect(() => {
+        // Listen to Record Dialog event
+        const handleDialogRecord = () => {
+            setTimeout(() => {
+                fetchWalletData();
+            }, 100);
+        }
+
+        document.addEventListener('dialog.wallet.hidden', handleDialogRecord);
+        document.addEventListener('wallet.deleted-action', handleDialogRecord);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.wallet.hidden', handleDialogRecord);
+            document.removeEventListener('wallet.deleted-action', handleDialogRecord);
+        };
+    });
+
     return (
         <>
             <SystemLayout
                 user={auth.user}
                 header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Wallet List</h2>}
+                fabAction={ [`wallet`] }
             >
                 <Head title="Wallet List" />
 
@@ -206,19 +231,26 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                             })()}
                         </div>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className={ `flex justify-between items-center` }>
                         {/* Footer */}
-                        <div>
-                            <Button
-                                variant={ `outline` }
-                                className={ `dark:border-white` }
-                                disabled={ !paginateState }
-                                onClick={() => {
-                                    setPaginateState(false);
-                                    setPaginate(paginate + paginate_item);
-                                }}
-                            >Load more</Button>
-                        </div>
+                        <Button
+                            variant={ `outline` }
+                            className={ `dark:border-white` }
+                            disabled={ !paginateState }
+                            onClick={() => {
+                                setPaginateState(false);
+                                setPaginate(paginate + paginate_item);
+                            }}
+                        >Load more</Button>
+                        {(() => {
+                            if(walletCountShown > 0 && walletCountTotal > 0){
+                                return <>
+                                    <span className={ `text-sm` }>Showing {walletCountShown} of {walletCountTotal} entries</span>
+                                </>;
+                            }
+
+                            return <></>
+                        })()}
                     </CardFooter>
                 </Card>
             </SystemLayout>

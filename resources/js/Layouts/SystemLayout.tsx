@@ -19,9 +19,10 @@ import WalletDialog from '@/Components/system/Wallet/WalletDialog';
 import { ThemeProvider } from '@/Components/template/theme-provider';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 
 
-export default function SystemLayout({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
+export default function SystemLayout({ user, header, children, fabAction = null }: PropsWithChildren<{ user: User, header?: ReactNode, fabAction?: any[] | null }>) {
     // Record Dialog
     const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
     const handleOpenRecordDialog = (isOpen: boolean) => {
@@ -81,9 +82,66 @@ export default function SystemLayout({ user, header, children }: PropsWithChildr
                 </div>
 
                 {/* Record Modal */}
-                <Button variant="outline" className={ ` fixed right-4 bottom-4 dark:text-white` } onClick={() => {
-                    setOpenRecordDialog(true);
-                }}>Add record</Button>
+                {/* FAB */}
+                {(() => {
+                    console.log(fabAction);
+                    if(fabAction !== null){
+                        let action: any = [];
+
+                        // Push planned-payment action
+                        if(fabAction.includes('plannedPayment')){
+                            action.push(
+                                <DropdownMenuItem onClick={() => {
+                                    document.dispatchEvent(new CustomEvent('plannedPayment.edit-action', {
+                                            bubbles: true,
+                                        }
+                                    ));
+                                }} className={ `cursor-pointer flex items-center gap-2` } key={ `fab-wallet` }>
+                                    <i className={ `fa-regular fa-clock h-4 w-4 text-center` }></i>
+                                    <span className={ `` }>Planned Payment</span>
+                                </DropdownMenuItem>
+                            );
+                        }
+                        // Push wallet action
+                        if(fabAction.includes('wallet')){
+                            action.push(
+                                <DropdownMenuItem onClick={() => {
+                                    document.dispatchEvent(new CustomEvent('wallet.edit-action', {
+                                            bubbles: true,
+                                        }
+                                    ));
+                                }} className={ `cursor-pointer flex items-center gap-2` } key={ `fab-wallet` }>
+                                    <i className={ `fa-solid fa-wallet h-4 w-4 text-center` }></i>
+                                    <span className={ `` }>Wallet</span>
+                                </DropdownMenuItem>
+                            );
+                        }
+
+                        // Push record action
+                        action.push(
+                            <DropdownMenuItem onClick={() => {
+                                setOpenRecordDialog(true);
+                            }} className={ `cursor-pointer flex items-center gap-2` } key={ `fab-record` }>
+                                <i className={ `fa-solid fa-receipt h-4 w-4 text-center` }></i>
+                                <span className={ `` }>Record</span>
+                            </DropdownMenuItem>
+                        );
+
+                        return <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className={ ` fixed right-4 bottom-4 dark:text-white` }>Add new</Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align={ `end` } side={ `top` }>
+                                { action }
+                            </DropdownMenuContent>
+                        </DropdownMenu>;
+                    }
+
+                    return <Button variant="outline" className={ ` fixed right-4 bottom-4 dark:text-white` } onClick={() => {
+                        setOpenRecordDialog(true);
+                    }}>Add record</Button>
+                })()}
+                
                 {/* Record Modal - Dialog */}
                 <RecordDialog openState={ openRecordDialog } setOpenState={ handleOpenRecordDialog }/>
                 {/* Record Modal - Delete Dialog */}

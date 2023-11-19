@@ -67,7 +67,8 @@ class RecordController extends Controller
             // Fetch Data
             $data = [
                 'data' => $data->get(),
-                'has_more' => $hasMore
+                'has_more' => $hasMore,
+                'total' => $raw->count()
             ];
         }
 
@@ -173,7 +174,7 @@ class RecordController extends Controller
             // Handle Planned Payment Confirmation
             if($request->has('planned_payment_uuid') && !empty($request->planned_payment_uuid)){
                 // Fetch Planned Payment Data
-                $plannedPayment = \App\Models\PlannedPayment::where(\DB::raw('BINARY `uuid`'), $request->planned_payment_uuid)
+                $plannedPayment = \App\Models\PlannedPayment::where(DB::raw('BINARY `uuid`'), $request->planned_payment_uuid)
                     ->firstOrFail();
 
                 // Create record

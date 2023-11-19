@@ -106,7 +106,8 @@ class WalletController extends Controller
                     
                     return $data;
                 }),
-                'has_more' => $hasMore
+                'has_more' => $hasMore,
+                'total' => isset($raw) ? $raw->count() : null
             ];
         }
 
@@ -144,8 +145,10 @@ class WalletController extends Controller
             }
 
             $data = new \App\Models\Wallet();
+            $data->user_id = $request->user()->id;
             $data->parent_id = $parent_id;
             $data->name = $request->name;
+            $data->starting_balance = $request->starting_balance ?? 0;
             $data->save();
         });
 
@@ -155,9 +158,18 @@ class WalletController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        //
+        $user = $request->user();
+
+        $data = \App\Models\Wallet::with('parent')
+            ->where(DB::raw('BINARY `uuid`'), $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        return $this->formatedJsonResponse(200, 'Data Fetched', [
+            'data' => $data
+        ]);
     }
 
     /**
@@ -191,14 +203,17 @@ class WalletController extends Controller
                     ->firstOrFail();
 
                 $parent_id = $parent->id;
+            } else {
+                $parent_id = null;
             }
 
             $data->parent_id = $parent_id;
             $data->name = $request->name;
+            $data->starting_balance = $request->starting_balance ?? 0;
             $data->save();
         });
 
-        return $this->formatedJsonResponse(200, 'Data Stored', []);
+        return $this->formatedJsonResponse(200, 'Data Updated', []);
     }
 
     /**

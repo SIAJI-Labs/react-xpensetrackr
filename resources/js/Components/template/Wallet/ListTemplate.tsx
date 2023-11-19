@@ -59,6 +59,39 @@ export default function ListTemplate({ wallet, deleteAction = true, editAction =
                                         }
                                         return <></>;
                                     })()}
+                                    {(() => {
+                                        // Check if record dialog form is exists
+                                        let walletDialogSection = document.getElementById('walletDialog-section');
+                                        if(walletDialogSection){
+                                            return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
+                                                let el = $refs.target as HTMLElement;
+                                                if(el){
+                                                    let originalText = el.innerHTML;
+                                                    el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+
+                                                    const revertToOriginalText = () => {
+                                                        if(originalText){
+                                                            el.innerHTML = originalText;
+                                                        }
+
+                                                        document.removeEventListener('dialog.wallet.shown', revertToOriginalText);
+                                                    }
+                                                    document.addEventListener('dialog.wallet.shown', revertToOriginalText);
+                                                }
+
+                                                document.dispatchEvent(new CustomEvent('wallet.edit-action', {
+                                                    bubbles: true,
+                                                    detail: {
+                                                        uuid: wallet && 'uuid' in wallet ? wallet?.uuid : ''
+                                                    }
+                                                }));
+                                            }}>
+                                                <span className={ ` text-yellow-500` }>Edit</span>
+                                            </DropdownMenuItem>;
+                                        }
+
+                                        return <></>;
+                                    })()}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>

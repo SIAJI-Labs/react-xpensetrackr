@@ -5,6 +5,7 @@ namespace App\Traits;
 use Intervention\Image\ImageManagerStatic as Image;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 trait FileUploadTrait
@@ -20,7 +21,7 @@ trait FileUploadTrait
         if ($file) {
             // Check if directory exists
             if (! (File::exists($this->fileUploadTraitsDestination))) {
-                \Log::debug('Debug on making directory ~ \App\Http\Traits\FileUploadTrait', [
+                Log::debug('Debug on making directory ~ \App\Http\Traits\FileUploadTrait', [
                     'fileUploadTraitsDestination' => $this->fileUploadTraitsDestination,
                 ]);
                 

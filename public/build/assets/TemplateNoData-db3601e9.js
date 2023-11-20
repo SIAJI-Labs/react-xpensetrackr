@@ -1,0 +1,1 @@
+import{j as r}from"./app-d6562abb.js";import"./button-e51aac1a.js";function o({hasBorder:t=!0}){let a=(Math.random()+1).toString(36).substring(7);return r.jsx("section",{children:r.jsx("div",{className:` ${t?"border":""} p-4 rounded`,children:r.jsx("span",{children:"No data available"})})},a)}export{o as T};

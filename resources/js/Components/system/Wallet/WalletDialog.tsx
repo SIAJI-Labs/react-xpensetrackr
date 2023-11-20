@@ -1,31 +1,31 @@
 import { FormEventHandler, useEffect, useState } from "react";
 import { useIsFirstRender } from "@/lib/utils";
-import { WalletItem } from "@/types";
 import axios, { AxiosError } from "axios";
+import { WalletItem } from "@/types";
 
 // Plugins
 import { IMaskMixin } from "react-imask";
 
 // Partials
 import ErrorMessage from "@/Components/forms/ErrorMessage";
+import { Check, ChevronsUpDown } from "lucide-react";
 
 // Shadcn
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
+import { ScrollArea } from "@/Components/ui/scroll-area";
 import { useToast } from "@/Components/ui/use-toast";
 import { Checkbox } from "@/Components/ui/checkbox";
-import { Input } from "@/Components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { Button } from "@/Components/ui/button";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
-import { ScrollArea } from "@/Components/ui/scroll-area";
+import { Input } from "@/Components/ui/input";
 
-type WalletDialogProps = {
+type dialogProps = {
     openState: boolean;
     setOpenState: (isOpen: boolean) => void;
 };
 
-export default function WalletDialog({ openState, setOpenState }: WalletDialogProps){
+export default function WalletDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
     const { toast } = useToast();
 
@@ -37,151 +37,24 @@ export default function WalletDialog({ openState, setOpenState }: WalletDialogPr
         />
     ));
 
-    // Dialog Action
-    useEffect(() => {
-        if(openState){
-            document.dispatchEvent(new CustomEvent('dialog.wallet.shown', { bubbles: true }));
-        } else {
-            console.log('Hidden');
-            
-            resetWalletDialog();
-            setKeepOpenWalletDialog(false);
-
-            // Announce Dialog Global Event
-            document.dispatchEvent(new CustomEvent('dialog.wallet.hidden', { bubbles: true }));
-        }
-    }, [openState]);
-
     // Form
-    const [valueWalletParent, setValueWalletParent] = useState<string>("");
-    const [valueWalletUuid, setValueWalletUuid] = useState<string>('');
-    const [valueWalletName, setValueWalletName] = useState<string>('');
-    const [valueWalletStartingBalance, setValueWalletStartingBalance] = useState<number>(0);
-    // Keep Record Dialog Open?
-    const [keepOpenWalletDialog, setKeepOpenWalletDialog] = useState<boolean>(false);
-    // Planned Payment Dialog - Forms
-    const resetWalletDialog = () => {
-        setValueWalletUuid('');
-        setValueWalletParent('');
-        setValueWalletName('');
-        setValueWalletStartingBalance(0);
-
-        setErrorWalletDialog({});
-    }
-    // Form Action
-    const [errorWalletDialog, setErrorWalletDialog] = useState<{ [key: string]: string[] }>({});
-    const [abortControllerWalletDialog, setAbortControllerWalletDialog] = useState<AbortController | null>(null);
-    const handleWalletDialogSubmit: FormEventHandler = (e) => {
-        e.preventDefault();
-        // Update submit button to loading state
-        let submitBtn = document.getElementById('wallet_dialog-submit');
-        if(submitBtn){
-            if(submitBtn.tagName.toLowerCase() === 'button'){
-                submitBtn.setAttribute('disabled', 'disabled');
-            }
-            submitBtn.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
-        }
-        // Reset error bag
-        setErrorWalletDialog({});
-
-        // Create a new AbortController
-        const abortController = new AbortController();
-        // Store the AbortController in state
-        setAbortControllerWalletDialog(abortController);
-
-        // Build Form Data
-        let formData = new FormData();
-        formData.append('parent_id', valueWalletParent);
-        formData.append('name', valueWalletName);
-        formData.append('starting_balance', valueWalletStartingBalance.toString());
-
-        if(valueWalletUuid){
-            formData.append('wallet_uuid', valueWalletUuid);
-        }
-
-        // Adjust route target
-        let actionRoute = route('api.wallet.v1.store');
-        if(valueWalletUuid){
-            formData.append('_method', 'PUT');
-            actionRoute = route('api.wallet.v1.update', valueWalletUuid);
-        }
-
-        // Make request call
-        axios.post(actionRoute, formData, {
-            cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-            })
-        }).then((response) => {
-            if (response.status === 200) {
-                const responseJson = response.data;
-            
-                if (responseJson?.code === 200) {
-                    if (!keepOpenWalletDialog) {
-                        setOpenState(false);
-                    } else {
-                        // Reset form
-                        resetWalletDialog();
-                    }
-            
-                    toast({
-                        title: "Action: Success",
-                        description: "Wallet data successfully saved",
-                    });
-                }
-            }
-
-            return true;
-        }).catch((response) => {
-            const axiosError = response as AxiosError;
-
-            let errors:any = axiosError.response?.data;
-            if(errors.errors){
-                // Store to the error bag variable
-                setErrorWalletDialog(errors.errors);
-            }
-
-            // Set a timeout to perform an action after a delay (e.g., 100 milliseconds)
-            setTimeout(() => {
-                // Find all elements with the class 'form--group' that are marked as 'is--invalid'
-                const errorElements = document.querySelectorAll('#walletDialog-forms .form--group.is--invalid');
-        
-                // Check if there are any 'is--invalid' elements
-                if (errorElements.length > 0) {
-                    // Find the element with the highest top offset within the 'is--invalid' elements
-                    const highestElement = Array.from(errorElements).reduce((a, b) =>
-                        (a as HTMLElement).offsetTop > (b as HTMLElement).offsetTop ? b : a
-                    );
-            
-                    // Scroll the element with the highest top offset into view with a smooth behavior
-                    highestElement.scrollIntoView({ behavior: 'smooth' });
-                }
-            }, 100);
-        }).finally(() => {
-            // Clear the AbortController from state
-            setAbortControllerWalletDialog(null);
-        
-            // Update to original state
-            let submitBtn = document.getElementById('wallet_dialog-submit');
-            if (submitBtn) {
-                if (submitBtn.tagName.toLowerCase() === 'button') {
-                    submitBtn.removeAttribute('disabled');
-                }
-                submitBtn.innerHTML = `Submit`;
-            }
-        });
-    };
+    const [formParent, setFormParent] = useState<string>("");
+    const [formUuid, setFormUuid] = useState<string>('');
+    const [formName, setFormName] = useState<string>('');
+    const [formStartingBalance, setFormStartingBalance] = useState<number>(0);
+    // Keep Dialog Open?
+    const [keepOpenDialog, setKeepOpenWalletDialog] = useState<boolean>(false);
 
     // Combobox - From Wallet
-    let parentComboboxTimeout: any;
+    let comboboxParentTimeout: any;
     const [openWalletParent, setOpenWalletParent] = useState<boolean>(false);
-    const [parentComboboxLabel, setWalletComboboxLabel] = useState<string>("Select an option");
-    const [parentComboboxList, setWalletComboboxList] = useState<string[] | any>([]);
-    const [parentComboboxInput, setWalletComboboxInput] = useState<string>("");
-    const [parentComboboxLoad, setWalletComboboxLoad] = useState<boolean>(false);
-    const [parentAbortController, setWalletAbortController] = useState<AbortController | null>(null);
+    const [comboboxParentLabel, setComboboxParentLabel] = useState<string>("Select an option");
+    const [comboboxParentList, setComboboxParentList] = useState<string[] | any>([]);
+    const [comboboxParentInput, setComboboxParentInput] = useState<string>("");
+    const [comboboxParentLoad, setComboboxParentLoad] = useState<boolean>(false);
+    const [comboboxParentAbortController, setComboboxParentAbortController] = useState<AbortController | null>(null);
     const fetchWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
-        setWalletComboboxLoad(true);
+        setComboboxParentLoad(true);
 
         try {
             // Build parameter
@@ -223,25 +96,25 @@ export default function WalletDialog({ openState, setOpenState }: WalletDialogPr
         return [];
     }
     useEffect(() => {
-        clearTimeout(parentComboboxTimeout);
-        setWalletComboboxList([]);
+        clearTimeout(comboboxParentTimeout);
+        setComboboxParentList([]);
 
         if(openWalletParent){
-            if (parentAbortController) {
+            if (comboboxParentAbortController) {
                 // If there is an ongoing request, abort it before making a new one.
-                parentAbortController.abort();
+                comboboxParentAbortController.abort();
             }
 
             // Create a new AbortController for the new request.
             const newAbortController = new AbortController();
-            setWalletAbortController(newAbortController);
+            setComboboxParentAbortController(newAbortController);
 
-            parentComboboxTimeout = setTimeout(() => {
-                fetchWalletList(parentComboboxInput, newAbortController)
+            comboboxParentTimeout = setTimeout(() => {
+                fetchWalletList(comboboxParentInput, newAbortController)
                     .then((data: string[] = []) => {
-                        setWalletComboboxLoad(false);
+                        setComboboxParentLoad(false);
                         if(data){
-                            setWalletComboboxList(data);
+                            setComboboxParentList(data);
                         }
                     })
                     .catch((error) => {
@@ -251,44 +124,175 @@ export default function WalletDialog({ openState, setOpenState }: WalletDialogPr
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (parentAbortController) {
-                    parentAbortController.abort();
+                if (comboboxParentAbortController) {
+                    comboboxParentAbortController.abort();
                 }
             };
         }
-    }, [parentComboboxInput, openWalletParent]);
+    }, [comboboxParentInput, openWalletParent]);
     useEffect(() => {
         if(openState){
-            if(valueWalletParent !== '' && parentComboboxList.length > 0){
-                const selected: WalletItem | undefined = parentComboboxList.find(
-                    (options: WalletItem) => options?.uuid === valueWalletParent
+            if(formParent !== '' && comboboxParentList.length > 0){
+                const selected: WalletItem | undefined = comboboxParentList.find(
+                    (options: WalletItem) => options?.uuid === formParent
                 ) as WalletItem | undefined;
     
                 if (selected) {
-                    setWalletComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                    setComboboxParentLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
                 }
             } else {
-                setWalletComboboxLabel(`Select an option`);
+                setComboboxParentLabel(`Select an option`);
             }
         } else {
-            if(!valueWalletUuid){
-                setWalletComboboxLabel(`Select an option`);
+            if(!formUuid){
+                setComboboxParentLabel(`Select an option`);
             }
         }
-    }, [valueWalletParent]);
+    }, [formParent]);
+
+    // Planned Payment Dialog - Forms
+    const resetWalletDialog = () => {
+        setFormUuid('');
+        setFormParent('');
+        setFormName('');
+        setFormStartingBalance(0);
+
+        setErrorFormDialog({});
+    }
+    // Form Action
+    const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
+    const [formDialogAbortController, setAbortControllerRecordDialog] = useState<AbortController | null>(null);
+    const handleWalletDialogSubmit: FormEventHandler = (e) => {
+        // Cancel previous request
+        if(formDialogAbortController instanceof AbortController){
+            formDialogAbortController.abort();
+        }
+
+        e.preventDefault();
+        // Update submit button to loading state
+        let submitBtn = document.getElementById('wallet-dialogSubmit');
+        if(submitBtn){
+            if(submitBtn.tagName.toLowerCase() === 'button'){
+                submitBtn.setAttribute('disabled', 'disabled');
+            }
+            submitBtn.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+        }
+        // Reset error bag
+        setErrorFormDialog({});
+
+        // Create a new AbortController
+        const abortController = new AbortController();
+        // Store the AbortController in state
+        setAbortControllerRecordDialog(abortController);
+
+        // Build Form Data
+        let formData = new FormData();
+        formData.append('parent_id', formParent);
+        formData.append('name', formName);
+        formData.append('starting_balance', formStartingBalance.toString());
+
+        if(formUuid){
+            formData.append('wallet_uuid', formUuid);
+        }
+
+        // Adjust route target
+        let actionRoute = route('api.wallet.v1.store');
+        if(formUuid){
+            formData.append('_method', 'PUT');
+            actionRoute = route('api.wallet.v1.update', formUuid);
+        }
+
+        // Make request call
+        axios.post(actionRoute, formData, {
+            cancelToken: new axios.CancelToken(function executor(c) {
+                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                abortController.abort = c;
+            })
+        }).then((response) => {
+            if (response.status === 200) {
+                const responseJson = response.data;
+            
+                if (responseJson?.code === 200) {
+                    if (!keepOpenDialog) {
+                        setOpenState(false);
+                    } else {
+                        // Reset form
+                        resetWalletDialog();
+                    }
+            
+                    toast({
+                        title: "Action: Success",
+                        description: "Wallet data successfully saved",
+                    });
+                }
+            }
+
+            return true;
+        }).catch((response) => {
+            const axiosError = response as AxiosError;
+
+            let errors:any = axiosError.response?.data;
+            if(errors.errors){
+                // Store to the error bag variable
+                setErrorFormDialog(errors.errors);
+            }
+
+            // Set a timeout to perform an action after a delay (e.g., 100 milliseconds)
+            setTimeout(() => {
+                // Find all elements with the class 'form--group' that are marked as 'is--invalid'
+                const errorElements = document.querySelectorAll('#wallet-dialogForms .form--group.is--invalid');
+        
+                // Check if there are any 'is--invalid' elements
+                if (errorElements.length > 0) {
+                    // Find the element with the highest top offset within the 'is--invalid' elements
+                    const highestElement = Array.from(errorElements).reduce((a, b) =>
+                        (a as HTMLElement).offsetTop > (b as HTMLElement).offsetTop ? b : a
+                    );
+            
+                    // Scroll the element with the highest top offset into view with a smooth behavior
+                    highestElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
+        }).finally(() => {
+            // Clear the AbortController from state
+            setAbortControllerRecordDialog(null);
+        
+            // Update to original state
+            let submitBtn = document.getElementById('wallet-dialogSubmit');
+            if (submitBtn) {
+                if (submitBtn.tagName.toLowerCase() === 'button') {
+                    submitBtn.removeAttribute('disabled');
+                }
+                submitBtn.innerHTML = `Submit`;
+            }
+        });
+    };
+
+    // Dialog Action
+    useEffect(() => {
+        if(openState){
+            document.dispatchEvent(new CustomEvent('dialog.wallet.shown', { bubbles: true }));
+        } else {
+            resetWalletDialog();
+            setKeepOpenWalletDialog(false);
+
+            // Announce Dialog Global Event
+            document.dispatchEvent(new CustomEvent('dialog.wallet.hidden', { bubbles: true }));
+        }
+    }, [openState]);
 
     // Document Ready
-    const [abortControllerWalletItem, setAbortControllerWalletItem] = useState<AbortController | null>(null);
+    const [walletFetchAbortController, setWalletFetchAbortController] = useState<AbortController | null>(null);
     const fetchWalletData = async (uuid: string, action: string = 'detail') => {
         // Cancel previous request
-        if(abortControllerWalletItem instanceof AbortController){
-            abortControllerWalletItem.abort();
+        if(walletFetchAbortController instanceof AbortController){
+            walletFetchAbortController.abort();
         }
 
         // Create a new AbortController
         const abortController = new AbortController();
         // Store the AbortController in state
-        setAbortControllerWalletDialog(abortController);
+        setWalletFetchAbortController(abortController);
         
         // Fetch
         try {
@@ -317,25 +321,21 @@ export default function WalletDialog({ openState, setOpenState }: WalletDialogPr
     }
     useEffect(() => {
         // Listen to Edit Action
-        const walletDialogEditAction = (event: any) => {
-            console.log('Listen to Dialog Planned Payment Edit Event');
-            
+        const editAction = (event: any) => {
             if(event?.detail?.uuid){
                 let uuid = event.detail.uuid;
 
                 // Fetch Data
                 fetchWalletData(uuid, 'edit').then((data: WalletItem) => {
-                    console.log(data);
-
                     // Update State
-                    setValueWalletUuid(data.uuid)
-                    setValueWalletName(data.name);
-                    setValueWalletParent(data.parent ? data.parent.uuid : '');
-                    setValueWalletStartingBalance(data.starting_balance ? data.starting_balance : 0);
+                    setFormUuid(data.uuid)
+                    setFormName(data.name);
+                    setFormParent(data.parent ? data.parent.uuid : '');
+                    setFormStartingBalance(data.starting_balance ? data.starting_balance : 0);
 
                     // Update Combobox Label
                     if(data.parent){
-                        setWalletComboboxLabel(`${data.parent ? `${data.parent.name} - ` : ''}${data.name}`);
+                        setComboboxParentLabel(`${data.parent ? `${data.parent.name} - ` : ''}${data.name}`);
                     }
                     
                     // Open record-dialog
@@ -347,24 +347,24 @@ export default function WalletDialog({ openState, setOpenState }: WalletDialogPr
                 setOpenState(true);
             }
         }
-        document.addEventListener('wallet.edit-action', walletDialogEditAction);
+        document.addEventListener('wallet.edit-action', editAction);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('wallet.edit-action', walletDialogEditAction);
+            document.removeEventListener('wallet.edit-action', editAction);
         };
     }, []);
 
     return (
-        <section id={ `walletDialog-section` }>
+        <section id={ `wallet-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
                 <DialogContent className=" h-full md:h-auto lg:min-w-[800px] max-md:!max-h-[85vh] p-0" data-type="record-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
-                        <DialogTitle className={ ` dark:text-white` }>{ valueWalletUuid ? `Edit` : `Add new` } Wallet</DialogTitle>
+                        <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Wallet</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleWalletDialogSubmit} id={ `walletDialog-forms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
+                    <form onSubmit={handleWalletDialogSubmit} id={ `wallet-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
                         {/* From Wallet */}
-                        <div className={ ` form--group  ${errorWalletDialog?.parent ? ` is--invalid` : ''}` } id={ `record_dialog-parent` }>
+                        <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `record_dialog-parent` }>
                             <label className={ ` form--label` }>From</label>
                             <div>
                                 <Popover open={openWalletParent} onOpenChange={setOpenWalletParent}>
@@ -373,31 +373,31 @@ export default function WalletDialog({ openState, setOpenState }: WalletDialogPr
                                             variant="outline"
                                             role="combobox"
                                             aria-expanded={openWalletParent}
-                                            className={ `w-full justify-between ${errorWalletDialog?.parent ? ` !border-red-500` : ''} dark:text-white` }
+                                            className={ `w-full justify-between ${errorFormDialog?.parent_id ? ` !border-red-500` : ''} dark:text-white` }
                                         >
-                                            <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{parentComboboxLabel}</span>
+                                            <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxParentLabel}</span>
                                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                         <Command shouldFilter={ false }>
-                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={parentComboboxInput} onValueChange={setWalletComboboxInput}/>
+                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxParentInput} onValueChange={setComboboxParentInput}/>
                                             
                                             <ScrollArea className="p-0">
                                                 <div className={ `max-h-[10rem]` }>
-                                                    <CommandEmpty>{parentComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                    <CommandEmpty>{comboboxParentLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                     <CommandGroup>
-                                                        {parentComboboxList.map((options: WalletItem) => (
+                                                        {comboboxParentList.map((options: WalletItem) => (
                                                             <CommandItem
                                                                 value={options?.uuid}
                                                                 key={options?.uuid}
                                                                 onSelect={(currentValue) => {
-                                                                    setValueWalletParent(currentValue === valueWalletParent ? "" : currentValue)
+                                                                    setFormParent(currentValue === formParent ? "" : currentValue)
                                                                     setOpenWalletParent(false)
                                                                 }}
                                                             >
                                                                 <Check
-                                                                    className={ `mr-2 h-4 w-4 ${valueWalletParent === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                    className={ `mr-2 h-4 w-4 ${formParent === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                 />
                                                                 <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
                                                             </CommandItem>
@@ -409,27 +409,27 @@ export default function WalletDialog({ openState, setOpenState }: WalletDialogPr
                                     </PopoverContent>
                                 </Popover>
 
-                                <ErrorMessage message={ errorWalletDialog?.parent }/>
+                                <ErrorMessage message={ errorFormDialog?.parent_id }/>
                             </div>
                         </div>
                         
                         {/* Name */}
                         <div className={ `form--group` }>
                             <label className={ `form--label` }>Name</label>
-                            <Input value={ valueWalletName } onChange={(e) => setValueWalletName(e.target.value)} placeholder={ `Wallet Name` } className={ `${errorWalletDialog?.name ? ` !border-red-500` : ''}` }/>
+                            <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Wallet Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
                                 
-                            <ErrorMessage message={ errorWalletDialog?.name }/>
+                            <ErrorMessage message={ errorFormDialog?.name }/>
                         </div>
 
                         {/* Starting Balance */}
-                        <div className={ ` form--group  ${errorWalletDialog?.starting_balance ? ` is--invalid` : ''}` } id={ `wallet_dialog-starting_balance` }>
+                        <div className={ ` form--group  ${errorFormDialog?.starting_balance ? ` is--invalid` : ''}` } id={ `wallet_dialog-starting_balance` }>
                             <label className={ `form--label` }>Starting Balance</label>
                             <MaskedInput
                                 type={ `text` }
                                 placeholder={ `Starting Balance` }
                                 inputMode={ `numeric` }
-                                value={ (valueWalletStartingBalance ?? 0).toString() }
-                                className={ `${errorWalletDialog?.starting_balance ? ` !border-red-500` : ''}` }
+                                value={ (formStartingBalance ?? 0).toString() }
+                                className={ `${errorFormDialog?.starting_balance ? ` !border-red-500` : ''}` }
                                 mask={ Number }
                                 unmask={ true }
                                 thousandsSeparator={ `,` }
@@ -439,17 +439,17 @@ export default function WalletDialog({ openState, setOpenState }: WalletDialogPr
                                     let value = (element.target as HTMLInputElement).value;
                                     value = value.replaceAll(',', '');
 
-                                    setValueWalletStartingBalance(Number(value));
+                                    setFormStartingBalance(Number(value));
                                 } }
                             />
 
-                            <ErrorMessage message={ errorWalletDialog?.starting_balance }/>
+                            <ErrorMessage message={ errorFormDialog?.starting_balance }/>
                         </div>
 
                         {/* Keep open Planned Payment dialog? */}
                         <div className={ `form-group` }>
                             <div className={ `flex items-center space-x-2` }>
-                                <Checkbox id="record_dialog-keep_open" checked={ keepOpenWalletDialog } onCheckedChange={(value) => {
+                                <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
                                     if(typeof value === 'boolean'){
                                         setKeepOpenWalletDialog(value);
                                     }
@@ -470,8 +470,8 @@ export default function WalletDialog({ openState, setOpenState }: WalletDialogPr
                             <span>Reset</span>
                         </Button>
                         <Button type='button' onClick={() => {
-                            if(document.getElementById('walletDialog-forms')){
-                                (document.getElementById('walletDialog-forms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
+                            if(document.getElementById('wallet-dialogForms')){
+                                (document.getElementById('wallet-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
                             }
                         }} id='plannedPayment_dialog-submit'>Submit</Button>
                     </DialogFooter>

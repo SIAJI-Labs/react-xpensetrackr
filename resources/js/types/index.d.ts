@@ -26,7 +26,8 @@ export interface WalletItem {
     name: string,
     starting_balance?: number,
     current_balance?: number,
-    balance?: number
+    balance?: number,
+    deleted_at?: string | null
 }
 export interface RecordItem {
     id: number,

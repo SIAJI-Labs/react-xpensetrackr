@@ -4,16 +4,16 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import axios, { AxiosError } from 'axios';
 
-type RecordDialogProps = {
+type dialogProps = {
     openState: boolean;
     setOpenState?: (isOpen: boolean) => void;
 };
 
-export default function RecordDeleteDialog({ openState, setOpenState }: RecordDialogProps){
+export default function RecordDeleteDialog({ openState, setOpenState }: dialogProps){
     const [recordUuid, setRecordUuid] = useState<string>();
     useEffect(() => {
         // Listen to Record Dialog event
-        const handleDeleteDialogRecord = (event: any) => {
+        const handleDeleteAction = (event: any) => {
             if(event?.detail?.uuid){
                 let uuid = event.detail.uuid;
                 setRecordUuid(uuid);
@@ -26,14 +26,14 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
                 }
             }
         }
-        window.addEventListener('record.deleted-action', handleDeleteDialogRecord);
+        window.addEventListener('record.delete-action', handleDeleteAction);
         // Remove the event listener when the component unmounts
         return () => {
-            window.removeEventListener('record.deleted-action', handleDeleteDialogRecord);
+            window.removeEventListener('record.delete-action', handleDeleteAction);
         };
     }, []);
 
-    const [recordDeleteAbortController, setRecordDeleteAbortController] = useState<AbortController | null>(null);
+    const [deleteAbortController, setDeleteAbortController] = useState<AbortController | null>(null);
     const confirmDelete = ($refs: any) => {
         let el = $refs.target as HTMLElement;
         if(el){
@@ -46,7 +46,7 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
         if(recordUuid){
             // Create a new AbortController for the new request.
             const abortController = new AbortController();
-            setRecordDeleteAbortController(abortController);
+            setDeleteAbortController(abortController);
 
             let formData = new FormData();
             formData.append('_method', 'DELETE');
@@ -70,7 +70,7 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
                             }
             
                             // Announce Dialog Global Event
-                            document.dispatchEvent(new CustomEvent('dialogRecord', {
+                            document.dispatchEvent(new CustomEvent('record.deleted-action', {
                                 bubbles: true,
                                 detail: {
                                     action: 'delete'
@@ -87,7 +87,7 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
     };
 
     return (
-        <section id={ `recordDeleteDialog-section` }>
+        <section id={ `record-deleteDialogSection` }>
             <AlertDialog open={ openState } onOpenChange={ setOpenState }>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -101,8 +101,8 @@ export default function RecordDeleteDialog({ openState, setOpenState }: RecordDi
                             if(setOpenState){
                                 setOpenState(false);
                             }
-                            if(recordDeleteAbortController instanceof AbortController){
-                                recordDeleteAbortController.abort();
+                            if(deleteAbortController instanceof AbortController){
+                                deleteAbortController.abort();
                             }
                         } }>
                             Cancel

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\System;
 
+use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
-use Inertia\Inertia;
 
 class RecordController extends Controller
 {
@@ -27,7 +28,7 @@ class RecordController extends Controller
 
         $data = \App\Models\Record::with('category.parent', 'fromWallet.parent', 'toWallet.parent', 'plannedPaymentRecord.plannedPayment')
             ->withTrashed()
-            ->where(\DB::raw('BINARY `uuid`'), $id)
+            ->where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
 

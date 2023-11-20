@@ -9,10 +9,10 @@ import moment from "moment-timezone";
 import axios from "axios";
 
 // Partials
-import ListRecordTemplate from "@/Components/template/PlannedPayment/ListRecordTemplate";
-import ListSkeleton from "@/Components/template/PlannedPayment/ListSkeleton";
-import BackButton from "@/Components/template/BackButtonTemplate";
-import NoDataTemplate from "@/Components/template/NoDataTemplate";
+import ListRecordTemplate from "@/Components/template/PlannedPayment/TemplateListRecord";
+import ListSkeleton from "@/Components/template/PlannedPayment/SkeletonList";
+import BackButton from "@/Components/template/TemplateBackButton";
+import NoDataTemplate from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
@@ -175,7 +175,7 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                         {/* Edit Action */}
                                         {(() => {
                                             // Check if record dialog form is exists
-                                            let plannedDialogSection = document.getElementById('plannedPaymentDialog-section');
+                                            let plannedDialogSection = document.getElementById('plannedPayment-dialogSection');
                                             if(plannedDialogSection){
                                                 return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
                                                     let el = $refs.target as HTMLElement;
@@ -210,7 +210,7 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                         {/* Delete Action */}
                                         {(() => {
                                             // Check if record dialog form is exists
-                                            let deleteSection = document.getElementById('plannedPaymentDeleteDialog-section');
+                                            let deleteSection = document.getElementById('plannedPayment-deleteDialogSection');
                                             if(deleteSection){
                                                 return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
                                                     document.dispatchEvent(new CustomEvent('planned-payment.delete-action', {

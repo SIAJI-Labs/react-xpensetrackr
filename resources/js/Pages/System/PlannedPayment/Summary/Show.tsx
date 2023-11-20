@@ -8,10 +8,10 @@ import { formatRupiah } from "@/function";
 import moment from "moment-timezone";
 
 // Partials
-import ListTemplate from "@/Components/template/PlannedPayment/ListTemplate";
-import ListSkeleton from "@/Components/template/PlannedPayment/ListSkeleton";
-import BackButton from "@/Components/template/BackButtonTemplate";
-import NoDataTemplate from "@/Components/template/NoDataTemplate";
+import ListTemplate from "@/Components/template/PlannedPayment/TemplateList";
+import ListSkeleton from "@/Components/template/PlannedPayment/SkeletonList";
+import BackButton from "@/Components/template/TemplateBackButton";
+import NoDataTemplate from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn

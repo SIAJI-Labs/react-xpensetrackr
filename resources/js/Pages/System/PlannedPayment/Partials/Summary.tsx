@@ -5,12 +5,12 @@ import { PageProps } from "@/types";
 import moment from "moment-timezone";
 
 // Partials
-import NoDataTemplate from "@/Components/template/NoDataTemplate";
-import SummaryTemplate from "@/Components/template/PlannedPayment/SummaryTemplate";
+import NoDataTemplate from "@/Components/template/TemplateNoData";
+import SummaryTemplate from "@/Components/template/PlannedPayment/TemplateSummary";
 
 // Shadcn
 import { Button } from "@/Components/ui/button";
-import SummarySkeleton from "@/Components/template/PlannedPayment/SummarySkeleton";
+import SummarySkeleton from "@/Components/template/PlannedPayment/SkeletonSummary";
 import axios from "axios";
 import { useIsFirstRender } from "@/lib/utils";
 

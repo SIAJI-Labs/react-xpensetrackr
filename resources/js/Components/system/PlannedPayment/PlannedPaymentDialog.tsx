@@ -1,33 +1,37 @@
-import { useIsFirstRender } from "@/lib/utils";
 import { FormEventHandler, useEffect, useMemo, useState } from "react";
+import { CategoryItem, PlannedItem, WalletItem } from "@/types";
+import { useIsFirstRender } from "@/lib/utils";
+import axios, { AxiosError } from "axios";
+import { format } from "date-fns";
+
+// Plugins
+import { momentFormated, ucwords } from "@/function";
+import { IMaskMixin } from "react-imask";
+import moment from "moment-timezone";
+
+// Partials
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 
 // Shadcn
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { useToast } from "@/Components/ui/use-toast";
-import { momentFormated, ucwords } from "@/function";
-import ErrorMessage from "@/Components/forms/ErrorMessage";
-import { Input } from "@/Components/ui/input";
-import axios, { AxiosError } from "axios";
-import { CategoryItem, PlannedItem, WalletItem } from "@/types";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import { Button } from "@/Components/ui/button";
-import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
-import { IMaskMixin } from "react-imask";
-import { format } from "date-fns";
-import { Calendar } from "@/Components/ui/calendar";
-import { Textarea } from "@/Components/ui/textarea";
-import { ScrollArea } from "@/Components/ui/scroll-area";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import moment from "moment-timezone";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
+import ErrorMessage from "@/Components/forms/ErrorMessage";
+import { ScrollArea } from "@/Components/ui/scroll-area";
+import { useToast } from "@/Components/ui/use-toast";
 import { Checkbox } from "@/Components/ui/checkbox";
+import { Textarea } from "@/Components/ui/textarea";
+import { Calendar } from "@/Components/ui/calendar";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
 
-type PlannedPaymentDialogProps = {
+type dialogProps = {
     openState: boolean;
     setOpenState: (isOpen: boolean) => void;
 };
 
-export default function PlannedPaymentDialog({ openState, setOpenState }: PlannedPaymentDialogProps){
+export default function PlannedPaymentDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
     const { toast } = useToast();
 
@@ -40,34 +44,34 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
     ));
 
     // Form Variable
-    const [valuePlannedPaymentUuid, setValuePlannedPaymentUuid] = useState<string>('');
-    const [valuePlannedPaymentName, setValuePlannedPaymentName] = useState<string>('');
-    const [valuePlannedPaymentType, setValuePlannedPaymentType] = useState<string>('expense');
-    const [valuePlannedPaymentCategory, setValuePlannedPaymentCategory] = useState<string>("");
-    const [valuePlannedPaymentFromWallet, setValuePlannedPaymentFromWallet] = useState<string>("");
-    const [valuePlannedPaymentToWallet, setValuePlannedPaymentToWallet] = useState<string>("");
-    const [valuePlannedPaymentAmount, setValuePlannedPaymentAmount] = useState<number>();
-    const [valuePlannedPaymentExtraAmount, setValuePlannedPaymentExtraAmount] = useState<number>();
-    const [valuePlannedPaymentExtraType, setValuePlannedPaymentExtraType] = useState<string>('amount');
-    const [valuePlannedPaymentOccurence, setValuePlannedPaymentOccurence] = useState<string>('recurring');
-    const [valuePlannedPaymentFrequency, setValuePlannedPaymentFrequency] = useState<number>(1);
-    const [valuePlannedPaymentFrequencyType, setValuePlannedPaymentFrequencyType] = useState<string>('');
-    const [valuePlannedPaymentDate, setValuePlannedPaymentDate] = useState<Date>();
-    const [valuePlannedPaymentNotes, setValuePlannedPaymentNotes] = useState<string>('');
-    // Keep Record Dialog Open?
-    const [keepOpenPlannedPaymentDialog, setKeepOpenPlannedPaymentDialog] = useState<boolean>(false);
+    const [formUuid, setFormUuid] = useState<string>('');
+    const [formName, setFormName] = useState<string>('');
+    const [formType, setFormType] = useState<string>('expense');
+    const [formCategory, setFormCategory] = useState<string>("");
+    const [formFromWallet, setFormFromWallet] = useState<string>("");
+    const [formToWallet, setFormToWallet] = useState<string>("");
+    const [formAmount, setFormAmount] = useState<number>();
+    const [formExtraAmount, setFormExtraAmount] = useState<number>();
+    const [formExtraType, setFormExtraType] = useState<string>('amount');
+    const [formOccurence, setFormOccurence] = useState<string>('recurring');
+    const [formFrequency, setFormFrequency] = useState<number>(1);
+    const [formFrequencyType, setFormFrequencyType] = useState<string>('');
+    const [formDate, setFormDate] = useState<Date>();
+    const [formNotes, setFormNotes] = useState<string>('');
+    // Keep Dialog Open?
+    const [keepOpenDialog, setKeepOpenDialog] = useState<boolean>(false);
 
     // Combobox - Category
-    let categoryComboboxTimeout: any;
-    const [openRecordCategory, setOpenRecordCategory] = useState<boolean>(false);
-    const [categoryComboboxLabel, setCategoryComboboxLabel] = useState<string>("Select an option");
-    const [categoryComboboxList, setCategoryComboboxList] = useState<string[] | any>([]);
-    const [categoryComboboxInput, setCategoryComboboxInput] = useState<string>("");
-    const [categoryComboboxLoad, setCategoryComboboxLoad] = useState<boolean>(false);
-    const [categoryAbortController, setCategoryAbortController] = useState<AbortController | null>(null);
+    let comboboxCategoryTimeout: any;
+    const [comboboxCategoryOpenState, setComboboxCategoryOpenState] = useState<boolean>(false);
+    const [comboboxCategoryLabel, setComboboxCategoryLabel] = useState<string>("Select an option");
+    const [comboboxCategoryList, setComboboxCategoryList] = useState<string[] | any>([]);
+    const [comboboxCategoryInput, setComboboxCategoryInput] = useState<string>("");
+    const [comboboxCategoryLoadState, setComboboxCategoryLoadState] = useState<boolean>(false);
+    const [comboboxCategoryAbortController, setComboboxCategoryAbortController] = useState<AbortController | null>(null);
     const fetchCategoryList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
         // Fetch Category Item List
-        setCategoryComboboxLoad(true);
+        setComboboxCategoryLoadState(true);
 
         try {
             // Build parameter
@@ -110,25 +114,25 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
     }
     useEffect(() => {
         // Handle Category Item
-        clearTimeout(categoryComboboxTimeout);
-        setCategoryComboboxList([]);
+        clearTimeout(comboboxCategoryTimeout);
+        setComboboxCategoryList([]);
 
-        if(openRecordCategory){
-            if (categoryAbortController) {
+        if(comboboxCategoryOpenState){
+            if (comboboxCategoryAbortController) {
                 // If there is an ongoing request, abort it before making a new one.
-                categoryAbortController.abort();
+                comboboxCategoryAbortController.abort();
             }
 
             // Create a new AbortController for the new request.
             const newAbortController = new AbortController();
-            setCategoryAbortController(newAbortController);
+            setComboboxCategoryAbortController(newAbortController);
 
-            categoryComboboxTimeout = setTimeout(() => {
-                fetchCategoryList(categoryComboboxInput, newAbortController)
+            comboboxCategoryTimeout = setTimeout(() => {
+                fetchCategoryList(comboboxCategoryInput, newAbortController)
                     .then((data: string[] = []) => {
-                        setCategoryComboboxLoad(false);
+                        setComboboxCategoryLoadState(false);
                         if(data){
-                            setCategoryComboboxList(data);
+                            setComboboxCategoryList(data);
                         }
                     })
                     .catch((error) => {
@@ -138,42 +142,43 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (categoryAbortController) {
-                    categoryAbortController.abort();
+                if (comboboxCategoryAbortController) {
+                    comboboxCategoryAbortController.abort();
                 }
             };
         }
-    }, [categoryComboboxInput, openRecordCategory]);
+    }, [comboboxCategoryInput, comboboxCategoryOpenState]);
     useEffect(() => {
         // Handle selection Label
         if(openState){
-            if(valuePlannedPaymentCategory !== '' && categoryComboboxList.length > 0){
-                const selected: CategoryItem | undefined = categoryComboboxList.find(
-                    (options: CategoryItem) => options?.uuid === valuePlannedPaymentCategory
+            if(formCategory !== '' && comboboxCategoryList.length > 0){
+                const selected: CategoryItem | undefined = comboboxCategoryList.find(
+                    (options: CategoryItem) => options?.uuid === formCategory
                 ) as CategoryItem | undefined;
     
                 if (selected) {
-                    setCategoryComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                    setComboboxCategoryLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
                 }
             } else {
-                setCategoryComboboxLabel(`Select an option`);
+                setComboboxCategoryLabel(`Select an option`);
             }
         } else {
-            if(!valuePlannedPaymentUuid){
-                setCategoryComboboxLabel(`Select an option`);
+            if(!formUuid){
+                setComboboxCategoryLabel(`Select an option`);
             }
         }
-    }, [valuePlannedPaymentCategory]);
+    }, [formCategory]);
+
     // Combobox - From Wallet
-    let fromWalletComboboxTimeout: any;
-    const [openRecordFromWallet, setOpenRecordFromWallet] = useState<boolean>(false);
-    const [fromWalletComboboxLabel, setFromWalletComboboxLabel] = useState<string>("Select an option");
-    const [fromWalletComboboxList, setFromWalletComboboxList] = useState<string[] | any>([]);
-    const [fromWalletComboboxInput, setFromWalletComboboxInput] = useState<string>("");
-    const [fromWalletComboboxLoad, setFromWalletComboboxLoad] = useState<boolean>(false);
-    const [fromWalletAbortController, setFromWalletAbortController] = useState<AbortController | null>(null);
+    let comboboxFromWalletTimeout: any;
+    const [comboboxFromWalletOpenState, setComboboxFromWalletOpenState] = useState<boolean>(false);
+    const [comboboxFromWalletLabel, setComboboxFromWalletLabel] = useState<string>("Select an option");
+    const [comboboxFromWalletList, setComboboxFromWalletList] = useState<string[] | any>([]);
+    const [comboboxFromWalletInput, setComboboxFromWalletInput] = useState<string>("");
+    const [comboboxFromWalletLoadState, setComboboxFromWalletLoadState] = useState<boolean>(false);
+    const [comboboxFromWalletAbortController, setComboboxFromWalletAbortController] = useState<AbortController | null>(null);
     const fetchFromWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
-        setFromWalletComboboxLoad(true);
+        setComboboxFromWalletLoadState(true);
 
         try {
             // Build parameter
@@ -214,25 +219,25 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
         return [];
     }
     useEffect(() => {
-        clearTimeout(fromWalletComboboxTimeout);
-        setFromWalletComboboxList([]);
+        clearTimeout(comboboxFromWalletTimeout);
+        setComboboxFromWalletList([]);
 
-        if(openRecordFromWallet){
-            if (fromWalletAbortController) {
+        if(comboboxFromWalletOpenState){
+            if (comboboxFromWalletAbortController) {
                 // If there is an ongoing request, abort it before making a new one.
-                fromWalletAbortController.abort();
+                comboboxFromWalletAbortController.abort();
             }
 
             // Create a new AbortController for the new request.
             const newAbortController = new AbortController();
-            setFromWalletAbortController(newAbortController);
+            setComboboxFromWalletAbortController(newAbortController);
 
-            fromWalletComboboxTimeout = setTimeout(() => {
-                fetchFromWalletList(fromWalletComboboxInput, newAbortController)
+            comboboxFromWalletTimeout = setTimeout(() => {
+                fetchFromWalletList(comboboxFromWalletInput, newAbortController)
                     .then((data: string[] = []) => {
-                        setFromWalletComboboxLoad(false);
+                        setComboboxFromWalletLoadState(false);
                         if(data){
-                            setFromWalletComboboxList(data);
+                            setComboboxFromWalletList(data);
                         }
                     })
                     .catch((error) => {
@@ -242,41 +247,42 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (fromWalletAbortController) {
-                    fromWalletAbortController.abort();
+                if (comboboxFromWalletAbortController) {
+                    comboboxFromWalletAbortController.abort();
                 }
             };
         }
-    }, [fromWalletComboboxInput, openRecordFromWallet]);
+    }, [comboboxFromWalletInput, comboboxFromWalletOpenState]);
     useEffect(() => {
         if(openState){
-            if(valuePlannedPaymentFromWallet !== '' && fromWalletComboboxList.length > 0){
-                const selected: WalletItem | undefined = fromWalletComboboxList.find(
-                    (options: WalletItem) => options?.uuid === valuePlannedPaymentFromWallet
+            if(formFromWallet !== '' && comboboxFromWalletList.length > 0){
+                const selected: WalletItem | undefined = comboboxFromWalletList.find(
+                    (options: WalletItem) => options?.uuid === formFromWallet
                 ) as WalletItem | undefined;
     
                 if (selected) {
-                    setFromWalletComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                    setComboboxFromWalletLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
                 }
             } else {
-                setFromWalletComboboxLabel(`Select an option`);
+                setComboboxFromWalletLabel(`Select an option`);
             }
         } else {
-            if(!valuePlannedPaymentUuid){
-                setFromWalletComboboxLabel(`Select an option`);
+            if(!formUuid){
+                setComboboxFromWalletLabel(`Select an option`);
             }
         }
-    }, [valuePlannedPaymentFromWallet]);
+    }, [formFromWallet]);
+
     // Combobox - To Wallet
-    let toWalletComboboxTimeout: any;
-    const [openRecordToWallet, setOpenRecordToWallet] = useState<boolean>(false);
-    const [toWalletComboboxLabel, setToWalletComboboxLabel] = useState<string>("Select an option");
-    const [toWalletComboboxList, setToWalletComboboxList] = useState<string[] | any>([]);
-    const [toWalletComboboxInput, setToWalletComboboxInput] = useState<string>("");
-    const [toWalletComboboxLoad, setToWalletComboboxLoad] = useState<boolean>(false);
-    const [toWalletAbortController, setToWalletAbortController] = useState<AbortController | null>(null);
+    let comboboxToWalletTimeout: any;
+    const [comboboxToWalletOpenState, setComboboxToWalletOpenState] = useState<boolean>(false);
+    const [comboboxToWalletLabel, setComboboxToWalletLabel] = useState<string>("Select an option");
+    const [comboboxToWalletList, setComboboxToWalletList] = useState<string[] | any>([]);
+    const [comboboxToWalletInput, setComboboxToWalletInput] = useState<string>("");
+    const [comboboxToWalletLoadState, setComboboxToWalletLoadState] = useState<boolean>(false);
+    const [comboboxToWalletAbort, setComboboxToWalletAbort] = useState<AbortController | null>(null);
     const fetchToWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
-        setToWalletComboboxLoad(true);
+        setComboboxToWalletLoadState(true);
 
         try {
             // Build parameter
@@ -317,25 +323,25 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
         return [];
     }
     useEffect(() => {
-        clearTimeout(toWalletComboboxTimeout);
-        setToWalletComboboxList([]);
+        clearTimeout(comboboxToWalletTimeout);
+        setComboboxToWalletList([]);
 
-        if(openRecordToWallet){
-            if (toWalletAbortController) {
+        if(comboboxToWalletOpenState){
+            if (comboboxToWalletAbort) {
                 // If there is an ongoing request, abort it before making a new one.
-                toWalletAbortController.abort();
+                comboboxToWalletAbort.abort();
             }
 
             // Create a new AbortController for the new request.
             const newAbortController = new AbortController();
-            setToWalletAbortController(newAbortController);
+            setComboboxToWalletAbort(newAbortController);
 
-            toWalletComboboxTimeout = setTimeout(() => {
-                fetchToWalletList(toWalletComboboxInput, newAbortController)
+            comboboxToWalletTimeout = setTimeout(() => {
+                fetchToWalletList(comboboxToWalletInput, newAbortController)
                     .then((data: string[] = []) => {
-                        setToWalletComboboxLoad(false);
+                        setComboboxToWalletLoadState(false);
                         if(data){
-                            setToWalletComboboxList(data);
+                            setComboboxToWalletList(data);
                         }
                     })
                     .catch((error) => {
@@ -345,41 +351,39 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (toWalletAbortController) {
-                    toWalletAbortController.abort();
+                if (comboboxToWalletAbort) {
+                    comboboxToWalletAbort.abort();
                 }
             };
         }
-    }, [toWalletComboboxInput, openRecordToWallet]);
+    }, [comboboxToWalletInput, comboboxToWalletOpenState]);
     useEffect(() => {
         if(openState){
-            if(valuePlannedPaymentToWallet !== '' && toWalletComboboxList.length > 0){
-                const selected: WalletItem | undefined = toWalletComboboxList.find(
-                    (options: WalletItem) => options?.uuid === valuePlannedPaymentToWallet
+            if(formToWallet !== '' && comboboxToWalletList.length > 0){
+                const selected: WalletItem | undefined = comboboxToWalletList.find(
+                    (options: WalletItem) => options?.uuid === formToWallet
                 ) as WalletItem | undefined;
     
                 if (selected) {
-                    setToWalletComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                    setComboboxToWalletLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
                 }
             } else {
-                setToWalletComboboxLabel(`Select an option`);
+                setComboboxToWalletLabel(`Select an option`);
             }
         } else {
-            if(!valuePlannedPaymentUuid){
-                setToWalletComboboxLabel(`Select an option`);
+            if(!formUuid){
+                setComboboxToWalletLabel(`Select an option`);
             }
         }
-    }, [valuePlannedPaymentToWallet]);
+    }, [formToWallet]);
 
     // Dialog Action
     useEffect(() => {
         if(openState){
             document.dispatchEvent(new CustomEvent('dialog.planned-payment.shown', { bubbles: true }));
         } else {
-            console.log('Hidden');
-            
-            resetPlannedPaymentDialog();
-            setKeepOpenPlannedPaymentDialog(false);
+            resetFormDialog();
+            setKeepOpenDialog(false);
 
             // Announce Dialog Global Event
             document.dispatchEvent(new CustomEvent('dialog.planned-payment.hidden', { bubbles: true }));
@@ -387,31 +391,36 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
     }, [openState]);
     
     // Planned Payment Dialog - Forms
-    const resetPlannedPaymentDialog = () => {
-        setValuePlannedPaymentUuid('');
-        setValuePlannedPaymentName('');
-        setValuePlannedPaymentType('expense');
-        setValuePlannedPaymentCategory('');
-        setValuePlannedPaymentFromWallet('');
-        setValuePlannedPaymentToWallet('');
-        setValuePlannedPaymentAmount(0);
-        setValuePlannedPaymentExtraAmount(0);
-        setValuePlannedPaymentExtraType('amount');
-        setValuePlannedPaymentOccurence('recurring');
-        setValuePlannedPaymentFrequency(1);
-        setValuePlannedPaymentFrequencyType('');
-        setValuePlannedPaymentDate(undefined);
-        setValuePlannedPaymentNotes('');
+    const resetFormDialog = () => {
+        setFormUuid('');
+        setFormName('');
+        setFormType('expense');
+        setFormCategory('');
+        setFormFromWallet('');
+        setFormToWallet('');
+        setFormAmount(0);
+        setFormExtraAmount(0);
+        setFormExtraType('amount');
+        setFormOccurence('recurring');
+        setFormFrequency(1);
+        setFormFrequencyType('');
+        setFormDate(undefined);
+        setFormNotes('');
 
-        setErrorPlanndPaymentDialog({});
+        setErrorFormDialog({});
     }
     // Form Action
-    const [errorPlannedPaymentDialog, setErrorPlanndPaymentDialog] = useState<{ [key: string]: string[] }>({});
-    const [abortControllerPlannedPaymentDialog, setAbortControllerPlannedPaymentDialog] = useState<AbortController | null>(null);
-    const handlePlannedPaymentDialogSubmit: FormEventHandler = (e) => {
+    const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
+    const [formDialogAbortController, setFormDialogAbortController] = useState<AbortController | null>(null);
+    const handleSubmitDialog: FormEventHandler = (e) => {
+        // Cancel previous request
+        if(formDialogAbortController instanceof AbortController){
+            formDialogAbortController.abort();
+        }
+
         e.preventDefault();
         // Update submit button to loading state
-        let submitBtn = document.getElementById('plannedPayment_dialog-submit');
+        let submitBtn = document.getElementById('plannedPayment-dialogSubmit');
         if(submitBtn){
             if(submitBtn.tagName.toLowerCase() === 'button'){
                 submitBtn.setAttribute('disabled', 'disabled');
@@ -419,35 +428,35 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
             submitBtn.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
         }
         // Reset error bag
-        setErrorPlanndPaymentDialog({});
+        setErrorFormDialog({});
 
         // Create a new AbortController
         const abortController = new AbortController();
         // Store the AbortController in state
-        setAbortControllerPlannedPaymentDialog(abortController);
+        setFormDialogAbortController(abortController);
 
         // Build Form Data
         let formData = new FormData();
-        formData.append('name', valuePlannedPaymentName);
-        formData.append('type', valuePlannedPaymentType);
-        formData.append('category', valuePlannedPaymentCategory);
-        formData.append('from_wallet', valuePlannedPaymentFromWallet);
-        formData.append('to_wallet', valuePlannedPaymentToWallet);
-        formData.append('amount', String(valuePlannedPaymentAmount ?? 0));
-        formData.append('extra_amount', String(valuePlannedPaymentExtraAmount ?? 0));
-        formData.append('extra_type', valuePlannedPaymentExtraType);
-        formData.append('date', String(valuePlannedPaymentDate ? moment(valuePlannedPaymentDate).format('YYYY-MM-DD HH:mm:ss') : ''));
-        formData.append('occurence', String(valuePlannedPaymentOccurence ?? ''));
-        formData.append('frequency', String(valuePlannedPaymentFrequency ?? 0));
-        formData.append('frequency_type', String(valuePlannedPaymentFrequencyType ?? ''));
-        formData.append('notes', String(valuePlannedPaymentNotes ?? ''));
+        formData.append('name', formName);
+        formData.append('type', formType);
+        formData.append('category', formCategory);
+        formData.append('from_wallet', formFromWallet);
+        formData.append('to_wallet', formToWallet);
+        formData.append('amount', String(formAmount ?? 0));
+        formData.append('extra_amount', String(formExtraAmount ?? 0));
+        formData.append('extra_type', formExtraType);
+        formData.append('date', String(formDate ? moment(formDate).format('YYYY-MM-DD HH:mm:ss') : ''));
+        formData.append('occurence', String(formOccurence ?? ''));
+        formData.append('frequency', String(formFrequency ?? 0));
+        formData.append('frequency_type', String(formFrequencyType ?? ''));
+        formData.append('notes', String(formNotes ?? ''));
         formData.append('timezone', moment.tz.guess());
 
         // Adjust route target
         let actionRoute = route('api.planned-payment.v1.store');
-        if(valuePlannedPaymentUuid){
+        if(formUuid){
             formData.append('_method', 'PUT');
-            actionRoute = route('api.planned-payment.v1.update', valuePlannedPaymentUuid);
+            actionRoute = route('api.planned-payment.v1.update', formUuid);
         }
 
         // Make request call
@@ -461,11 +470,11 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                 const responseJson = response.data;
             
                 if (responseJson?.code === 200) {
-                    if (!keepOpenPlannedPaymentDialog) {
+                    if (!keepOpenDialog) {
                         setOpenState(false);
                     } else {
                         // Reset form
-                        resetPlannedPaymentDialog();
+                        resetFormDialog();
                     }
             
                     toast({
@@ -482,13 +491,13 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
             let errors:any = axiosError.response?.data;
             if(errors.errors){
                 // Store to the error bag variable
-                setErrorPlanndPaymentDialog(errors.errors);
+                setErrorFormDialog(errors.errors);
             }
 
             // Set a timeout to perform an action after a delay (e.g., 100 milliseconds)
             setTimeout(() => {
                 // Find all elements with the class 'form--group' that are marked as 'is--invalid'
-                const errorElements = document.querySelectorAll('#plannedPaymentDialog-forms .form--group.is--invalid');
+                const errorElements = document.querySelectorAll('#plannedPayment-dialogForms .form--group.is--invalid');
         
                 // Check if there are any 'is--invalid' elements
                 if (errorElements.length > 0) {
@@ -503,10 +512,10 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
             }, 100);
         }).finally(() => {
             // Clear the AbortController from state
-            setAbortControllerPlannedPaymentDialog(null);
+            setFormDialogAbortController(null);
         
             // Update to original state
-            let submitBtn = document.getElementById('plannedPayment_dialog-submit');
+            let submitBtn = document.getElementById('plannedPayment-dialogSubmit');
             if (submitBtn) {
                 if (submitBtn.tagName.toLowerCase() === 'button') {
                     submitBtn.removeAttribute('disabled');
@@ -517,31 +526,31 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
     }
 
     // Calculate Final Amount
-    const valuePlannedPaymentFinalAmount = useMemo(() => {
+    const formFinalAmount = useMemo(() => {
         // Calculate Final Amount
-        let amount: number = valuePlannedPaymentAmount ?? 0;
-        let extra: number = valuePlannedPaymentExtraAmount ?? 0;
+        let amount: number = formAmount ?? 0;
+        let extra: number = formExtraAmount ?? 0;
 
         // Calculate extra value if extra type is percentage
-        if(valuePlannedPaymentExtraType === 'percentage'){
+        if(formExtraType === 'percentage'){
             extra = (extra * amount) / 100;
         }
 
         return amount + extra;
-    }, [valuePlannedPaymentAmount, valuePlannedPaymentExtraAmount, valuePlannedPaymentExtraType]);
+    }, [formAmount, formExtraAmount, formExtraType]);
 
     // Document Ready
-    const [abortControllerPlannedPaymentItem, setAbortControllerPlannedPaymentItem] = useState<AbortController | null>(null);
+    const [plannedPaymentFetchAbortController, setPlannedPaymentFetchAbortController] = useState<AbortController | null>(null);
     const fetchPlannedPaymentData = async (uuid: string, action: string = 'detail') => {
         // Cancel previous request
-        if(abortControllerPlannedPaymentItem instanceof AbortController){
-            abortControllerPlannedPaymentItem.abort();
+        if(plannedPaymentFetchAbortController instanceof AbortController){
+            plannedPaymentFetchAbortController.abort();
         }
 
         // Create a new AbortController
         const abortController = new AbortController();
         // Store the AbortController in state
-        setAbortControllerPlannedPaymentItem(abortController);
+        setPlannedPaymentFetchAbortController(abortController);
         
         // Fetch
         try {
@@ -570,43 +579,40 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
     }
     useEffect(() => {
         // Listen to Edit Action
-        const plannedPaymentDialogEditAction = (event: any) => {
-            console.log('Listen to Dialog Planned Payment Edit Event');
-            
+        const editAction = (event: any) => {
             if(event?.detail?.uuid){
                 let uuid = event.detail.uuid;
 
                 // Fetch Data
                 fetchPlannedPaymentData(uuid, 'edit').then((data: PlannedItem) => {
-                    console.log(data);
                     let raw = momentFormated('YYYY-MM-DD', data.date_start, moment.tz.guess());
                     let date = moment(raw).toDate();
 
                     // Update State
-                    setValuePlannedPaymentUuid(data.uuid)
-                    setValuePlannedPaymentName(data.name);
-                    setValuePlannedPaymentType(data.type);
-                    setValuePlannedPaymentCategory(data.category ? data.category.uuid : '');
-                    setValuePlannedPaymentFromWallet(data.from_wallet ? data.from_wallet.uuid : '');
-                    setValuePlannedPaymentToWallet(data.to_wallet ? data.to_wallet.uuid : '');
-                    setValuePlannedPaymentAmount(data.amount);
-                    setValuePlannedPaymentExtraAmount(data.extra_type === 'amount' ? data.extra_amount : data.extra_percentage);
-                    setValuePlannedPaymentExtraType(data.extra_type);
-                    setValuePlannedPaymentOccurence(data.repeat_type);
-                    setValuePlannedPaymentFrequency(data.repeat_frequency);
-                    setValuePlannedPaymentFrequencyType(data.repeat_period);
-                    setValuePlannedPaymentDate(date);
-                    setValuePlannedPaymentNotes(data.note ?? '');
+                    setFormUuid(data.uuid)
+                    setFormName(data.name);
+                    setFormType(data.type);
+                    setFormCategory(data.category ? data.category.uuid : '');
+                    setFormFromWallet(data.from_wallet ? data.from_wallet.uuid : '');
+                    setFormToWallet(data.to_wallet ? data.to_wallet.uuid : '');
+                    setFormAmount(data.amount);
+                    setFormExtraAmount(data.extra_type === 'amount' ? data.extra_amount : data.extra_percentage);
+                    setFormExtraType(data.extra_type);
+                    setFormOccurence(data.repeat_type);
+                    setFormFrequency(data.repeat_frequency);
+                    setFormFrequencyType(data.repeat_period);
+                    setFormDate(date);
+                    setFormNotes(data.note ?? '');
 
                     // Update Combobox Label
                     if(data.category){
-                        setCategoryComboboxLabel(`${data.category.parent ? `${data.category.parent.name} - ` : ''}${data.category.name}`);
+                        setComboboxCategoryLabel(`${data.category.parent ? `${data.category.parent.name} - ` : ''}${data.category.name}`);
                     }
                     if(data.from_wallet){
-                        setFromWalletComboboxLabel(`${data.from_wallet.parent ? `${data.from_wallet.parent.name} - ` : ''}${data.from_wallet.name}`);
+                        setComboboxFromWalletLabel(`${data.from_wallet.parent ? `${data.from_wallet.parent.name} - ` : ''}${data.from_wallet.name}`);
                     }
                     if(data.to_wallet){
-                        setToWalletComboboxLabel(`${data.to_wallet.parent ? `${data.to_wallet.parent.name} - ` : ''}${data.to_wallet.name}`);
+                        setComboboxToWalletLabel(`${data.to_wallet.parent ? `${data.to_wallet.parent.name} - ` : ''}${data.to_wallet.name}`);
                     }
                     
                     // Open record-dialog
@@ -618,42 +624,42 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                 setOpenState(true);
             }
         }
-        document.addEventListener('planned-payment.edit-action', plannedPaymentDialogEditAction);
+        document.addEventListener('planned-payment.edit-action', editAction);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('planned-payment.edit-action', plannedPaymentDialogEditAction);
+            document.removeEventListener('planned-payment.edit-action', editAction);
         };
     }, []);
 
     return (
-        <section id={ `plannedPaymentDialog-section` }>
+        <section id={ `plannedPayment-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
                 <DialogContent className=" h-full md:h-auto lg:min-w-[800px] max-md:!max-h-[85vh] p-0" data-type="record-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
-                        <DialogTitle className={ ` dark:text-white` }>{ valuePlannedPaymentUuid ? `Edit` : `Add new` } Planned Payment</DialogTitle>
+                        <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Planned Payment</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handlePlannedPaymentDialogSubmit} id={ `plannedPaymentDialog-forms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh]` }>
+                    <form onSubmit={handleSubmitDialog} id={ `plannedPayment-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh]` }>
                         <div className={ ` flex gap-0 lg:gap-6 flex-col lg:flex-row px-6` }>
                             {/* Left */}
                             <div className={ `py-6 w-full lg:w-3/5` }>
                                 {/* Name */}
                                 <div className={ `form--group` }>
                                     <label className={ `form--label` }>Name</label>
-                                    <Input value={ valuePlannedPaymentName } onChange={(e) => setValuePlannedPaymentName(e.target.value)} placeholder={ `Planned Payment Name` } className={ `${errorPlannedPaymentDialog?.category ? ` !border-red-500` : ''}` }/>
+                                    <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Planned Payment Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
                                     
-                                    <ErrorMessage message={ errorPlannedPaymentDialog?.name }/>
+                                    <ErrorMessage message={ errorFormDialog?.name }/>
                                 </div>
 
                                 {/* Data Type */}
-                                <div className={ `form--group mb-4 ${errorPlannedPaymentDialog?.type ? ` is--invalid` : ''}` }>
-                                    <div className={ ` flex flex-row gap-1 w-full border p-1 rounded-md ${errorPlannedPaymentDialog?.type ? ` !border-red-500` : ''}` } id={ `planned_dialog-type` }>
+                                <div className={ `form--group mb-4 ${errorFormDialog?.type ? ` is--invalid` : ''}` }>
+                                    <div className={ ` flex flex-row gap-1 w-full border p-1 rounded-md ${errorFormDialog?.type ? ` !border-red-500` : ''}` } id={ `planned_dialog-type` }>
                                         {(() => {
                                             let recordType: any[] = [];
                                             ['income', 'transfer', 'expense'].map((value, index) => {
                                                 recordType.push(
-                                                    <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valuePlannedPaymentType === value ? `bg-primary ` : ` dark:!text-white dark:hover:!text-black !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
-                                                        setValuePlannedPaymentType(value);
+                                                    <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ formType === value ? `bg-primary ` : ` dark:!text-white dark:hover:!text-black !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
+                                                        setFormType(value);
                                                     }} key={ `record_type-${value}` }>
                                                         <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
                                                     </div>
@@ -668,43 +674,43 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                         })()}
                                     </div>
 
-                                    <ErrorMessage message={ errorPlannedPaymentDialog?.category_id }/>
+                                    <ErrorMessage message={ errorFormDialog?.category_id }/>
                                 </div>
 
                                 {/* Category */}
-                                <div className={ ` form--group  ${errorPlannedPaymentDialog?.category ? ` is--invalid` : ''}` } id={ `record_dialog-category` }>
+                                <div className={ ` form--group  ${errorFormDialog?.category ? ` is--invalid` : ''}` } id={ `planned_dialog-category` }>
                                     <label className={ ` form--label` }>Category</label>
                                     <div>
-                                        <Popover open={openRecordCategory} onOpenChange={setOpenRecordCategory}>
+                                        <Popover open={comboboxCategoryOpenState} onOpenChange={setComboboxCategoryOpenState}>
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     variant="outline"
                                                     role="combobox"
-                                                    aria-expanded={openRecordCategory}
-                                                    className={ `w-full justify-between ${errorPlannedPaymentDialog?.category ? ` !border-red-500` : ''} dark:text-white` }
+                                                    aria-expanded={comboboxCategoryOpenState}
+                                                    className={ `w-full justify-between ${errorFormDialog?.category ? ` !border-red-500` : ''} dark:text-white` }
                                                 >
-                                                    <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{categoryComboboxLabel}</span>
+                                                    <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxCategoryLabel}</span>
                                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                                 <Command shouldFilter={ false }>
-                                                    <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={categoryComboboxInput} onValueChange={setCategoryComboboxInput}/>
+                                                    <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
                                                     <ScrollArea className="p-0">
                                                         <div className={ `max-h-[10rem]` }>
-                                                            <CommandEmpty>{categoryComboboxLoad ? `Loading...` : `No category found.`}</CommandEmpty>
+                                                            <CommandEmpty>{comboboxCategoryLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
                                                             <CommandGroup>
-                                                                {categoryComboboxList.map((options: CategoryItem) => (
+                                                                {comboboxCategoryList.map((options: CategoryItem) => (
                                                                     <CommandItem
                                                                         value={options?.uuid}
                                                                         key={options?.uuid}
                                                                         onSelect={(currentValue) => {
-                                                                            setValuePlannedPaymentCategory(currentValue === valuePlannedPaymentCategory ? "" : currentValue)
-                                                                            setOpenRecordCategory(false)
+                                                                            setFormCategory(currentValue === formCategory ? "" : currentValue)
+                                                                            setComboboxCategoryOpenState(false)
                                                                         }}
                                                                     >
                                                                         <Check
-                                                                            className={ `mr-2 h-4 w-4 ${valuePlannedPaymentCategory === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                            className={ `mr-2 h-4 w-4 ${formCategory === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                         />
                                                                         <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
                                                                     </CommandItem>
@@ -716,45 +722,45 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                             </PopoverContent>
                                         </Popover>
 
-                                        <ErrorMessage message={ errorPlannedPaymentDialog?.category_id }/>
+                                        <ErrorMessage message={ errorFormDialog?.category_id }/>
                                     </div>
                                 </div>
 
                                 {/* From Wallet */}
-                                <div className={ ` form--group  ${errorPlannedPaymentDialog?.from_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-from_wallet` }>
+                                <div className={ ` form--group  ${errorFormDialog?.from_wallet ? ` is--invalid` : ''}` } id={ `planned_dialog-from_wallet` }>
                                     <label className={ ` form--label` }>From</label>
                                     <div>
-                                        <Popover open={openRecordFromWallet} onOpenChange={setOpenRecordFromWallet}>
+                                        <Popover open={comboboxFromWalletOpenState} onOpenChange={setComboboxFromWalletOpenState}>
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     variant="outline"
                                                     role="combobox"
-                                                    aria-expanded={openRecordFromWallet}
-                                                    className={ `w-full justify-between ${errorPlannedPaymentDialog?.from_wallet ? ` !border-red-500` : ''} dark:text-white` }
+                                                    aria-expanded={comboboxFromWalletOpenState}
+                                                    className={ `w-full justify-between ${errorFormDialog?.from_wallet ? ` !border-red-500` : ''} dark:text-white` }
                                                 >
-                                                    <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{fromWalletComboboxLabel}</span>
+                                                    <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxFromWalletLabel}</span>
                                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                                 <Command shouldFilter={ false }>
-                                                    <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={fromWalletComboboxInput} onValueChange={setFromWalletComboboxInput}/>
+                                                    <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxFromWalletInput} onValueChange={setComboboxFromWalletInput}/>
                                                     
                                                     <ScrollArea className="p-0">
                                                         <div className={ `max-h-[10rem]` }>
-                                                            <CommandEmpty>{fromWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                            <CommandEmpty>{comboboxFromWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                             <CommandGroup>
-                                                                {fromWalletComboboxList.map((options: WalletItem) => (
+                                                                {comboboxFromWalletList.map((options: WalletItem) => (
                                                                     <CommandItem
                                                                         value={options?.uuid}
                                                                         key={options?.uuid}
                                                                         onSelect={(currentValue) => {
-                                                                            setValuePlannedPaymentFromWallet(currentValue === valuePlannedPaymentFromWallet ? "" : currentValue)
-                                                                            setOpenRecordFromWallet(false)
+                                                                            setFormFromWallet(currentValue === formFromWallet ? "" : currentValue)
+                                                                            setComboboxFromWalletOpenState(false)
                                                                         }}
                                                                     >
                                                                         <Check
-                                                                            className={ `mr-2 h-4 w-4 ${valuePlannedPaymentFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                            className={ `mr-2 h-4 w-4 ${formFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                         />
                                                                         <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
                                                                     </CommandItem>
@@ -766,46 +772,46 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                             </PopoverContent>
                                         </Popover>
 
-                                        <ErrorMessage message={ errorPlannedPaymentDialog?.from_wallet }/>
+                                        <ErrorMessage message={ errorFormDialog?.from_wallet }/>
                                     </div>
                                 </div>
 
                                 {/* To Wallet */}
                                 {(() => {
-                                    if(valuePlannedPaymentType === 'transfer'){
-                                        return <div className={ ` form--group  ${errorPlannedPaymentDialog?.to_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-to_wallet` }>
+                                    if(formType === 'transfer'){
+                                        return <div className={ ` form--group  ${errorFormDialog?.to_wallet ? ` is--invalid` : ''}` } id={ `planned_dialog-to_wallet` }>
                                             <label className={ ` form--label` }>To</label>
                                             <div>
-                                                <Popover open={openRecordToWallet} onOpenChange={setOpenRecordToWallet}>
+                                                <Popover open={comboboxToWalletOpenState} onOpenChange={setComboboxToWalletOpenState}>
                                                     <PopoverTrigger asChild>
                                                         <Button
                                                             variant="outline"
                                                             role="combobox"
-                                                            aria-expanded={openRecordToWallet}
-                                                            className={ ` w-full justify-between ${errorPlannedPaymentDialog?.to_wallet ? ` !border-red-500` : ''} dark:text-white` }
+                                                            aria-expanded={comboboxToWalletOpenState}
+                                                            className={ ` w-full justify-between ${errorFormDialog?.to_wallet ? ` !border-red-500` : ''} dark:text-white` }
                                                         >
-                                                            <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{toWalletComboboxLabel}</span>
+                                                            <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxToWalletLabel}</span>
                                                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                         </Button>
                                                     </PopoverTrigger>
                                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                                         <Command shouldFilter={ false }>
-                                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={toWalletComboboxInput} onValueChange={setToWalletComboboxInput}/>
+                                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
                                                             <ScrollArea className="p-0">
                                                                 <div className={ `max-h-[10rem]` }>
-                                                                    <CommandEmpty>{toWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                                    <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                                     <CommandGroup>
-                                                                        {toWalletComboboxList.map((options: WalletItem) => (
+                                                                        {comboboxToWalletList.map((options: WalletItem) => (
                                                                             <CommandItem
                                                                                 value={options?.uuid}
                                                                                 key={options?.uuid}
                                                                                 onSelect={(currentValue) => {
-                                                                                    setValuePlannedPaymentToWallet(currentValue === valuePlannedPaymentToWallet ? "" : currentValue)
-                                                                                    setOpenRecordToWallet(false)
+                                                                                    setFormToWallet(currentValue === formToWallet ? "" : currentValue)
+                                                                                    setComboboxToWalletOpenState(false)
                                                                                 }}
                                                                             >
                                                                                 <Check
-                                                                                    className={ `mr-2 h-4 w-4 ${valuePlannedPaymentToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                                    className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                                 />
                                                                                 <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
                                                                             </CommandItem>
@@ -817,7 +823,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                                     </PopoverContent>
                                                 </Popover>
 
-                                                <ErrorMessage message={ errorPlannedPaymentDialog?.to_wallet }/>
+                                                <ErrorMessage message={ errorFormDialog?.to_wallet }/>
                                             </div>
                                         </div>
                                     }
@@ -826,14 +832,14 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                 })()}
 
                                 {/* Amount */}
-                                <div className={ ` form--group  ${errorPlannedPaymentDialog?.amount ? ` is--invalid` : ''}` } id={ `record_dialog-amount` }>
+                                <div className={ ` form--group  ${errorFormDialog?.amount ? ` is--invalid` : ''}` } id={ `planned_dialog-amount` }>
                                     <label className={ `form--label` }>Amount</label>
                                     <MaskedInput
                                         type={ `text` }
                                         placeholder={ `Amount` }
                                         inputMode={ `numeric` }
-                                        value={ (valuePlannedPaymentAmount ?? 0).toString() }
-                                        className={ `${errorPlannedPaymentDialog?.amount ? ` !border-red-500` : ''}` }
+                                        value={ (formAmount ?? 0).toString() }
+                                        className={ `${errorFormDialog?.amount ? ` !border-red-500` : ''}` }
                                         mask={ Number }
                                         unmask={ true }
                                         thousandsSeparator={ `,` }
@@ -843,27 +849,27 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                             let value = (element.target as HTMLInputElement).value;
                                             value = value.replaceAll(',', '');
 
-                                            setValuePlannedPaymentAmount(Number(value));
+                                            setFormAmount(Number(value));
                                         } }
                                     />
 
-                                    <ErrorMessage message={ errorPlannedPaymentDialog?.amount }/>
+                                    <ErrorMessage message={ errorFormDialog?.amount }/>
                                 </div>
 
                                 {/* Extra & Final Amount */}
                                 <div className={ ` flex flex-row gap-4 w-full` }>
                                     {/* Extra Amount */}
-                                    <div className={ ` form--group !mb-0 w-1/2  ${errorPlannedPaymentDialog?.extra_amount ? ` is--invalid` : ''}` } id={ `record_dialog-extra_amount` }>
+                                    <div className={ ` form--group !mb-0 w-1/2  ${errorFormDialog?.extra_amount ? ` is--invalid` : ''}` } id={ `planned_dialog-extra_amount` }>
                                         <div className={ ` flex flex-col gap-1` }>
                                             {/* Extra Amount */}
-                                            <div id={ `record_dialog-extra_amount` }>
+                                            <div id={ `planned_dialog-extra_amount` }>
                                                 <label className={ ` form--label` }>Extra</label>
                                                 <MaskedInput
                                                     type={ `text` }
                                                     placeholder={ `Extra Amount` }
                                                     inputMode={ `numeric` }
-                                                    value={ (valuePlannedPaymentExtraAmount ?? 0).toString() }
-                                                    className={ `${errorPlannedPaymentDialog?.extra_amount ? ` !border-red-500` : ''}` }
+                                                    value={ (formExtraAmount ?? 0).toString() }
+                                                    className={ `${errorFormDialog?.extra_amount ? ` !border-red-500` : ''}` }
                                                     mask={ Number }
                                                     unmask={ true }
                                                     thousandsSeparator={ `,` }
@@ -873,24 +879,24 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                                         let value = (element.target as HTMLInputElement).value;
                                                         value = value.replaceAll(',', '');
 
-                                                        setValuePlannedPaymentExtraAmount(Number(value));
+                                                        setFormExtraAmount(Number(value));
                                                     } }
                                                 />
 
-                                                <ErrorMessage message={ errorPlannedPaymentDialog?.extra_amount }/>
+                                                <ErrorMessage message={ errorFormDialog?.extra_amount }/>
                                             </div>
                                             {/* Extra Type */}
-                                            <div id={ `record_dialog-extra_type` }>
+                                            <div id={ `planned_dialog-extra_type` }>
                                                 <span className={ ` text-sm flex flex-row gap-1` }>
-                                                    <span className={ ` cursor-pointer ${valuePlannedPaymentExtraType === 'amount' ? ` font-semibold dark:text-white dark:underline` : ' dark:text-white'}` } onClick={() => {
-                                                        if(valuePlannedPaymentExtraType !== 'amount'){
-                                                            setValuePlannedPaymentExtraType('amount');
+                                                    <span className={ ` cursor-pointer ${formExtraType === 'amount' ? ` font-semibold dark:text-white dark:underline` : ' dark:text-white'}` } onClick={() => {
+                                                        if(formExtraType !== 'amount'){
+                                                            setFormExtraType('amount');
                                                         }
                                                     }}>Amount</span>
                                                     <span className={ `dark:text-white` }>/</span>
-                                                    <span className={ ` cursor-pointer ${valuePlannedPaymentExtraType === 'percentage' ? ` font-semibold dark:text-white dark:underline` : ' dark:text-white'}` } onClick={() => {
-                                                        if(valuePlannedPaymentExtraType !== 'percentage'){
-                                                            setValuePlannedPaymentExtraType('percentage');
+                                                    <span className={ ` cursor-pointer ${formExtraType === 'percentage' ? ` font-semibold dark:text-white dark:underline` : ' dark:text-white'}` } onClick={() => {
+                                                        if(formExtraType !== 'percentage'){
+                                                            setFormExtraType('percentage');
                                                         }
                                                     }}>Percentage</span>
                                                 </span>
@@ -899,14 +905,14 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                     </div>
 
                                     {/* Final Amount */}
-                                    <div className={ ` form--group !mb-0 w-1/2  ${errorPlannedPaymentDialog?.final_amount ? ` is--invalid` : ''}` } id={ `record_dialog-final_amount` }>
+                                    <div className={ ` form--group !mb-0 w-1/2  ${errorFormDialog?.final_amount ? ` is--invalid` : ''}` } id={ `planned_dialog-final_amount` }>
                                         <label className={ ` form--label` }>Final</label>
                                         <MaskedInput
                                             type={ `text` }
                                             placeholder={ `Final Amount` }
                                             inputMode={ `numeric` }
-                                            value={ (valuePlannedPaymentFinalAmount ?? 0).toString() }
-                                            className={ `${errorPlannedPaymentDialog?.final_amount ? ` !border-red-500` : ''}` }
+                                            value={ (formFinalAmount ?? 0).toString() }
+                                            className={ `${errorFormDialog?.final_amount ? ` !border-red-500` : ''}` }
                                             mask={ Number }
                                             unmask={ true }
                                             thousandsSeparator={ `,` }
@@ -915,20 +921,21 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                             disabled={ true }
                                         />
 
-                                        <ErrorMessage message={ errorPlannedPaymentDialog?.final_amount }/>
+                                        <ErrorMessage message={ errorFormDialog?.final_amount }/>
                                     </div>
                                 </div>
                             </div>
+
                             {/* Right */}
                             <div className={ ` py-6 lg:p-6 lg:pr-0 w-full lg:w-2/5 lg:border-l lg:border-t-0 border-t` }>
                                 {/* Occurence */}
-                                <div className={ `form--group` }>
+                                <div className={ `form--group` } id={ `planned_dialog-occurence` }>
                                     <label className={ `form--label` }>Occurence</label>
 
                                     <Select onValueChange={(value) => {
-                                        setValuePlannedPaymentOccurence(value);
-                                    }} value={valuePlannedPaymentOccurence}>
-                                        <SelectTrigger className={ `dark:text-white ${errorPlannedPaymentDialog?.occurence ? ` !border-red-500` : ''}` }>
+                                        setFormOccurence(value);
+                                    }} value={formOccurence}>
+                                        <SelectTrigger className={ `dark:text-white ${errorFormDialog?.occurence ? ` !border-red-500` : ''}` }>
                                             <SelectValue placeholder="Select an option" className={ `dark:text-white` }/>
                                         </SelectTrigger>
                                         <SelectContent>
@@ -940,11 +947,11 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                         </SelectContent>
                                     </Select>
 
-                                    <ErrorMessage message={ errorPlannedPaymentDialog?.occurence }/>
+                                    <ErrorMessage message={ errorFormDialog?.occurence }/>
                                 </div>
 
                                 {/* Frequency */}
-                                <div className={ ` mb-4` }>
+                                <div className={ ` mb-4` } id={ `planned_dialog-frequency` }>
                                     <div className={ `form--group !mb-0` }>
                                         <label className={ `form--label` }>Frequency</label>
                                     </div>
@@ -954,8 +961,8 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                                 type={ `text` }
                                                 placeholder={ `Amount` }
                                                 inputMode={ `numeric` }
-                                                value={ (valuePlannedPaymentFrequency ?? 1).toString() }
-                                                className={ `${errorPlannedPaymentDialog?.frequency ? ` !border-red-500` : ''} dark:text-white` }
+                                                value={ (formFrequency ?? 1).toString() }
+                                                className={ `${errorFormDialog?.frequency ? ` !border-red-500` : ''} dark:text-white` }
                                                 mask={ Number }
                                                 unmask={ true }
                                                 thousandsSeparator={ `,` }
@@ -965,15 +972,15 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                                     let value = (element.target as HTMLInputElement).value;
                                                     value = value.replaceAll(',', '');
 
-                                                    setValuePlannedPaymentFrequency(Number(value));
+                                                    setFormFrequency(Number(value));
                                                 } }
                                             />
                                         </div>
                                         <div className={ ` w-3/5` }>
                                             <Select onValueChange={(value) => {
-                                                setValuePlannedPaymentFrequencyType(value);
-                                            }} value={valuePlannedPaymentFrequencyType}>
-                                                <SelectTrigger className={ `dark:text-white ${errorPlannedPaymentDialog?.frequency_type ? ` !border-red-500` : ''}` }>
+                                                setFormFrequencyType(value);
+                                            }} value={formFrequencyType}>
+                                                <SelectTrigger className={ `dark:text-white ${errorFormDialog?.frequency_type ? ` !border-red-500` : ''}` }>
                                                     <SelectValue placeholder="Select an option" className={ `dark:text-white` }/>
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -989,60 +996,60 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                                         </div>
                                     </div>
                                     <div className={ ` flex flex-col gap-0.5 mt-1` }>
-                                        <ErrorMessage message={ errorPlannedPaymentDialog?.frequency }/>
-                                        <ErrorMessage message={ errorPlannedPaymentDialog?.frequency_type }/>
+                                        <ErrorMessage message={ errorFormDialog?.frequency }/>
+                                        <ErrorMessage message={ errorFormDialog?.frequency_type }/>
                                     </div>
                                 </div>
                                 
                                 {/* Timestamp */}
                                 <div className={ ` form--group` }>
-                                    <div id={ `record_dialog-date` } className={ ` form--group !mb-0 ${errorPlannedPaymentDialog?.date ? ` is--invalid` : ''}` }>
+                                    <div id={ `planned_dialog-date` } className={ ` form--group !mb-0 ${errorFormDialog?.date ? ` is--invalid` : ''}` }>
                                         <label className={ ` form--label` }>Start at</label>
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     variant={"outline"}
-                                                    className={ ` w-full justify-start text-left font-normal ${!valuePlannedPaymentDate && "text-muted-foreground"} ${errorPlannedPaymentDialog?.date ? ` !border-red-500` : ''} dark:text-white`}
+                                                    className={ ` w-full justify-start text-left font-normal ${!formDate && "text-muted-foreground"} ${errorFormDialog?.date ? ` !border-red-500` : ''} dark:text-white`}
                                                 >
                                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {valuePlannedPaymentDate ? format(valuePlannedPaymentDate, "PPP") : <span>Pick a date</span>}
+                                                    {formDate ? format(formDate, "PPP") : <span>Pick a date</span>}
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0">
                                                 <Calendar
                                                     mode="single"
-                                                    selected={valuePlannedPaymentDate}
-                                                    onSelect={setValuePlannedPaymentDate}
-                                                    defaultMonth={valuePlannedPaymentDate}
+                                                    selected={formDate}
+                                                    onSelect={setFormDate}
+                                                    defaultMonth={formDate}
                                                     initialFocus
                                                 />
                                             </PopoverContent>
                                         </Popover>
 
-                                        <ErrorMessage message={ errorPlannedPaymentDialog?.date }/>
+                                        <ErrorMessage message={ errorFormDialog?.date }/>
                                     </div>
                                 </div>
 
                                 {/* Planned Payment Note */}
-                                <div className={ ` form--group  ${errorPlannedPaymentDialog?.notes ? ` is--invalid` : ''}` } id={ `record_dialog-note` }>
+                                <div className={ ` form--group  ${errorFormDialog?.notes ? ` is--invalid` : ''}` } id={ `planned_dialog-note` }>
                                     <label className={ ` form--label` }>Note</label>
-                                    <Textarea className={ ` w-full ${errorPlannedPaymentDialog?.notes ? ` !border-red-500` : ''}` } placeholder="Type your message here." value={ valuePlannedPaymentNotes } onChange={(e) => {
-                                        setValuePlannedPaymentNotes(e.target.value);
+                                    <Textarea className={ ` w-full ${errorFormDialog?.notes ? ` !border-red-500` : ''}` } placeholder="Type your message here." value={ formNotes } onChange={(e) => {
+                                        setFormNotes(e.target.value);
                                     }}/>
                                 
-                                    <ErrorMessage message={ errorPlannedPaymentDialog?.notes }/>
+                                    <ErrorMessage message={ errorFormDialog?.notes }/>
                                 </div>
 
                                 {/* Keep open Planned Payment dialog? */}
                                 <div className={ `form-group` }>
                                     <div className={ `flex items-center space-x-2` }>
-                                    <Checkbox id="record_dialog-keep_open" checked={ keepOpenPlannedPaymentDialog } onCheckedChange={(value) => {
+                                    <Checkbox id="planned_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
                                         if(typeof value === 'boolean'){
-                                            setKeepOpenPlannedPaymentDialog(value);
+                                            setKeepOpenDialog(value);
                                         }
                                     }} />
                                         <label
-                                            htmlFor="record_dialog-keep_open"
+                                            htmlFor="planned_dialog-keep_open"
                                             className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
                                         >
                                             Keep Open?
@@ -1053,11 +1060,16 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: Planne
                         </div>
                     </form>
                     <DialogFooter className={ ` p-6 pt-2` }>
+                        <Button variant={ `ghost` } onClick={() => {
+                            resetFormDialog();
+                        }}>
+                            <span>Reset</span>
+                        </Button>
                         <Button type='button' onClick={() => {
-                            if(document.getElementById('plannedPaymentDialog-forms')){
-                                (document.getElementById('plannedPaymentDialog-forms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
+                            if(document.getElementById('plannedPayment-dialogForms')){
+                                (document.getElementById('plannedPayment-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
                             }
-                        }} id='plannedPayment_dialog-submit'>Submit</Button>
+                        }} id='plannedPayment-dialogSubmit'>Submit</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

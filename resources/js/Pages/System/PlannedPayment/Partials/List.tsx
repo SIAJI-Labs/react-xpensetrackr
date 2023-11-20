@@ -4,13 +4,13 @@ import { PageProps } from "@/types";
 import axios from "axios";
 
 // Partials
-import ListTemplate from "@/Components/template/PlannedPayment/ListTemplate";
-import NoDataTemplate from "@/Components/template/NoDataTemplate";
+import ListTemplate from "@/Components/template/PlannedPayment/TemplateList";
+import NoDataTemplate from "@/Components/template/TemplateNoData";
 
 // Shadcn
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
-import ListSkeleton from "@/Components/template/PlannedPayment/ListSkeleton";
+import ListSkeleton from "@/Components/template/PlannedPayment/SkeletonList";
 
 // Props
 type PlannedPaymentListProps = {

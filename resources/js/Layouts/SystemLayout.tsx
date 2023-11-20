@@ -1,9 +1,9 @@
 import React, { useState, PropsWithChildren, ReactNode, useEffect, useMemo, FormEventHandler, useRef } from 'react';
 import { Head } from '@inertiajs/react';
 import { User } from '@/types';
-
 // Script
 import '@/function';
+import '@/service-worker/service-worker'
 // Plugins
 import '@/../plugins/fontawesome/all.scss';
 
@@ -20,7 +20,7 @@ import { ThemeProvider } from '@/Components/template/theme-provider';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
-
+import WalletDeleteDialog from '@/Components/system/Wallet/WalletDeleteDialog';
 
 export default function SystemLayout({ user, header, children, fabAction = null }: PropsWithChildren<{ user: User, header?: ReactNode, fabAction?: any[] | null }>) {
     // Record Dialog
@@ -84,7 +84,6 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 {/* Record Modal */}
                 {/* FAB */}
                 {(() => {
-                    console.log(fabAction);
                     if(fabAction !== null){
                         let action: any = [];
 
@@ -152,7 +151,8 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 <PlannedPaymentDeleteDialog openState={ openPlannedPaymentDeleteDialog } setOpenState={ handleOpenPlannedPaymentDeleteDialog }/>
 
                 {/* Wallet Modal - Dialog */}
-                <WalletDialog openState={ openWalletDialog } setOpenState={ setOpenWalletDialog }/>
+                <WalletDialog openState={ openWalletDialog } setOpenState={ handleOpenWalletDialog }/>
+                <WalletDeleteDialog openState={ openWalletDeleteDialog } setOpenState={ handleOpenWalletDeleteDialog }/>
             </div>
 
             <Toaster />

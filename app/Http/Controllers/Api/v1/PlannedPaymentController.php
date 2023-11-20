@@ -17,7 +17,6 @@ class PlannedPaymentController extends Controller
      */
     public function index(Request $request)
     {
-        // sleep(30);
         $user = $request->user();
 
         $data = \App\Models\PlannedPayment::query()
@@ -34,15 +33,17 @@ class PlannedPaymentController extends Controller
         if($request->has('sort') && in_array($request->sort, ['asc', 'desc'])){
             $sort_type = $request->sort;
         }
-        if($request->has('sort_by') && in_array($request->sort_by, [])){
+        if($request->has('sort_by') && in_array($request->sort_by, ['date_start', 'name'])){
+            // Validate allowed column to use in order
             $data->orderBy($request->sort_by, $sort_type);
         } else {
+            // Default ordering column
             $data->orderBy('date_start', $sort_type);
         }
 
         // Pagination
-        $hasMore = false;
         $perPage = 5;
+        $hasMore = false;
         if($request->has('per_page') && is_numeric($request->per_page)){
             $perPage = $request->per_page;
         }
@@ -87,11 +88,18 @@ class PlannedPaymentController extends Controller
             'extra_amount' => ['nullable', 'numeric'],
             'extra_type' => ['nullable', 'string', 'in:amount,percentage'],
             'occurence' => ['required', 'string', 'in:recurring,once'],
-            'frequency' => ['nullable', 'required_if:occurence,occureing', 'numeric', 'min:1'],
-            'frequency_type' => ['nullable', 'required_if:occurence,occureing', 'string', 'in:daily,weekly,monthly,yearly'],
+            'frequency' => ['nullable', 'required_if:occurence,recurring', 'numeric', 'min:1'],
+            'frequency_type' => ['nullable', 'required_if:occurence,recurring', 'string', 'in:daily,weekly,monthly,yearly'],
             'date' => ['required', 'string'],
             'notes' => ['nullable', 'string']
         ]);
+
+        // Validate date start must be greater or equal with today
+        if(date('Y-m-d', strtotime($request->date)) < date('Y-m-d')){
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'date' => 'Start at value must be greater or equal than today!'
+            ]);
+        }
         
         // Store to database
         DB::transaction(function () use ($request) {
@@ -229,6 +237,13 @@ class PlannedPaymentController extends Controller
         $data = \App\Models\PlannedPayment::where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
+
+        // Validate date start must be greater or equal with today
+        if(date('Y-m-d', strtotime($request->date)) < date('Y-m-d', strtotime($data->date_start))){
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'date' => 'Start at value is invalid, value cannot be less than previous value ('.(date('d F, Y', strtotime($data->date_start))).')!'
+            ]);
+        }
         
         // Store to database
         DB::transaction(function () use ($request, $user, $data) {

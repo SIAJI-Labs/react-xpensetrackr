@@ -4,7 +4,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 // Partials
-import BackButton from '@/Components/template/BackButtonTemplate';
+import BackButton from '@/Components/template/TemplateBackButton';
 
 // Plugins
 import { formatRupiah, momentFormated, ucwords } from '@/function';
@@ -77,7 +77,7 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                         {/* Edit Action */}
                                         {(() => {
                                             // Check if record dialog form is exists
-                                            let recordDialogSection = document.getElementById('recordDialog-section');
+                                            let recordDialogSection = document.getElementById('record-dialogSection');
                                             if(recordDialogSection){
                                                 return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
                                                     let el = $refs.target as HTMLElement;
@@ -111,7 +111,7 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                         {/* Delete Action */}
                                         {(() => {
                                             // Check if record dialog form is exists
-                                            let recordDialogSection = document.getElementById('recordDeleteDialog-section');
+                                            let recordDialogSection = document.getElementById('record-deleteDialogSection');
                                             if(recordDialogSection){
                                                 return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
                                                     document.dispatchEvent(new CustomEvent('record.deleted-action', {

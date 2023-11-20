@@ -4,13 +4,13 @@ import { PageProps } from "@/types"
 // Partials
 import SystemLayout from "@/Layouts/SystemLayout";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import ListSkeleton from "@/Components/template/Wallet/ListSkeleton";
+import ListSkeleton from "@/Components/template/Wallet/SkeletonList";
 import { useEffect, useState } from "react";
 import { useIsFirstRender } from "@/lib/utils";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
-import ListTemplate from "@/Components/template/Wallet/ListTemplate";
-import NoDataTemplate from "@/Components/template/NoDataTemplate";
+import ListTemplate from "@/Components/template/Wallet/TemplateList";
+import NoDataTemplate from "@/Components/template/TemplateNoData";
 import axios from "axios";
 
 // Props
@@ -169,7 +169,13 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                                 {/* Refresh Button */}
                                 {(() => {
                                     return <Button variant={ `outline` } onClick={() => {
-                                        document.dispatchEvent(new CustomEvent('wallet.refresh', {bubbles: true}));
+                                        // Cancel previous request
+                                        if(walletItemAbortController instanceof AbortController){
+                                            walletItemAbortController.abort();
+                                        }
+                                        
+                                        // Fetch Pending Count
+                                        fetchWalletData();
                                     }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
                                 })()}
                                 {/* Add new Button */}

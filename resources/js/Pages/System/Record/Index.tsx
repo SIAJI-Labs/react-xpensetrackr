@@ -1,28 +1,26 @@
 import { PageProps, RecordItem } from '@/types';
+import { useIsFirstRender } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 
 // Partials
-import RecordTemplate from '@/Components/template/Record/RecordTemplate';
-import NoDataTemplate from '@/Components/template/NoDataTemplate';
+import RecordTemplate from '@/Components/template/Record/TemplateList';
+import NoDataTemplate from '@/Components/template/TemplateNoData';
 import SystemLayout from '@/Layouts/SystemLayout';
 
 // Shadcn
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Skeleton } from '@/Components/ui/skeleton';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import ListSkeleton from '@/Components/template/Record/ListSkeleton';
+import ListSkeleton from '@/Components/template/Record/SkeletonList';
 
 // Props
 type RecordIndexProps = {
 }
 
 export default function Index({ auth }: PageProps<RecordIndexProps>) {
-    // Record Dialog
-    const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
-
+    const isFirstRender = useIsFirstRender();
     // Record List - Template
     const recordListTemplate = (obj:RecordItem) => {
         return <RecordTemplate record={obj}></RecordTemplate>;
@@ -34,15 +32,17 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
     const [recordFilterKeyword, setRecordFilterKeyword] = useState<string>('');
     const [recordFilterStatus, setRecordFilterStatus] = useState<string>('complete');
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setRecordPaginate(paginate_item);
-            fetchRecordList();
-        }, 500);
-
-        // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
-        return () => {
-            clearTimeout(timer);
-        };
+        if(!isFirstRender){
+            const timer = setTimeout(() => {
+                setRecordPaginate(paginate_item);
+                fetchRecordList();
+            }, 500);
+    
+            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+            return () => {
+                clearTimeout(timer);
+            };
+        }
     }, [recordFilterKeyword]);
     // Record List - Variable Init
     let paginate_item = 5;
@@ -131,11 +131,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
         // Listen to Record Dialog event
         const handleDialogRecord = () => {
             setTimeout(() => {
-                console.log('Dialog Event');
-
                 fetchRecordList();
-                // Open dialog state
-                setOpenRecordDialog(false);
             }, 100);
         }
 
@@ -181,7 +177,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                         }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
                                     })()}
                                     <Button variant={ `outline` } onClick={() => {
-                                        document.dispatchEvent(new CustomEvent('recordDialogEditAction', {
+                                        document.dispatchEvent(new CustomEvent('record.edit-action', {
                                                 bubbles: true,
                                             }
                                         ));

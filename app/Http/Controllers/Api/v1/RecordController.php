@@ -17,7 +17,6 @@ class RecordController extends Controller
      */
     public function index(Request $request)
     {
-        // sleep(10);
         $user = $request->user();
 
         $data = \App\Models\Record::query()
@@ -37,15 +36,17 @@ class RecordController extends Controller
         if($request->has('sort') && in_array($request->sort, ['asc', 'desc'])){
             $sort_type = $request->sort;
         }
-        if($request->has('sort_by') && in_array($request->sort_by, [])){
+        if($request->has('sort_by') && in_array($request->sort_by, ['datetime'])){
+            // Validate allowed column to use in order
             $data->orderBy($request->sort_by, $sort_type);
         } else {
+            // Default ordering column
             $data->orderBy('datetime', $sort_type);
         }
 
         // Pagination
-        $hasMore = false;
         $perPage = 5;
+        $hasMore = false;
         if($request->has('per_page') && is_numeric($request->per_page)){
             $perPage = $request->per_page;
         }
@@ -80,8 +81,6 @@ class RecordController extends Controller
      */
     public function store(Request $request)
     {
-        // sleep(10);
-        
         $request->validate([
             'type' => ['required', 'string', 'in:expense,transfer,income'],
             'category' => ['nullable', 'string', 'exists:'.(new \App\Models\Category())->getTable().',uuid'],

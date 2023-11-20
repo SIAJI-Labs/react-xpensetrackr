@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-// use Inertia\Inertia;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -19,7 +17,6 @@ class WalletController extends Controller
      */
     public function index(Request $request)
     {
-        // sleep(10);
         $user = $request->user();
 
         $data = \App\Models\Wallet::query()
@@ -73,14 +70,16 @@ class WalletController extends Controller
             $sort_type = $request->sort;
         }
         if($request->has('sort_by') && in_array($request->sort_by, ['name', 'order_main'])){
+            // Validate allowed column to use in order
             $data->orderBy($request->sort_by, $sort_type);
         } else {
+            // Default ordering column
             $data->orderBy('order_main', $sort_type);
         }
 
         // Pagination
-        $hasMore = false;
         $perPage = 5;
+        $hasMore = false;
         if($request->has('per_page') && is_numeric($request->per_page)){
             $perPage = $request->per_page;
         }
@@ -110,7 +109,6 @@ class WalletController extends Controller
                 'total' => isset($raw) ? $raw->count() : null
             ];
         }
-
 
         return $this->formatedJsonResponse(200, 'Data Fetched', $data);
     }
@@ -173,14 +171,6 @@ class WalletController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
@@ -190,12 +180,20 @@ class WalletController extends Controller
             'name' => ['required', 'string', 'max:191']
         ]);
 
-        DB::transaction(function () use ($request, $id) {
-            $user = $request->user();
+        $user = $request->user();
+        $data = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        // Validate can't use self as parent data
+        if($request->has('parent_id') && $request->parent_id === $data->uuid){
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'parent_id' => 'Unable to assign parent wallet: Self-assignment is not permitted'
+            ]);
+        }
+
+        DB::transaction(function () use ($request, $user, $data) {
             
-            $data = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $id)
-                ->where('user_id', $user->id)
-                ->firstOrFail();
             $parent_id = $data->parent_id;
             if($request->has('parent_id') && !empty($request->parent_id)){
                 $parent = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->parent_id)
@@ -219,8 +217,20 @@ class WalletController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        $user = $request->user();
+
+        $data = \App\Models\Wallet::with('parent')
+            ->where(DB::raw('BINARY `uuid`'), $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        DB::transaction(function () use ($request, $data) {
+            // Remove data
+            $data->delete();
+        });
+
+        return $this->formatedJsonResponse(200, 'Data Deleted', []);
     }
 }

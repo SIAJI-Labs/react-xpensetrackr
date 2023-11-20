@@ -4,21 +4,22 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import axios, { AxiosError } from 'axios';
 
-type PlannedDialogProps = {
+type dialogProps = {
     openState?: boolean;
     setOpenState?: (isOpen: boolean) => void;
 };
 
-export default function PlannedPaymentDeleteDialog({ openState, setOpenState }: PlannedDialogProps){
+export default function PlannedPaymentDeleteDialog({ openState, setOpenState }: dialogProps){
     const [plannedUuid, setPlannedUuid] = useState<string>();
     const [plannedAction, setPlannedAction] = useState<string>('delete');
     useEffect(() => {
         // Listen to Record Dialog event
-        const handlePlannedPaymentDelete = (event: any) => {
-            console.log(event);
+        const handleDeleteAction = (event: any) => {
+            // Override default action (Ex: for skip planned record)
             if(event?.detail?.action){
                 setPlannedAction(event.detail.action);
             }
+
             if(event?.detail?.uuid){
                 let uuid = event.detail.uuid;
                 setPlannedUuid(uuid);
@@ -31,14 +32,14 @@ export default function PlannedPaymentDeleteDialog({ openState, setOpenState }: 
                 }
             }
         }
-        window.addEventListener('planned-payment.delete-action', handlePlannedPaymentDelete);
+        window.addEventListener('planned-payment.delete-action', handleDeleteAction);
         // Remove the event listener when the component unmounts
         return () => {
-            window.removeEventListener('planned-payment.delete-action', handlePlannedPaymentDelete);
+            window.removeEventListener('planned-payment.delete-action', handleDeleteAction);
         };
     }, []);
 
-    const [plannedDeleteAbortController, setPlannedDeleteAbortController] = useState<AbortController | null>(null);
+    const [deleteAbortController, setDeleteAbortController] = useState<AbortController | null>(null);
     const confirmDelete = ($refs: any) => {
         let el = $refs.target as HTMLElement;
         if(el){
@@ -49,13 +50,13 @@ export default function PlannedPaymentDeleteDialog({ openState, setOpenState }: 
         }
 
         if(plannedUuid){
-            if(plannedDeleteAbortController instanceof AbortController){
-                plannedDeleteAbortController.abort();
+            if(deleteAbortController instanceof AbortController){
+                deleteAbortController.abort();
             }
 
             // Create a new AbortController for the new request.
             const abortController = new AbortController();
-            setPlannedDeleteAbortController(abortController);
+            setDeleteAbortController(abortController);
 
             let formData = new FormData();
             formData.append('_method', 'DELETE');
@@ -99,7 +100,7 @@ export default function PlannedPaymentDeleteDialog({ openState, setOpenState }: 
     };
 
     return (
-        <section id={ `plannedPaymentDeleteDialog-section` }>
+        <section id={ `plannedPayment-deleteDialogSection` }>
             <AlertDialog open={ openState } onOpenChange={ setOpenState }>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -113,8 +114,8 @@ export default function PlannedPaymentDeleteDialog({ openState, setOpenState }: 
                             if(setOpenState){
                                 setOpenState(false);
                             }
-                            if(plannedDeleteAbortController instanceof AbortController){
-                                plannedDeleteAbortController.abort();
+                            if(deleteAbortController instanceof AbortController){
+                                deleteAbortController.abort();
                             }
                         } }>
                             Cancel

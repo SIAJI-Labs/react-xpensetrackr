@@ -24,7 +24,7 @@ function initSW(){
     // Check if swBase variable exists
     if(typeof swBase !== 'undefined' && swBase){
         // Register SW
-        navigator.serviceWorker.register(swBase)
+        navigator.serviceWorker.register(`${swBase}/sw.js`)
             .then((registration) => {
                 registration.update();
             

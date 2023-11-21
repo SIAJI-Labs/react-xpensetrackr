@@ -60,6 +60,11 @@ export default function SystemLayout({ user, header, children, fabAction = null 
 
                 {/* Favicon */}
                 <link rel="icon" type="image/x-icon" href="/assets/images/favicon.svg"></link>
+
+                {/* Manifest */}
+                <link rel="manifest" href="/build/manifest.webmanifest"/>
+                <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff"/>
+                <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1f2937"/>
             </Head>
 
             <div className="min-h-screen bg-gray-100 dark:bg-background relative">
@@ -128,7 +133,7 @@ export default function SystemLayout({ user, header, children, fabAction = null 
 
                         return <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className={ ` fixed right-4 bottom-4 dark:text-white` }>Add new</Button>
+                                <Button variant="outline" className={ ` fixed right-6 bottom-6 dark:text-white` }>Add new</Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align={ `end` } side={ `top` }>
                                 { action }
@@ -136,7 +141,7 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                         </DropdownMenu>;
                     }
 
-                    return <Button variant="outline" className={ ` fixed right-4 bottom-4 dark:text-white` } onClick={() => {
+                    return <Button variant="outline" className={ ` fixed right-6 bottom-6 dark:text-white` } onClick={() => {
                         setOpenRecordDialog(true);
                     }}>Add record</Button>
                 })()}

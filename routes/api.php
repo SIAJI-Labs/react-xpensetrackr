@@ -159,6 +159,8 @@ Route::group([
             'prefix' => 'v1',
             'as' => 'v1.'
         ], function(){
+            // Re-Order
+            Route::post('re-order', [\App\Http\Controllers\Api\v1\WalletController::class, 'reOrder'])->name('re-order');
             // List
             Route::get('list', [\App\Http\Controllers\Api\v1\WalletController::class, 'index'])->name('list');// Show
             Route::get('{uuid}', [\App\Http\Controllers\Api\v1\WalletController::class, 'show'])->name('show');

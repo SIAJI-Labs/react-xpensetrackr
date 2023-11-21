@@ -1,4 +1,4 @@
-import BackButton from "@/Components/template/TemplateBackButton";
+import TemplateBackButton from "@/Components/template/TemplateBackButton";
 import NoDataTemplate from "@/Components/template/TemplateNoData";
 import ListTemplate from "@/Components/template/Wallet/TemplateList";
 import { Badge } from "@/Components/ui/badge";
@@ -33,7 +33,7 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
                 <Head title={ `Planned Summary: ${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` } />
 
                 <div className="flex flex-col gap-6">
-                    <BackButton className={ `px-0` }/>
+                    <TemplateBackButton className={ `px-0` }/>
                 </div>
 
                 <Card className={ ` w-full` }>

@@ -233,4 +233,54 @@ class WalletController extends Controller
 
         return $this->formatedJsonResponse(200, 'Data Deleted', []);
     }
+
+    /**
+     * Re-Order
+     */
+    public function reOrder(Request $request)
+    {
+        DB::transaction(function () use ($request) {
+            $user = $request->user();
+            $order = json_decode($request->hierarchy, true);
+
+            $numorder = 0;
+            $numorderMain = 0;
+            foreach ($order as $hierarchy) {
+                // Update Main Order
+                $wallet = \App\Models\Wallet::where('user_id', $user->id)
+                    ->where(DB::raw('BINARY `uuid`'), $hierarchy['id'])
+                    ->firstOrFail();
+                $wallet->order = $numorder;
+                $wallet->order_main = $numorderMain;
+                if (!empty($wallet->parent_id)) {
+                    $wallet->parent_id = null;
+                }
+                $wallet->save();
+    
+                // Request has Child Wallet
+                if (isset($hierarchy['child']) && is_array($hierarchy['child']) && count($hierarchy['child']) > 0) {
+                    $childOrder = 0;
+                    foreach ($hierarchy['child'] as $child) {
+                        $numorderMain++;
+    
+                        // Update Child Order
+                        $subwallet = \App\Models\Wallet::where('user_id', $user->id)
+                            ->where(DB::raw('BINARY `uuid`'), $child['id'])
+                            ->firstOrFail();
+                        $subwallet->order = $childOrder;
+                        $subwallet->order_main = $numorderMain;
+                        $subwallet->parent_id = $wallet->id;
+                        $subwallet->save();
+    
+                        $childOrder++;
+                    }
+                }
+    
+                $numorderMain++;
+                $numorder++;
+            }
+        });
+
+        return $this->formatedJsonResponse(200, 'Data Updated', []);
+    }
 }

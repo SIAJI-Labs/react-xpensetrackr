@@ -1,17 +1,19 @@
-import { Head } from "@inertiajs/react";
+import { useIsFirstRender } from "@/lib/utils";
+import { Head, Link } from "@inertiajs/react";
+import { useEffect, useState } from "react";
 import { PageProps } from "@/types"
+import axios from "axios";
 
 // Partials
-import SystemLayout from "@/Layouts/SystemLayout";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import ListSkeleton from "@/Components/template/Wallet/SkeletonList";
-import { useEffect, useState } from "react";
-import { useIsFirstRender } from "@/lib/utils";
-import { Input } from "@/Components/ui/input";
-import { Button } from "@/Components/ui/button";
 import ListTemplate from "@/Components/template/Wallet/TemplateList";
 import NoDataTemplate from "@/Components/template/TemplateNoData";
-import axios from "axios";
+import SystemLayout from "@/Layouts/SystemLayout";
+
+// Shadcn
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
+import ListSkeleton from "@/Components/template/Wallet/SkeletonList";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
 
 // Props
 type WalletIndexProps = {
@@ -201,6 +203,11 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                                 <Button disabled>
                                     <i className={ `fa-solid fa-filter` }></i>
                                 </Button>
+                                <Link href={ route('sys.wallet.re-order.index') }>
+                                    <Button variant={ `outline` }>
+                                        <i className={ `fa-solid fa-sort` }></i>
+                                    </Button>
+                                </Link>
                             </div>
                             {/* Content */}
                             {(() => {

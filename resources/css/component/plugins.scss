@@ -1,0 +1,69 @@
+/**
+* Nestable
+**/
+.nst-list {
+    &.nst-container {
+        @apply
+            z-[19999];
+    }
+}
+.nst-parent, .nst-list {
+    .nst-item {
+        @apply
+            relative;
+
+        // Expandable
+        .nst-button {
+            @apply
+                left-[unset]
+                right-4
+                top-6
+                leading-none
+                -translate-y-1/2;
+        }
+        // Handle
+        .nst-handle {
+            @apply
+                absolute
+                left-4
+                top-6
+                leading-none
+                -translate-y-1/2;
+        }
+
+        .nst-content {
+            @apply
+                bg-white
+                border-inherit
+                rounded-md
+                py-0
+                px-10
+                min-h-[3rem]
+                
+                dark:bg-gray-600;
+
+            .item-name {
+                @apply
+                    block
+                    overflow-hidden
+                    text-ellipsis
+                    whitespace-nowrap;
+
+                .item_parent-name {
+                    @apply
+                        contents
+                        ml-1;
+                }
+            }
+        }
+    }
+}
+.nst-placeholder {
+    @apply
+        bg-gray-100
+        rounded-md
+        border-inherit
+
+        dark:bg-gray-900
+        #{!important};
+}

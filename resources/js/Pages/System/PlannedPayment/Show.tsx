@@ -12,7 +12,7 @@ import axios from "axios";
 import ListRecordTemplate from "@/Components/template/PlannedPayment/TemplateListRecord";
 import ListSkeleton from "@/Components/template/PlannedPayment/SkeletonList";
 import BackButton from "@/Components/template/TemplateBackButton";
-import NoDataTemplate from "@/Components/template/TemplateNoData";
+import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
@@ -398,7 +398,7 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                 return element;
                             } else {
                                 let plannedElement: any[] = [];
-                                let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                                let defaultContent = <TemplateNoData></TemplateNoData>;
             
                                 if(data && ('deleted_at' in data) && !data.deleted_at){
                                     plannedElement.push(

@@ -6,7 +6,7 @@ import axios from "axios";
 
 // Partials
 import ListTemplate from "@/Components/template/Wallet/TemplateList";
-import NoDataTemplate from "@/Components/template/TemplateNoData";
+import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
@@ -224,7 +224,7 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                                     return element;
                                 } else {
                                     let walletElement: any[] = [];
-                                    let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                                    let defaultContent = <TemplateNoData></TemplateNoData>;
 
                                     // Loop through response
                                     if(walletItem && walletItem.length > 0){

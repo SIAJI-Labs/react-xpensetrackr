@@ -11,7 +11,7 @@ import moment from "moment-timezone";
 import ListTemplate from "@/Components/template/PlannedPayment/TemplateList";
 import ListSkeleton from "@/Components/template/PlannedPayment/SkeletonList";
 import BackButton from "@/Components/template/TemplateBackButton";
-import NoDataTemplate from "@/Components/template/TemplateNoData";
+import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
@@ -273,7 +273,7 @@ export default function Show({ auth, wallet, period, estimate_income = 0, estima
                                     return element;
                                 } else {
                                     let plannedElement: any[] = [];
-                                    let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                                    let defaultContent = <TemplateNoData></TemplateNoData>;
                                     let plannedPeriod: any | null = null;
 
                                     // Loop through response

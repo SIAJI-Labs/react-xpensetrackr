@@ -6,7 +6,7 @@ import axios from 'axios';
 
 // Partials
 import RecordTemplate from '@/Components/template/Record/TemplateList';
-import NoDataTemplate from '@/Components/template/TemplateNoData';
+import TemplateNoData from '@/Components/template/TemplateNoData';
 import SystemLayout from '@/Layouts/SystemLayout';
 
 // Shadcn
@@ -215,7 +215,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                         return element;
                                     } else {
                                         let recordElement: any[] = [];
-                                        let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                                        let defaultContent = <TemplateNoData></TemplateNoData>;
                                         // Loop through response
                                         if(recordItem.length > 0){
                                             recordItem.map((val, index) => {

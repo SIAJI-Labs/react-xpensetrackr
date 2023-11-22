@@ -7,8 +7,8 @@ import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 // Partials
-import RecordTemplate from '@/Components/template/Record/TemplateList';
-import NoDataTemplate from '@/Components/template/TemplateNoData';
+import TemplateListRecord from '@/Components/template/Record/TemplateList';
+import TemplateNoData from '@/Components/template/TemplateNoData';
 
 // Shadcn Component
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -65,7 +65,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
     </>;
     // Record List - Template
     const recordListTemplate = (obj:RecordItem) => {
-        return <RecordTemplate record={obj}></RecordTemplate>;
+        return <TemplateListRecord record={obj}></TemplateListRecord>;
     }
     // Create API Call
     const fetchRecordList = async () => {
@@ -284,7 +284,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
                                     return element;
                                 } else {
                                     let recordElement: any[] = [];
-                                    let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                                    let defaultContent = <TemplateNoData></TemplateNoData>;
                                     // Loop through response
                                     if(recordItem.length > 0){
                                         recordItem.map((val, index) => {

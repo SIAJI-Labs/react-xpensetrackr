@@ -5,7 +5,7 @@ import axios from "axios";
 
 // Partials
 import ListTemplate from "@/Components/template/PlannedPayment/TemplateList";
-import NoDataTemplate from "@/Components/template/TemplateNoData";
+import TemplateNoData from "@/Components/template/TemplateNoData";
 
 // Shadcn
 import { Button } from "@/Components/ui/button";
@@ -176,7 +176,7 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
                     return element;
                 } else {
                     let plannedElement: any[] = [];
-                    let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                    let defaultContent = <TemplateNoData></TemplateNoData>;
 
                     // Loop through response
                     if(plannedItem && plannedItem.length > 0){

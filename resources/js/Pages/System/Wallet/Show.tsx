@@ -1,5 +1,5 @@
 import TemplateBackButton from "@/Components/template/TemplateBackButton";
-import NoDataTemplate from "@/Components/template/TemplateNoData";
+import TemplateNoData from "@/Components/template/TemplateNoData";
 import ListTemplate from "@/Components/template/Wallet/TemplateList";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
@@ -133,7 +133,7 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
                                     <div className={ `flex flex-col gap-6` }>
                                         {(() => {
                                             let relatedElement: any = [];
-                                            let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                                            let defaultContent = <TemplateNoData></TemplateNoData>;
 
                                             Object.values(related).forEach((val, index) => {
                                                 console.log(val);

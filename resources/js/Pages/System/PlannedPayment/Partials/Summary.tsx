@@ -5,7 +5,7 @@ import { PageProps } from "@/types";
 import moment from "moment-timezone";
 
 // Partials
-import NoDataTemplate from "@/Components/template/TemplateNoData";
+import TemplateNoData from "@/Components/template/TemplateNoData";
 import SummaryTemplate from "@/Components/template/PlannedPayment/TemplateSummary";
 
 // Shadcn
@@ -196,7 +196,7 @@ export default function PlannedPaymentSummary({ auth, activeType }: PageProps<Pl
                     return element;
                 } else {
                     let plannedElement: any[] = [];
-                    let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                    let defaultContent = <TemplateNoData></TemplateNoData>;
 
                     // Loop through response
                     if(plannedItem && plannedItem.length > 0){

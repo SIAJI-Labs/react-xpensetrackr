@@ -182,36 +182,38 @@ export default function PlannedPaymentSummary({ auth, activeType }: PageProps<Pl
             </div>
 
             {/* Content */}
-            {(() => {
-                if(plannedIsLoading){
-                    let element: any[] = [];
-                    for(let i = 0; i < plannedSkeletonCount; i++){
-                        element.push(
-                            <div key={ `skeleton-${i}` }>
-                                {listSkeleton()}
-                            </div>
-                        );
-                    }
-
-                    return element;
-                } else {
-                    let plannedElement: any[] = [];
-                    let defaultContent = <TemplateNoData></TemplateNoData>;
-
-                    // Loop through response
-                    if(plannedItem && plannedItem.length > 0){
-                        plannedItem.map((val, index) => {
-                            plannedElement.push(
-                                <div key={ `planned_item-${index}` }>
-                                    {listTemplate(val)}
+            <div className={ ` flex flex-col gap-4` }>
+                {(() => {
+                    if(plannedIsLoading){
+                        let element: any[] = [];
+                        for(let i = 0; i < plannedSkeletonCount; i++){
+                            element.push(
+                                <div key={ `skeleton-${i}` }>
+                                    {listSkeleton()}
                                 </div>
                             );
-                        });
-                    }
+                        }
 
-                    return plannedElement.length > 0 ? plannedElement : defaultContent;
-                }
-            })()}
+                        return element;
+                    } else {
+                        let plannedElement: any[] = [];
+                        let defaultContent = <TemplateNoData></TemplateNoData>;
+
+                        // Loop through response
+                        if(plannedItem && plannedItem.length > 0){
+                            plannedItem.map((val, index) => {
+                                plannedElement.push(
+                                    <div key={ `planned_item-${index}` }>
+                                        {listTemplate(val)}
+                                    </div>
+                                );
+                            });
+                        }
+
+                        return plannedElement.length > 0 ? plannedElement : defaultContent;
+                    }
+                })()}
+            </div>
 
             {/* Footer */}
             <div>

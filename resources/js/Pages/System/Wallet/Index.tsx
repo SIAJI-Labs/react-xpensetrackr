@@ -210,38 +210,40 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                                 </Link>
                             </div>
                             {/* Content */}
-                            {(() => {
-                                if(contentIsLoading){
-                                    let element: any[] = [];
-                                    for(let i = 0; i < skeletonCount; i++){
-                                        element.push(
-                                            <div key={ `skeleton-${i}` }>
-                                                {listSkeleton()}
-                                            </div>
-                                        );
-                                    }
-
-                                    return element;
-                                } else {
-                                    let walletElement: any[] = [];
-                                    let defaultContent = <TemplateNoData></TemplateNoData>;
-
-                                    // Loop through response
-                                    if(walletItem && walletItem.length > 0){
-                                        walletItem.map((val, index) => {
-                                            walletElement.push(
-                                                <div key={ `wallet_item-${index}` }>
-                                                    {listTemplate(val)}
+                            <div className={ ` flex flex-col gap-4` }>
+                                {(() => {
+                                    if(contentIsLoading){
+                                        let element: any[] = [];
+                                        for(let i = 0; i < skeletonCount; i++){
+                                            element.push(
+                                                <div key={ `skeleton-${i}` }>
+                                                    {listSkeleton()}
                                                 </div>
                                             );
-                                        });
+                                        }
+
+                                        return element;
+                                    } else {
+                                        let walletElement: any[] = [];
+                                        let defaultContent = <TemplateNoData></TemplateNoData>;
+
+                                        // Loop through response
+                                        if(walletItem && walletItem.length > 0){
+                                            walletItem.map((val, index) => {
+                                                walletElement.push(
+                                                    <div key={ `wallet_item-${index}` }>
+                                                        {listTemplate(val)}
+                                                    </div>
+                                                );
+                                            });
+                                        }
+
+                                        return walletElement.length > 0 ? walletElement : defaultContent;
                                     }
 
-                                    return walletElement.length > 0 ? walletElement : defaultContent;
-                                }
-
-                                return <></>;
-                            })()}
+                                    return <></>;
+                                })()}
+                            </div>
                         </div>
                     </CardContent>
                     <CardFooter className={ `flex justify-between items-center` }>

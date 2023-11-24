@@ -440,7 +440,7 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                                     <div className={ ` mt-4 flex flex-row gap-4` }>
                                                         {(() => {
                                                             // Check if delete dialog form is exists
-                                                            let plannedPaymentDeleteSection = document.getElementById('plannedPaymentDeleteDialog-section');
+                                                            let plannedPaymentDeleteSection = document.getElementById('plannedPayment-deleteDialogSection');
                                                             if(plannedPaymentDeleteSection){
                                                                 return <Button className={ `w-full` } variant={ `outline` } onClick={() => {
                                                                     document.dispatchEvent(new CustomEvent('planned-payment.delete-action', {

@@ -133,6 +133,12 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                         </div>
                     </CardHeader>
                     <CardContent className={ ` flex flex-col gap-6` }>
+                        {/* Timestamp */}
+                        <div className={ ` flex flex-row gap-2` }>
+                            <span><i className={ `fa-solid fa-clock` }></i></span>
+                            <span className={ ` font-medium` }>{ momentFormated('MMM Do, YYYY / HH:mm', record?.datetime, moment.tz.guess()) }</span>
+                        </div>
+
                         {(() => {
                             if(record && 'planned_payment_record' in record){
                                 return (
@@ -146,7 +152,7 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                                 if(record.planned_payment_record && record.planned_payment_record.planned_payment){
                                                     return (
                                                         <>
-                                                            <span>This record are part of <u><Link href={ route('sys.planned-payment.show', record.planned_payment_record.planned_payment.uuid) } className={ `text-primary` }>{record.planned_payment_record.planned_payment.name}</Link></u></span>
+                                                            <span>This record are part of <u><Link href={ route('sys.planned-payment.show', record.planned_payment_record.planned_payment.uuid) } className={ `text-primary` }>{record.planned_payment_record.planned_payment.name}</Link></u> Planned Payment</span>
                                                         </>
                                                     )
                                                 }
@@ -160,12 +166,6 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
 
                             return <></>;
                         })()}
-
-                        {/* Timestamp */}
-                        <div className={ ` flex flex-row gap-2` }>
-                            <span><i className={ `fa-solid fa-clock` }></i></span>
-                            <span className={ ` font-medium` }>{ momentFormated('MMM Do, YYYY / HH:mm', record?.datetime, moment.tz.guess()) }</span>
-                        </div>
 
                         {/* Type, Category, and Wallet */}
                         <div className={ ` flex gap-4` }>
@@ -237,12 +237,12 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                         </div>
 
                         {/* Amount, etc */}
-                        <div className={ `` }>
-                            <div className={ `flex justify-between mt-2 text-sm` }>
+                        <div className={ ` flex flex-col` }>
+                            <div className={ `flex justify-between text-sm` }>
                                 <span>Amount</span>
                                 <span data-review="amount">{ formatRupiah(record.amount ?? 0) }</span>
                             </div>
-                            <div className={ `flex justify-between mt-1 text-sm` }>
+                            <div className={ `flex justify-between text-sm` }>
                                 <span>
                                     <span>Extra</span>
                                     {(() => {

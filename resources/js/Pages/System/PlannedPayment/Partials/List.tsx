@@ -21,7 +21,7 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
     const isFirstRender = useIsFirstRender();
     useEffect(() => {
         // Run on tab changed
-        fetchPlannedSummary();
+        fetchPlannedList();
     }, []);
 
     // Planned Payment Data
@@ -34,7 +34,7 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
     const [plannedCountTotal, setPlannedCountTotal] = useState<number>(0);
     const [plannedPaginate, setPlannedPaginate] = useState<number>(paginate_item);
     const [plannedPaginateState, setPlannedPaginateState] = useState<boolean>(false);
-    const fetchPlannedSummary = async() => {
+    const fetchPlannedList = async() => {
         // Show skeleton
         setPlannedIsLoading(true);
 
@@ -115,7 +115,7 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
         if(!isFirstRender){
             const timer = setTimeout(() => {
                 setPlannedPaginate(paginate_item);
-                fetchPlannedSummary();
+                fetchPlannedList();
             }, 500);
     
             // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
@@ -127,7 +127,7 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
 
     useEffect(() => {
         if(!isFirstRender){
-            fetchPlannedSummary();
+            fetchPlannedList();
         }
     }, [plannedPaginate]);
     useEffect(() => {
@@ -135,9 +135,7 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
             // Listen to Record Dialog event
             const handleDialogPlannedPayment = () => {
                 setTimeout(() => {
-                    console.log('Dialog Event');
-
-                    fetchPlannedSummary();
+                    fetchPlannedList();
                 }, 100);
             }
             window.addEventListener('planned-payment.refresh', handleDialogPlannedPayment);
@@ -162,36 +160,38 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
             </div>
 
             {/* Content */}
-            {(() => {
-                if(plannedIsLoading){
-                    let element: any[] = [];
-                    for(let i = 0; i < plannedSkeletonCount; i++){
-                        element.push(
-                            <div key={ `skeleton-${i}` }>
-                                {listSkeleton()}
-                            </div>
-                        );
-                    }
-
-                    return element;
-                } else {
-                    let plannedElement: any[] = [];
-                    let defaultContent = <TemplateNoData></TemplateNoData>;
-
-                    // Loop through response
-                    if(plannedItem && plannedItem.length > 0){
-                        plannedItem.map((val, index) => {
-                            plannedElement.push(
-                                <div key={ `planned_item-${index}` }>
-                                    {listTemplate(val)}
+            <div className={ ` flex flex-col gap-4` }>
+                {(() => {
+                    if(plannedIsLoading){
+                        let element: any[] = [];
+                        for(let i = 0; i < plannedSkeletonCount; i++){
+                            element.push(
+                                <div key={ `skeleton-${i}` }>
+                                    {listSkeleton()}
                                 </div>
                             );
-                        });
-                    }
+                        }
 
-                    return plannedElement.length > 0 ? plannedElement : defaultContent;
-                }
-            })()}
+                        return element;
+                    } else {
+                        let plannedElement: any[] = [];
+                        let defaultContent = <TemplateNoData></TemplateNoData>;
+
+                        // Loop through response
+                        if(plannedItem && plannedItem.length > 0){
+                            plannedItem.map((val, index) => {
+                                plannedElement.push(
+                                    <div key={ `planned_item-${index}` }>
+                                        {listTemplate(val)}
+                                    </div>
+                                );
+                            });
+                        }
+
+                        return plannedElement.length > 0 ? plannedElement : defaultContent;
+                    }
+                })()}
+            </div>
 
             {/* Footer */}
             <div className={ `flex justify-between items-center` }>

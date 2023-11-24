@@ -27,6 +27,24 @@ class PlannedPaymentController extends Controller
         if($request->has('keyword') && !empty($request->keyword)){
             $data->where('name', 'like', '%'.$request->keyword.'%');
         }
+        if($request->has('filter_state') && in_array($request->filter_state, ['overdue', 'today', 'upcoming'])){
+            $interval = 5;
+            // Override upcoming interval
+            // if(!empty($user->getPreference('upcoming_planned_payment_interval'))){
+            //     $interval = $user->getPreference('upcoming_planned_payment_interval');
+            // } else {
+            //     $interval = 5;
+            // }
+            
+            if($request->filter_state === 'overdue'){
+                $data->where('date_start', '<', date('Y-m-d'));
+            } else if($request->filter_state === 'today'){
+                $data->where('date_start', date('Y-m-d'));
+            } else if($request->filter_state === 'upcoming'){
+                $data->where('date_start', '<=', date('Y-m-d', strtotime('+'.($interval).' days')))
+                    ->where('date_start', '>', date('Y-m-d'));
+            }
+        }
 
         // Apply ordering
         $sort_type = 'asc';
@@ -239,7 +257,7 @@ class PlannedPaymentController extends Controller
             ->firstOrFail();
 
         // Validate date start must be greater or equal with today
-        if(date('Y-m-d', strtotime($request->date)) < date('Y-m-d', strtotime($data->date_start))){
+        if(date('Y-m-d', strtotime($request->date)) < date('Y-m-d')){
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'date' => 'Start at value is invalid, value cannot be less than previous value ('.(date('d F, Y', strtotime($data->date_start))).')!'
             ]);

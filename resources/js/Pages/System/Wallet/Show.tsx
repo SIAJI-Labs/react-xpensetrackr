@@ -136,7 +136,7 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className={ `flex flex-col gap-6` }>
+                                    <div className={ `flex flex-col gap-4` }>
                                         {(() => {
                                             let relatedElement: any = [];
                                             let defaultContent = <TemplateNoData></TemplateNoData>;

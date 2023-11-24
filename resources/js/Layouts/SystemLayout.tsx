@@ -21,6 +21,8 @@ import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import WalletDeleteDialog from '@/Components/system/Wallet/WalletDeleteDialog';
+import CategoryDialog from '@/Components/system/Category/WalletDialog';
+import CategoryDeleteDialog from '@/Components/system/Category/WalletDeleteDialog';
 
 export default function SystemLayout({ user, header, children, fabAction = null }: PropsWithChildren<{ user: User, header?: ReactNode, fabAction?: any[] | null }>) {
     // Record Dialog
@@ -51,6 +53,16 @@ export default function SystemLayout({ user, header, children, fabAction = null 
     const [openWalletDeleteDialog, setOpenWalletDeleteDialog] = useState<boolean>(false);
     const handleOpenWalletDeleteDialog = (isOpen: boolean) => {
         setOpenWalletDeleteDialog(isOpen);
+    };
+
+    // Category Dialog
+    const [openCategoryDialog, setOpenCategoryDialog] = useState<boolean>(false);
+    const handleOpenCategoryDialog = (isOpen: boolean) => {
+        setOpenCategoryDialog(isOpen);
+    };
+    const [openCategoryDeleteDialog, setOpenCategoryDeleteDialog] = useState<boolean>(false);
+    const handleOpenCategoryDeleteDialog = (isOpen: boolean) => {
+        setOpenCategoryDeleteDialog(isOpen);
     };
 
     return (
@@ -86,8 +98,7 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                     </main>
                 </div>
 
-                {/* Record Modal */}
-                {/* FAB */}
+                {/* Floating Action Button */}
                 {(() => {
                     if(fabAction !== null){
                         let action: any = [];
@@ -103,6 +114,20 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                                 }} className={ `cursor-pointer flex items-center gap-2` } key={ `fab-wallet` }>
                                     <i className={ `fa-regular fa-clock h-4 w-4 text-center` }></i>
                                     <span className={ `` }>Planned Payment</span>
+                                </DropdownMenuItem>
+                            );
+                        }
+                        // Push category action
+                        if(fabAction.includes('category')){
+                            action.push(
+                                <DropdownMenuItem onClick={() => {
+                                    document.dispatchEvent(new CustomEvent('category.edit-action', {
+                                            bubbles: true,
+                                        }
+                                    ));
+                                }} className={ `cursor-pointer flex items-center gap-2` } key={ `fab-category` }>
+                                    <i className={ `fa-solid fa-bookmark h-4 w-4 text-center` }></i>
+                                    <span className={ `` }>Category</span>
                                 </DropdownMenuItem>
                             );
                         }
@@ -158,6 +183,10 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 {/* Wallet Modal - Dialog */}
                 <WalletDialog openState={ openWalletDialog } setOpenState={ handleOpenWalletDialog }/>
                 <WalletDeleteDialog openState={ openWalletDeleteDialog } setOpenState={ handleOpenWalletDeleteDialog }/>
+
+                {/* Category Modal - Dialog */}
+                <CategoryDialog openState={ openCategoryDialog } setOpenState={ handleOpenCategoryDialog }/>
+                <CategoryDeleteDialog openState={ openCategoryDeleteDialog } setOpenState={ handleOpenCategoryDeleteDialog }/>
             </div>
 
             <Toaster />

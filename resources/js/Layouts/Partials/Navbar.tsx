@@ -101,6 +101,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                         let feature: { name: string, icon?: string, link?: any}[] = [
                             { name: 'Dashboard', icon: '', link: route('sys.index') },
                             { name: 'Budget', icon: '', link: null },
+                            { name: 'Category', icon: '', link: route('sys.category.index') },
                             { name: 'Debt', icon: '', link: null },
                             { name: 'Goals', icon: '', link: null },
                             { name: 'Planned Payment', icon: '', link: route('sys.planned-payment.index') },
@@ -264,11 +265,13 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
 
                                         <DropdownMenuSeparator />
                                         <DropdownMenuGroup>
-                                            <DropdownMenuItem className={ ` flex flex-row gap-2` }>
-                                                <i className={ `fa-solid fa-bookmark w-1/12` }></i>
-                                                <span className=' w-11/12'>Category</span>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem className={ ` flex flex-row gap-2` }>
+                                            <Link href={ route('sys.category.index') }>
+                                                <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-pointer` }>
+                                                    <i className={ `fa-solid fa-bookmark w-1/12` }></i>
+                                                    <span className=' w-11/12'>Category</span>
+                                                </DropdownMenuItem>
+                                            </Link>
+                                            <DropdownMenuItem className={ ` flex flex-row gap-2 opacity-50` }>
                                                 <i className={ `fa-solid fa-tags w-1/12` }></i>
                                                 <span className=' w-11/12'>Tags</span>
                                             </DropdownMenuItem>

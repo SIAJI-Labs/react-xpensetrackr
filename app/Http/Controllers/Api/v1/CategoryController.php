@@ -60,8 +60,11 @@ class CategoryController extends Controller
                     });
             }
         }
+        if($request->has('only_parent') && ($request->only_parent || $request->only_parent == 'true')){
+            $data->whereNull('parent_id');
+        }
 
-        // Apply Ordering
+        // Apply ordering
         $sort_type = 'asc';
         if($request->has('sort') && in_array($request->sort, ['asc', 'desc'])){
             $sort_type = $request->sort;
@@ -81,10 +84,9 @@ class CategoryController extends Controller
             $perPage = $request->per_page;
         }
         if($request->has('paginate') && in_array($request->paginate, ['true', '1'])){
-            // Simple pagination
+            // Fetch data
             $data = $data->simplePaginate($perPage);
         } else {
-            // List of data
             if($request->has('limit') && is_numeric($request->limit)){
                 $raw = (clone $data);
 
@@ -105,6 +107,14 @@ class CategoryController extends Controller
         }
 
         return $this->formatedJsonResponse(200, 'Data Fetched', $data);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
     }
 
     /**
@@ -165,15 +175,23 @@ class CategoryController extends Controller
             'name' => ['required', 'string', 'max:191']
         ]);
 
-        DB::transaction(function () use ($request, $id) {
-            $user = $request->user();
+        $user = $request->user();
+        $data = \App\Models\Category::where(DB::raw('BINARY `uuid`'), $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        // Validate can't use self as parent data
+        if($request->has('parent_id') && $request->parent_id === $data->uuid){
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'parent_id' => 'Unable to assign parent category: Self-assignment is not permitted'
+            ]);
+        }
+
+        DB::transaction(function () use ($request, $user, $data) {
             
-            $data = \App\Models\Category::where(DB::raw('BINARY `uuid`'), $id)
-                ->where('user_id', $user->id)
-                ->firstOrFail();
             $parent_id = $data->parent_id;
             if($request->has('parent_id') && !empty($request->parent_id)){
-                $parent = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->parent_id)
+                $parent = \App\Models\Category::where(DB::raw('BINARY `uuid`'), $request->parent_id)
                     ->where('user_id', $user->id)
                     ->firstOrFail();
 
@@ -195,6 +213,68 @@ class CategoryController extends Controller
      */
     public function destroy(Request $request, string $id)
     {
+        $user = $request->user();
+
+        $data = \App\Models\Category::with('parent')
+            ->where(DB::raw('BINARY `uuid`'), $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        DB::transaction(function () use ($request, $data) {
+            // Remove data
+            $data->delete();
+        });
+
         return $this->formatedJsonResponse(200, 'Data Deleted', []);
+    }
+
+    /**
+     * Re-Order
+     */
+    public function reOrder(Request $request)
+    {
+        DB::transaction(function () use ($request) {
+            $user = $request->user();
+            $order = json_decode($request->hierarchy, true);
+
+            $numorder = 0;
+            $numorderMain = 0;
+            foreach ($order as $hierarchy) {
+                // Update Main Order
+                $category = \App\Models\Category::where('user_id', $user->id)
+                    ->where(DB::raw('BINARY `uuid`'), $hierarchy['id'])
+                    ->firstOrFail();
+                $category->order = $numorder;
+                $category->order_main = $numorderMain;
+                if (!empty($category->parent_id)) {
+                    $category->parent_id = null;
+                }
+                $category->save();
+    
+                // Request has Child Category
+                if (isset($hierarchy['child']) && is_array($hierarchy['child']) && count($hierarchy['child']) > 0) {
+                    $childOrder = 0;
+                    foreach ($hierarchy['child'] as $child) {
+                        $numorderMain++;
+    
+                        // Update Child Order
+                        $subcategory = \App\Models\Category::where('user_id', $user->id)
+                            ->where(DB::raw('BINARY `uuid`'), $child['id'])
+                            ->firstOrFail();
+                        $subcategory->order = $childOrder;
+                        $subcategory->order_main = $numorderMain;
+                        $subcategory->parent_id = $category->id;
+                        $subcategory->save();
+    
+                        $childOrder++;
+                    }
+                }
+    
+                $numorderMain++;
+                $numorder++;
+            }
+        });
+
+        return $this->formatedJsonResponse(200, 'Data Updated', []);
     }
 }

@@ -137,7 +137,7 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
         }, {
             name: 'Category',
             icon: 'fa-solid fa-bookmark',
-            route: null,
+            route: route('sys.category.index'),
             sub: [],
             active: ['sys.category.index', 'sys.category.show', 'sys.category.re-order.index'],
             is_disabled: false,
@@ -189,7 +189,21 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                                         let sideChild: any[] = [];
                                         
                                         sidebarMenu.forEach((val, index) => {
-                                            let className = `transition-all flex flex-row gap-2 items-center px-4 py-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group`;
+                                            let className = `
+                                                transition-all 
+                                                flex 
+                                                flex-row 
+                                                gap-2 
+                                                items-center 
+                                                px-4 
+                                                py-2 
+                                                text-gray-900 
+                                                dark:text-white
+                                                hover:bg-gray-100
+                                                dark:hover:bg-gray-700
+                                                group
+                                                rounded-lg 
+                                            `;
                                             // Handle icon
                                             let icon: any = null;
                                             if(val.icon){
@@ -202,13 +216,13 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
 
                                             // Handle classname
                                             if(val.active.includes(currentRoute)){
-                                                className = `transition-all flex flex-row gap-2 items-center px-4 py-2 text-gray-900 rounded-lg dark:text-white bg-gray-100 dark:hover:bg-gray-700 group`;
+                                                className += ` !bg-gray-100 dark:!bg-gray-700`;
                                             } 
                                             if(val.is_header){
-                                                className += ` font-semibold !my-0 leading-none !pb-0 !pt-4 !pl-0.5 hover:bg-transparent`;
+                                                className += ` font-semibold !my-0 leading-none !pb-0 !pt-4 !pl-0.5 !bg-transparent hover:bg-transparent`;
                                             }
                                             if(val.is_disabled){
-                                                className += ` opacity-50 hover:cursor-not-allowed`;
+                                                className += ` opacity-50 hover:cursor-not-allowed hover:!bg-transparent`;
                                             }
                                             if(val.sub.length > 0){
                                                 className += ` justify-between`;

@@ -228,12 +228,12 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                                                     let child: any[] = [];
                                                     (val.sub).forEach((ch: any, chk: any) => {
                                                         // Handle child class
-                                                        let childClass = ` transition-all hover:bg-gray-100 rounded px-4 py-2 flex flex-row gap-4`;
+                                                        let childClass = ` transition-all hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white rounded px-4 py-2 flex flex-row gap-4`;
                                                         if(ch.is_disabled){
                                                             childClass += ` opacity-50 cursor-not-allowed`;
                                                         }
                                                         if((ch.active).includes(currentRoute)){
-                                                            childClass += ` bg-gray-100`
+                                                            childClass += ` bg-gray-100 dark:bg-gray-700 dark:text-white`
                                                         }
 
                                                         // Handle Content
@@ -261,7 +261,7 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
 
                                                     sideChild.push(
                                                         <li className={ val.active.includes(currentRoute) ? 'open' : '' } key={ `sidebar_menu-${index}` }>
-                                                            <div className={ `${className} cursor-pointer` } key={ `sidebar_menu-${index}` } onClick={($refs) => {
+                                                            <div className={ `${className} [.open_&]:dark:bg-gray-700 cursor-pointer` } key={ `sidebar_menu-${index}` } onClick={($refs) => {
                                                                 let el = $refs.target as HTMLElement;
                                                                 el.closest('li')?.classList.toggle('open');
                                                             }}>
@@ -281,7 +281,7 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                                                 } else {
                                                     sideChild.push(
                                                         <li key={ `sidebar_menu-${index}` }>
-                                                            <div className={ `${className}` }>
+                                                            <div className={ `${className} ` }>
                                                                 { icon }
                                                                 <span className="">{ val.name }</span>
                                                             </div>

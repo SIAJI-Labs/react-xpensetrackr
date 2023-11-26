@@ -1,28 +1,26 @@
 import { PageProps, RecordItem } from '@/types';
+import { useIsFirstRender } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 
 // Partials
-import RecordTemplate from '@/Components/template/Record/RecordTemplate';
-import NoDataTemplate from '@/Components/template/NoDataTemplate';
+import RecordTemplate from '@/Components/template/Record/TemplateList';
+import TemplateNoData from '@/Components/template/TemplateNoData';
 import SystemLayout from '@/Layouts/SystemLayout';
 
 // Shadcn
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Skeleton } from '@/Components/ui/skeleton';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import ListSkeleton from '@/Components/template/Record/ListSkeleton';
+import ListSkeleton from '@/Components/template/Record/SkeletonList';
 
 // Props
 type RecordIndexProps = {
 }
 
 export default function Index({ auth }: PageProps<RecordIndexProps>) {
-    // Record Dialog
-    const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
-
+    const isFirstRender = useIsFirstRender();
     // Record List - Template
     const recordListTemplate = (obj:RecordItem) => {
         return <RecordTemplate record={obj}></RecordTemplate>;
@@ -34,18 +32,22 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
     const [recordFilterKeyword, setRecordFilterKeyword] = useState<string>('');
     const [recordFilterStatus, setRecordFilterStatus] = useState<string>('complete');
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setRecordPaginate(paginate_item);
-            fetchRecordList();
-        }, 500);
-
-        // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
-        return () => {
-            clearTimeout(timer);
-        };
+        if(!isFirstRender){
+            const timer = setTimeout(() => {
+                setRecordPaginate(paginate_item);
+                fetchRecordList();
+            }, 500);
+    
+            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+            return () => {
+                clearTimeout(timer);
+            };
+        }
     }, [recordFilterKeyword]);
     // Record List - Variable Init
     let paginate_item = 5;
+    const [recordCountShown, setRalletCountShown] = useState<number>(0);
+    const [recordCountTotal, setRalletCountTotal] = useState<number>(0);
     const [recordPaginate, setRecordPaginate] = useState<number>(paginate_item);
     const [recordPaginateState, setRecordPaginateState] = useState<boolean>(false);
     useEffect(() => {
@@ -104,6 +106,11 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
             setRecordItem(jsonResponse.result.data);
             // Update load more state
             setRecordPaginateState(jsonResponse.result.has_more);
+            // Update shown
+            setRalletCountShown((jsonResponse.result.data).length);
+            if('total' in jsonResponse.result){
+                setRalletCountTotal(jsonResponse.result.total);
+            }
 
             // Remove loading state
             setRecordIsLoading(false);
@@ -124,11 +131,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
         // Listen to Record Dialog event
         const handleDialogRecord = () => {
             setTimeout(() => {
-                console.log('Dialog Event');
-
                 fetchRecordList();
-                // Open dialog state
-                setOpenRecordDialog(false);
             }, 100);
         }
 
@@ -174,7 +177,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                         }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
                                     })()}
                                     <Button variant={ `outline` } onClick={() => {
-                                        document.dispatchEvent(new CustomEvent('recordDialogEditAction', {
+                                        document.dispatchEvent(new CustomEvent('record.edit-action', {
                                                 bubbles: true,
                                             }
                                         ));
@@ -212,7 +215,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                         return element;
                                     } else {
                                         let recordElement: any[] = [];
-                                        let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                                        let defaultContent = <TemplateNoData></TemplateNoData>;
                                         // Loop through response
                                         if(recordItem.length > 0){
                                             recordItem.map((val, index) => {
@@ -229,7 +232,7 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                 })()}
                             </div>
                         </CardContent>
-                        <CardFooter>
+                        <CardFooter className={ `flex justify-between items-center` }>
                             <Button
                                 variant={ `outline` }
                                 className={ `` }
@@ -239,6 +242,16 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                     setRecordPaginate(recordPaginate + paginate_item);
                                 }}
                             >Load more</Button>
+
+                            {(() => {
+                                if(recordCountShown > 0 && recordCountTotal > 0){
+                                    return <>
+                                        <span className={ `text-sm` }>Showing {recordCountShown} of {recordCountTotal} entries</span>
+                                    </>;
+                                }
+
+                                return <></>
+                            })()}
                         </CardFooter>
                     </Card>
                 </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\System;
 
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -38,7 +39,7 @@ class PlannedSummaryController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        $data = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $id)
+        $data = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
         $data->current_balance = $data->getBalance();

@@ -29,3 +29,8 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Notification
+Route::get('notification-subscribe', function(){
+    return response()->json('ok');
+})->name('public.notification.subscribe');

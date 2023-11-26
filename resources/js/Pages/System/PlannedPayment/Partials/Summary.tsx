@@ -5,12 +5,12 @@ import { PageProps } from "@/types";
 import moment from "moment-timezone";
 
 // Partials
-import NoDataTemplate from "@/Components/template/NoDataTemplate";
-import SummaryTemplate from "@/Components/template/PlannedPayment/SummaryTemplate";
+import TemplateNoData from "@/Components/template/TemplateNoData";
+import SummaryTemplate from "@/Components/template/PlannedPayment/TemplateSummary";
 
 // Shadcn
 import { Button } from "@/Components/ui/button";
-import SummarySkeleton from "@/Components/template/PlannedPayment/SummarySkeleton";
+import SummarySkeleton from "@/Components/template/PlannedPayment/SkeletonSummary";
 import axios from "axios";
 import { useIsFirstRender } from "@/lib/utils";
 
@@ -182,36 +182,38 @@ export default function PlannedPaymentSummary({ auth, activeType }: PageProps<Pl
             </div>
 
             {/* Content */}
-            {(() => {
-                if(plannedIsLoading){
-                    let element: any[] = [];
-                    for(let i = 0; i < plannedSkeletonCount; i++){
-                        element.push(
-                            <div key={ `skeleton-${i}` }>
-                                {listSkeleton()}
-                            </div>
-                        );
-                    }
-
-                    return element;
-                } else {
-                    let plannedElement: any[] = [];
-                    let defaultContent = <NoDataTemplate></NoDataTemplate>;
-
-                    // Loop through response
-                    if(plannedItem && plannedItem.length > 0){
-                        plannedItem.map((val, index) => {
-                            plannedElement.push(
-                                <div key={ `planned_item-${index}` }>
-                                    {listTemplate(val)}
+            <div className={ ` flex flex-col gap-4` }>
+                {(() => {
+                    if(plannedIsLoading){
+                        let element: any[] = [];
+                        for(let i = 0; i < plannedSkeletonCount; i++){
+                            element.push(
+                                <div key={ `skeleton-${i}` }>
+                                    {listSkeleton()}
                                 </div>
                             );
-                        });
-                    }
+                        }
 
-                    return plannedElement.length > 0 ? plannedElement : defaultContent;
-                }
-            })()}
+                        return element;
+                    } else {
+                        let plannedElement: any[] = [];
+                        let defaultContent = <TemplateNoData></TemplateNoData>;
+
+                        // Loop through response
+                        if(plannedItem && plannedItem.length > 0){
+                            plannedItem.map((val, index) => {
+                                plannedElement.push(
+                                    <div key={ `planned_item-${index}` }>
+                                        {listTemplate(val)}
+                                    </div>
+                                );
+                            });
+                        }
+
+                        return plannedElement.length > 0 ? plannedElement : defaultContent;
+                    }
+                })()}
+            </div>
 
             {/* Footer */}
             <div>

@@ -8,10 +8,10 @@ import { formatRupiah } from "@/function";
 import moment from "moment-timezone";
 
 // Partials
-import ListTemplate from "@/Components/template/PlannedPayment/ListTemplate";
-import ListSkeleton from "@/Components/template/PlannedPayment/ListSkeleton";
-import BackButton from "@/Components/template/BackButtonTemplate";
-import NoDataTemplate from "@/Components/template/NoDataTemplate";
+import ListTemplate from "@/Components/template/PlannedPayment/TemplateList";
+import ListSkeleton from "@/Components/template/PlannedPayment/SkeletonList";
+import BackButton from "@/Components/template/TemplateBackButton";
+import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
@@ -228,84 +228,88 @@ export default function Show({ auth, wallet, period, estimate_income = 0, estima
                                 </div>
                             </div>
 
-                            {/* Period Navigation */}
-                            <div className={ `flex flex-col` }>
-                                <div className={ ` flex justify-between items-center` }>
-                                    <Button variant={ `ghost` } onClick={() => {
-                                        navigatePeriod('prev');
-                                    }}>
-                                        <span><i className={ `fa-solid fa-angle-left` }></i></span>
-                                    </Button>
-                                    <div className={ `flex flex-col` }>
-                                        <Button variant={ `outline` } className={ `px-6` }>
-                                            {moment(activePeriod).format('MMMM, YYYY')}
+                            <div className={ ` flex flex-col gap-4` }>
+                                {/* Period Navigation */}
+                                <div className={ `flex flex-col` }>
+                                    <div className={ ` flex justify-between items-center` }>
+                                        <Button variant={ `ghost` } onClick={() => {
+                                            navigatePeriod('prev');
+                                        }}>
+                                            <span><i className={ `fa-solid fa-angle-left` }></i></span>
+                                        </Button>
+                                        <div className={ `flex flex-col` }>
+                                            <Button variant={ `outline` } className={ `px-6` }>
+                                                {moment(activePeriod).format('MMMM, YYYY')}
+                                            </Button>
+                                        </div>
+                                        <Button variant={ `ghost` } onClick={() => {
+                                            navigatePeriod('next');
+                                        }}>
+                                            <span><i className={ `fa-solid fa-angle-right` }></i></span>
                                         </Button>
                                     </div>
-                                    <Button variant={ `ghost` } onClick={() => {
-                                        navigatePeriod('next');
-                                    }}>
-                                        <span><i className={ `fa-solid fa-angle-right` }></i></span>
-                                    </Button>
+                                    {(() => {
+                                        if(moment().format('YYYY-MM-DD') != moment(activePeriod).format('YYYY-MM-DD')){
+                                            return <Button variant={ `link` } className={ `py-0` } onClick={() => {
+                                                navigatePeriod('current')
+                                            }}>Back to current period ({moment().format('MMM, YYYY')})</Button>
+                                        }
+
+                                        return <></>;
+                                    })()}
                                 </div>
-                                {(() => {
-                                    if(moment().format('YYYY-MM-DD') != moment(activePeriod).format('YYYY-MM-DD')){
-                                        return <Button variant={ `link` } className={ `py-0` } onClick={() => {
-                                            navigatePeriod('current')
-                                        }}>Back to current period ({moment().format('MMM, YYYY')})</Button>
-                                    }
 
-                                    return <></>;
-                                })()}
-                            </div>
-
-                            {/* Planned List */}
-                            {(() => {
-                                if(plannedIsLoading){
-                                    let element: any[] = [];
-                                    for(let i = 0; i < plannedSkeletonCount; i++){
-                                        element.push(
-                                            <div key={ `skeleton-${i}` }>
-                                                {listSkeleton()}
-                                            </div>
-                                        );
-                                    }
-
-                                    return element;
-                                } else {
-                                    let plannedElement: any[] = [];
-                                    let defaultContent = <NoDataTemplate></NoDataTemplate>;
-                                    let plannedPeriod: any | null = null;
-
-                                    // Loop through response
-                                    if(plannedItem && plannedItem.length > 0){
-                                        plannedItem.map((val, index) => {
-                                            let show = false;
-                                            if(plannedPeriod === null || plannedPeriod !== val.period){
-                                                show = true;
-                                                plannedPeriod = val.period;
-                                            }
-
-                                            if(index > 0 && show){
-                                                plannedElement.push(
-                                                    <div key={ `period_separator-${index}` }>
-                                                        <div className={ ` flex justify-center relative before:absolute before:border-t before:w-[calc(50%-1.25rem)] before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-1 after:absolute after:border-t after:w-[calc(50%-1.25rem)] after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-1` }>
-                                                            <span><i className={ `fa-regular fa-clock` }></i></span>
-                                                        </div>
+                                {/* Planned List */}
+                                <div className={ ` flex flex-col gap-2` }>
+                                    {(() => {
+                                        if(plannedIsLoading){
+                                            let element: any[] = [];
+                                            for(let i = 0; i < plannedSkeletonCount; i++){
+                                                element.push(
+                                                    <div key={ `skeleton-${i}` }>
+                                                        {listSkeleton()}
                                                     </div>
                                                 );
                                             }
 
-                                            plannedElement.push(
-                                                <div key={ `planned_item-${index}` }>
-                                                    {listTemplate(val)}
-                                                </div>
-                                            );
-                                        });
-                                    }
+                                            return element;
+                                        } else {
+                                            let plannedElement: any[] = [];
+                                            let defaultContent = <TemplateNoData></TemplateNoData>;
+                                            let plannedPeriod: any | null = null;
 
-                                    return plannedElement.length > 0 ? plannedElement : defaultContent;
-                                }
-                            })()}
+                                            // Loop through response
+                                            if(plannedItem && plannedItem.length > 0){
+                                                plannedItem.map((val, index) => {
+                                                    let show = false;
+                                                    if(plannedPeriod === null || plannedPeriod !== val.period){
+                                                        show = true;
+                                                        plannedPeriod = val.period;
+                                                    }
+
+                                                    if(index > 0 && show){
+                                                        plannedElement.push(
+                                                            <div key={ `period_separator-${index}` }>
+                                                                <div className={ ` flex justify-center relative before:absolute before:border-t before:w-[calc(50%-1.25rem)] before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-1 after:absolute after:border-t after:w-[calc(50%-1.25rem)] after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-1` }>
+                                                                    <span><i className={ `fa-regular fa-clock` }></i></span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    }
+
+                                                    plannedElement.push(
+                                                        <div key={ `planned_item-${index}` }>
+                                                            {listTemplate(val)}
+                                                        </div>
+                                                    );
+                                                });
+                                            }
+
+                                            return plannedElement.length > 0 ? plannedElement : defaultContent;
+                                        }
+                                    })()}
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                     <CardFooter>

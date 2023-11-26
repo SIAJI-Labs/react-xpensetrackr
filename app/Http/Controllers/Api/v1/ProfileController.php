@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use Illuminate\Support\Facades\Storage;
+
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
 use App\Traits\FileUploadTrait;
 use App\Traits\JsonResponseTrait;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ProfileController extends Controller
 {
@@ -66,7 +69,7 @@ class ProfileController extends Controller
         // Override file location
         $this->fileUploadTraitsDestination = 'files/user'.'/'.$user->uuid;   
 
-        \DB::transaction(function () use ($user, $request) {
+        DB::transaction(function () use ($user, $request) {
             $user->name = $request->name;
             $user->email = $request->email;
             $user->username = $request->username;

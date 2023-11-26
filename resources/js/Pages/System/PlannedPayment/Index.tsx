@@ -39,6 +39,7 @@ export default function Index({ auth, type = 'list' }: PageProps<PlannedPaymentI
             <SystemLayout
                 user={auth.user}
                 header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Planned Payment {ucwords(pageType)}</h2>}
+                fabAction={ ['plannedPayment'] }
             >
                 <Head title={ `Planned Payment ${ucwords(pageType)}` } />
 

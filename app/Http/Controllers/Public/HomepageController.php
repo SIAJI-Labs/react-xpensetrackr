@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 use App\Http\Controllers\Controller;
@@ -21,7 +22,7 @@ class HomepageController extends Controller
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
             'phpVersion' => PHP_VERSION,
-            'isAuthenticated' => \Auth::check()
+            'isAuthenticated' => Auth::check()
         ]);
     }
 }

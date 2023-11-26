@@ -39,6 +39,18 @@ Route::group([
     Route::get('record/{uuid}', [\App\Http\Controllers\System\RecordController::class, 'show'])->name('record.show');
     Route::get('record', [\App\Http\Controllers\System\RecordController::class, 'index'])->name('record.index');
 
+    // Category Re-Order
+    Route::get('category/re-order', [\App\Http\Controllers\System\CategoryReOrderController::class, 'index'])->name('category.re-order.index');
+    // Category
+    Route::get('category/{uuid}', [\App\Http\Controllers\System\CategoryController::class, 'show'])->name('category.show');
+    Route::get('category', [\App\Http\Controllers\System\CategoryController::class, 'index'])->name('category.index');
+
+    // Wallet Re-Order
+    Route::get('wallet/re-order', [\App\Http\Controllers\System\WalletReOrderController::class, 'index'])->name('wallet.re-order.index');
+    // Wallet
+    Route::get('wallet/{uuid}', [\App\Http\Controllers\System\WalletController::class, 'show'])->name('wallet.show');
+    Route::get('wallet', [\App\Http\Controllers\System\WalletController::class, 'index'])->name('wallet.index');
+
     // Profile
     Route::get('profile', [\App\Http\Controllers\System\ProfileController::class, 'index'])->name('profile.index');
 });

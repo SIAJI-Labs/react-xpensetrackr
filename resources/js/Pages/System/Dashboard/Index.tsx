@@ -7,8 +7,8 @@ import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 // Partials
-import RecordTemplate from '@/Components/template/Record/RecordTemplate';
-import NoDataTemplate from '@/Components/template/NoDataTemplate';
+import TemplateListRecord from '@/Components/template/Record/TemplateList';
+import TemplateNoData from '@/Components/template/TemplateNoData';
 
 // Shadcn Component
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -16,15 +16,12 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 
-type DashboardProps = {
+type ContentProps = {
     inspire: string,
 }
 
-export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardProps>) {
+export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
-
-    // Record Dialog
-    const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
 
     // Global Variable
     const [refreshLoading, setRefreshLoading] = useState<boolean>(false);
@@ -68,9 +65,9 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
     </>;
     // Record List - Template
     const recordListTemplate = (obj:RecordItem) => {
-        return <RecordTemplate record={obj}></RecordTemplate>;
+        return <TemplateListRecord record={obj}></TemplateListRecord>;
     }
-    // Simulate API call
+    // Create API Call
     const fetchRecordList = async () => {
         setRefreshLoading(true);
 
@@ -85,7 +82,6 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
         setRecordItemAbortController(abortController);
 
         setRecordIsLoading(true);
-
         // Build parameter
         const query = [];
         const obj = {
@@ -288,7 +284,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<DashboardPro
                                     return element;
                                 } else {
                                     let recordElement: any[] = [];
-                                    let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                                    let defaultContent = <TemplateNoData></TemplateNoData>;
                                     // Loop through response
                                     if(recordItem.length > 0){
                                         recordItem.map((val, index) => {

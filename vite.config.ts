@@ -547,6 +547,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/js/app.tsx',
+                'resources/css/app.css',
             ],
             refresh: true,
         }),

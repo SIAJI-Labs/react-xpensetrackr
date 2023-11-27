@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\QuickAction\v1;
 use App\Http\Controllers\Controller;
 use App\Traits\JsonResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RecordController extends Controller
 {
@@ -29,9 +30,11 @@ class RecordController extends Controller
                 break;
             case 'amount':
                 $request->validate([
-                    'amount' => ['required', 'numeric'],
+                    'amount' => ['required', 'numeric', 'min:1'],
                     'extra_amount' => ['nullable', 'numeric'],
                     'extra_type' => ['nullable', 'string', 'in:amount,percentage'],
+                ], [
+                    'amount.min' => 'the :attribute field must be greater than 0'
                 ]);
                 break;
         }
@@ -55,7 +58,7 @@ class RecordController extends Controller
         ]);
 
         // Store to database
-        \DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request) {
             $user = $request->user();
             $data = new \App\Models\Record();
 
@@ -70,7 +73,7 @@ class RecordController extends Controller
             // Fetch From Wallet
             $fromWallet_id = null;
             if($request->has('from_wallet') && !empty($request->from_wallet)){
-                $fetchFromWallet = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $request->from_wallet)
+                $fetchFromWallet = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->from_wallet)
                     ->where('user_id', $user->id)
                     ->first();
                 if(!empty($fetchFromWallet)){
@@ -81,7 +84,7 @@ class RecordController extends Controller
             // Fetch To Wallet
             $toWallet_id = null;
             if($request->has('to_wallet') && !empty($request->to_wallet)){
-                $fetchToWallet = \App\Models\Wallet::where(\DB::raw('BINARY `uuid`'), $request->to_wallet)
+                $fetchToWallet = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->to_wallet)
                     ->where('user_id', $user->id)
                     ->first();
                 if(!empty($fetchToWallet)){

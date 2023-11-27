@@ -3,7 +3,7 @@ import { Link, router } from '@inertiajs/react';
 import { User } from '@/types';
 
 // Partials
-import { useTheme, getCurrentTheme } from '@/Components/template/theme-provider';
+import { ThemeToggle } from '@/Components/template/theme-toggle';
 import ApplicationLogoMask from '@/Components/ApplicationLogoMask';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import ApplicationLogo from '@/Components/ApplicationLogo';
@@ -23,8 +23,6 @@ import { handleUserAvatar } from '@/function';
 import Notification from './Notification';
 
 export default function Navbar({ user, className = '' }: PropsWithChildren<{ user: User, className?: string }>) {
-    const { setTheme } = useTheme();
-    const currentTheme = getCurrentTheme();
 
     const [avatar, setAvatar] = useState<string>();
     // Search Command
@@ -263,23 +261,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
 
                                         <DropdownMenuSeparator />
                                         <DropdownMenuGroup className={ ` flex flex-row gap-2 p-2` }>
-                                            <Button variant={ currentTheme === 'light' ? `default` : `ghost` } className={ ` py-2 w-full` } onClick={() => {
-                                                setTheme('light');
-                                            }}>
-                                                <i className={ `fa-solid fa-sun` }></i>
-                                            </Button>
-
-                                            <Button variant={ currentTheme === 'system' ? `default` : `ghost` } className={ ` py-2 w-full` } onClick={() => {
-                                                setTheme('system');
-                                            }}>
-                                                <i className={ `fa-solid fa-display` }></i>
-                                            </Button>
-
-                                            <Button variant={ currentTheme === 'dark' ? `default` : `ghost` } className={ ` py-2 w-full` } onClick={() => {
-                                                setTheme('dark');
-                                            }}>
-                                                <i className={ `fa-solid fa-moon` }></i>
-                                            </Button>
+                                            <ThemeToggle className={ ` flex flex-row gap-2 w-full` }/>
                                         </DropdownMenuGroup>
                                         <DropdownMenuSeparator />
 

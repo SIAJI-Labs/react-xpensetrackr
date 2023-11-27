@@ -251,12 +251,12 @@ export default function Notification({ user, className = '' }: PropsWithChildren
             <SheetTrigger asChild>
                 <Button variant={ `ghost` } className={ ` dark:text-white` }><i className={ `fa-regular fa-bell ${plannedOverdueItem && plannedOverdueItem.length > 0 || plannedTodayItem && plannedTodayItem.length > 0 || plannedUpcomingItem && plannedUpcomingItem.length > 0 ? `fa-shake` : ``}` } data-type="notification-bell"></i></Button>
             </SheetTrigger>
-            <SheetContent side={ `right` } className={ `p-0` }>
+            <SheetContent side={ `right` } className={ `p-0 w-screen md:w-72 dark:!text-white` }>
                 <ScrollArea className={ ` h-screen p-6 py-0` }>
                     <div className={ ` flex flex-col gap-6 my-6` }>
-                        <SheetHeader className={ ` flex flex-col gap-2` }>
-                            <SheetTitle>Notification</SheetTitle>
-                            <SheetDescription className={ `!mt-0` }>
+                        <SheetHeader className={ ` flex flex-col items-start gap-2` }>
+                            <SheetTitle className={ ` leading-none` }>Notification</SheetTitle>
+                            <SheetDescription className={ `!mt-0 leading-none` }>
                                 See all of your notification in one panel
                             </SheetDescription>
                         </SheetHeader>
@@ -276,7 +276,7 @@ export default function Notification({ user, className = '' }: PropsWithChildren
                                             let element: any = [];
                                             ['overdue', 'today', 'upcoming'].forEach((val) => {
                                                 element.push(
-                                                    <div className={ ` p-6 border rounded flex flex-col gap-4` } key={ `planned_payment-${val}` }>
+                                                    <div className={ ` p-6 border rounded flex flex-col gap-4 dark:text-white` } key={ `planned_payment-${val}` }>
                                                         <h6 className={ `font-semibold underline` }>{ ucwords(val) }</h6>
 
                                                         <div className={ ` flex flex-col gap-2` }>

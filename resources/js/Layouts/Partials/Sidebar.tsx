@@ -168,7 +168,7 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                 <SheetTrigger asChild>
                     <Button variant={ `ghost` } className={ ` dark:text-white` }><i className={ `fa-solid fa-toggle-off` }></i></Button>
                 </SheetTrigger>
-                <SheetContent side={ `left` } className={ ` w-72 p-0` }>
+                <SheetContent side={ `left` } className={ ` w-screen md:w-72 p-0 dark:!text-white` }>
                     <ScrollArea className={ ` h-screen p-0` }>
                         <div className={ ` p-6` }>
                             <SheetHeader className={ ` relative border-b pb-6 pointer-events-none select-none` }>

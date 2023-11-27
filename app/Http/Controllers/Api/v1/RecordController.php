@@ -86,7 +86,7 @@ class RecordController extends Controller
             'category' => ['nullable', 'string', 'exists:'.(new \App\Models\Category())->getTable().',uuid'],
             'from_wallet' => ['required', 'string', 'exists:'.(new \App\Models\Wallet())->getTable().',uuid'],
             'to_wallet' => ['nullable', 'required_if:type,transfer', 'different:from_wallet', 'exists:'.(new \App\Models\Wallet())->getTable().',uuid'],
-            'amount' => ['required', 'numeric'],
+            'amount' => ['required', 'numeric', 'min:1'],
             'extra_amount' => ['nullable', 'numeric'],
             'extra_type' => ['nullable', 'string', 'in:amount,percentage'],
             'date' => ['required', 'string'],

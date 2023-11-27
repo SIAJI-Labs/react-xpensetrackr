@@ -8,6 +8,7 @@ import { formatRupiah, ucwords } from "@/function";
 import moment from "moment-timezone";
 import '@/../css/siaji.scss';
 
+// Partials
 import ErrorMessage from "@/Components/forms/ErrorMessage";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useToast } from "@/Components/ui/use-toast";
@@ -23,12 +24,14 @@ import { Input } from "@/Components/ui/input";
 import { IMaskMixin } from "react-imask";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import { ScrollArea } from "@/Components/ui/scroll-area";
+import { ThemeToggle } from "@/Components/template/theme-toggle";
 
 type Props = {
 }
 
 export default function Record({ auth }: PageProps<Props>) {
     const { toast } = useToast();
+
     // extend style component
     const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
         <Input
@@ -36,7 +39,7 @@ export default function Record({ auth }: PageProps<Props>) {
             ref={inputRef} // bind internal input
         />
     ));
-    const [errorRecordDialog, setErrorRecordDialog] = useState<{ [key: string]: string[] }>({});
+    const [errorBag, setErrorBag] = useState<{ [key: string]: string[] }>({});
     
     // Quick Action: Form Wizard
     const [formIndex, setFormIndex] = useState<number>(0);
@@ -64,7 +67,7 @@ export default function Record({ auth }: PageProps<Props>) {
 
                 if(keyValidation){
                     // Reset error bag
-                    setErrorRecordDialog({});
+                    setErrorBag({});
                     // Create a new AbortController
                     const abortController = new AbortController();
                     // Store the AbortController in state
@@ -93,6 +96,7 @@ export default function Record({ auth }: PageProps<Props>) {
                             abortController.abort = c;
                         })
                     }).then((response) => {
+                        console.log(response);
                         if (response.status === 200) {
                             const responseJson = response.data;
 
@@ -103,11 +107,13 @@ export default function Record({ auth }: PageProps<Props>) {
                         return true;
                     }).catch((response) => {
                         const axiosError = response as AxiosError;
+                        console.log(response);
 
                         let errors:any = axiosError.response?.data;
+                        // console.log(errors);
                         if(errors.errors){
                             // Store to the error bag variable
-                            setErrorRecordDialog(errors.errors);
+                            setErrorBag(errors.errors);
                         }
 
                         // Set a timeout to perform an action after a delay (e.g., 100 milliseconds)
@@ -259,7 +265,7 @@ export default function Record({ auth }: PageProps<Props>) {
             let errors:any = axiosError.response?.data;
             if(errors.errors){
                 // Store to the error bag variable
-                setErrorRecordDialog(errors.errors);
+                setErrorBag(errors.errors);
             }
         }).finally(() => {
             if(element.tagName.toLowerCase() === 'button'){
@@ -502,11 +508,13 @@ export default function Record({ auth }: PageProps<Props>) {
             <Head title="Quick Action: Create new Record"/>
 
             <div className={ ` flex flex-col justify-center items-center h-screen w-screen` }>
-                <main className={ ` max-w-[400px] md:min-w-[400px] py-[calc(64px)] px-6` }>
+                <main className={ ` w-full md:max-w-[420px] md:min-w-[420px] px-4 md:px-6` }>
                     <div className={ ` mb-4` }>
-                        <ApplicationLogo
-                            fontSizeMain={ ` text-3xl` }   
-                        ></ApplicationLogo>
+                        <Link href={ route('sys.index') }>
+                            <ApplicationLogo
+                                fontSizeMain={ ` text-3xl` }   
+                            ></ApplicationLogo>
+                        </Link>
                     </div>
 
                     <Card>
@@ -526,13 +534,13 @@ export default function Record({ auth }: PageProps<Props>) {
                                                 key: 'wallet',
                                                 el: <div>
                                                     {/* Record Type */}
-                                                    <div className={ `form-group mb-4 ${errorRecordDialog?.type ? ` is--invalid` : ''}` }>
-                                                        <div className={ ` flex flex-row gap-4 w-full border p-1 rounded-md ${errorRecordDialog?.type ? ` border-red-500` : ''}` } id={ `record_dialog-type` }>
+                                                    <div className={ `form-group mb-4 ${errorBag?.type ? ` is--invalid` : ''}` }>
+                                                        <div className={ ` flex flex-row gap-4 w-full border p-1 rounded-md ${errorBag?.type ? ` !border-red-500` : ''}` } id={ `record_dialog-type` }>
                                                             {(() => {
                                                                 let recordType: any[] = [];
                                                                 ['income', 'transfer', 'expense'].map((value, index) => {
                                                                     recordType.push(
-                                                                        <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valueRecordType === value ? `bg-primary ` : ` dark:text-white !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
+                                                                        <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valueRecordType === value ? `bg-primary ` : ` dark:!text-white !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
                                                                             setValueRecordType(value);
                                                                         }} key={ `record_type-${value}` }>
                                                                             <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
@@ -548,11 +556,11 @@ export default function Record({ auth }: PageProps<Props>) {
                                                             })()}
                                                         </div>
 
-                                                        <ErrorMessage message={ errorRecordDialog?.category_id }/>
+                                                        <ErrorMessage message={ errorBag?.category_id }/>
                                                     </div>
 
                                                     {/* From Wallet */}
-                                                    <div className={ ` form--group  ${errorRecordDialog?.from_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-from_wallet` }>
+                                                    <div className={ ` form--group  ${errorBag?.from_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-from_wallet` }>
                                                         <label className={ ` form--label` }>From</label>
                                                         <div>
                                                             <Popover open={openRecordFromWallet} onOpenChange={setOpenRecordFromWallet}>
@@ -561,7 +569,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                         variant="outline"
                                                                         role="combobox"
                                                                         aria-expanded={openRecordFromWallet}
-                                                                        className={ `w-full justify-between ${errorRecordDialog?.from_wallet ? ` border-red-500` : ''} dark:text-white` }
+                                                                        className={ `w-full justify-between ${errorBag?.from_wallet ? ` !border-red-500` : ''} dark:text-white` }
                                                                     >
                                                                         <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{fromWalletComboboxLabel}</span>
                                                                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -596,14 +604,14 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                 </PopoverContent>
                                                             </Popover>
 
-                                                            <ErrorMessage message={ errorRecordDialog?.from_wallet }/>
+                                                            <ErrorMessage message={ errorBag?.from_wallet }/>
                                                         </div>
                                                     </div>
 
                                                     {/* To Wallet */}
                                                     {(() => {
                                                         if(valueRecordType === 'transfer'){
-                                                            return <div className={ ` form--group  ${errorRecordDialog?.to_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-to_wallet` }>
+                                                            return <div className={ ` form--group  ${errorBag?.to_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-to_wallet` }>
                                                                 <label className={ ` form--label` }>To</label>
                                                                 <div>
                                                                     <Popover open={openRecordToWallet} onOpenChange={setOpenRecordToWallet}>
@@ -612,7 +620,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                                 variant="outline"
                                                                                 role="combobox"
                                                                                 aria-expanded={openRecordToWallet}
-                                                                                className={ ` w-full justify-between ${errorRecordDialog?.to_wallet ? ` border-red-500` : ''} dark:text-white` }
+                                                                                className={ ` w-full justify-between ${errorBag?.to_wallet ? ` !border-red-500` : ''} dark:text-white` }
                                                                             >
                                                                                 <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{toWalletComboboxLabel}</span>
                                                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -647,7 +655,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                         </PopoverContent>
                                                                     </Popover>
 
-                                                                    <ErrorMessage message={ errorRecordDialog?.to_wallet }/>
+                                                                    <ErrorMessage message={ errorBag?.to_wallet }/>
                                                                 </div>
                                                             </div>
                                                         }
@@ -660,14 +668,14 @@ export default function Record({ auth }: PageProps<Props>) {
                                                 key: 'amount',
                                                 el: <div>
                                                     {/* Amount */}
-                                                    <div className={ ` form--group  ${errorRecordDialog?.amount ? ` is--invalid` : ''}` } id={ `record_dialog-amount` }>
+                                                    <div className={ ` form--group  ${errorBag?.amount ? ` is--invalid` : ''}` } id={ `record_dialog-amount` }>
                                                         <label className={ `form--label` }>Amount</label>
                                                         <MaskedInput
                                                             type={ `text` }
                                                             placeholder={ `Amount` }
                                                             inputMode={ `numeric` }
                                                             value={ (valueRecordAmount ?? 0).toString() }
-                                                            className={ `${errorRecordDialog?.amount ? ` border-red-500` : ''}` }
+                                                            className={ `${errorBag?.amount ? ` !border-red-500` : ''}` }
                                                             mask={ Number }
                                                             unmask={ true }
                                                             thousandsSeparator={ `,` }
@@ -681,13 +689,13 @@ export default function Record({ auth }: PageProps<Props>) {
                                                             } }
                                                         />
 
-                                                        <ErrorMessage message={ errorRecordDialog?.amount }/>
+                                                        <ErrorMessage message={ errorBag?.amount }/>
                                                     </div>
 
                                                     {/* Extra & Final Amount */}
                                                     <div className={ ` flex flex-col w-full` }>
                                                         {/* Extra Amount */}
-                                                        <div className={ ` form--group  ${errorRecordDialog?.extra_amount ? ` is--invalid` : ''}` } id={ `record_dialog-extra_amount` }>
+                                                        <div className={ ` form--group  ${errorBag?.extra_amount ? ` is--invalid` : ''}` } id={ `record_dialog-extra_amount` }>
                                                             <div className={ ` flex flex-col gap-1` }>
                                                                 {/* Extra Amount */}
                                                                 <div id={ `record_dialog-extra_amount` }>
@@ -697,7 +705,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                         placeholder={ `Extra Amount` }
                                                                         inputMode={ `numeric` }
                                                                         value={ (valueRecordExtraAmount ?? 0).toString() }
-                                                                        className={ `${errorRecordDialog?.extra_amount ? ` border-red-500` : ''}` }
+                                                                        className={ `${errorBag?.extra_amount ? ` !border-red-500` : ''}` }
                                                                         mask={ Number }
                                                                         unmask={ true }
                                                                         thousandsSeparator={ `,` }
@@ -711,7 +719,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                         } }
                                                                     />
 
-                                                                    <ErrorMessage message={ errorRecordDialog?.extra_amount }/>
+                                                                    <ErrorMessage message={ errorBag?.extra_amount }/>
                                                                 </div>
                                                                 {/* Extra Type */}
                                                                 <div id={ `record_dialog-extra_type` }>
@@ -733,14 +741,14 @@ export default function Record({ auth }: PageProps<Props>) {
                                                         </div>
 
                                                         {/* Final Amount */}
-                                                        <div className={ ` form--group  ${errorRecordDialog?.final_amount ? ` is--invalid` : ''}` } id={ `record_dialog-final_amount` }>
+                                                        <div className={ ` form--group  ${errorBag?.final_amount ? ` is--invalid` : ''}` } id={ `record_dialog-final_amount` }>
                                                             <label className={ ` form--label` }>Final</label>
                                                             <MaskedInput
                                                                 type={ `text` }
                                                                 placeholder={ `Final Amount` }
                                                                 inputMode={ `numeric` }
                                                                 value={ (valueRecordFinalAmount ?? 0).toString() }
-                                                                className={ `${errorRecordDialog?.final_amount ? ` border-red-500` : ''}` }
+                                                                className={ `${errorBag?.final_amount ? ` !border-red-500` : ''}` }
                                                                 mask={ Number }
                                                                 unmask={ true }
                                                                 thousandsSeparator={ `,` }
@@ -749,7 +757,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                 disabled={ true }
                                                             />
 
-                                                            <ErrorMessage message={ errorRecordDialog?.final_amount }/>
+                                                            <ErrorMessage message={ errorBag?.final_amount }/>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -758,13 +766,13 @@ export default function Record({ auth }: PageProps<Props>) {
                                                 key: 'note',
                                                 el: <div>
                                                     {/* Record Note */}
-                                                    <div className={ ` form--group  ${errorRecordDialog?.notes ? ` is--invalid` : ''}` } id={ `record_dialog-note` }>
+                                                    <div className={ ` form--group  ${errorBag?.notes ? ` is--invalid` : ''}` } id={ `record_dialog-note` }>
                                                         <label className={ ` form--label` }>Note</label>
-                                                        <Textarea className={ ` w-full ${errorRecordDialog?.notes ? ` border-red-500` : ''}` } placeholder="Type your message here." value={ valueRecordNotes } onChange={(e) => {
+                                                        <Textarea className={ ` w-full ${errorBag?.notes ? ` !border-red-500` : ''}` } placeholder="Type your message here." value={ valueRecordNotes } onChange={(e) => {
                                                             setValueRecordNotes(e.target.value);
                                                         }}/>
                                                     
-                                                        <ErrorMessage message={ errorRecordDialog?.notes }/>
+                                                        <ErrorMessage message={ errorBag?.notes }/>
                                                     </div>
                                                 </div>
                                             }, {
@@ -884,6 +892,11 @@ export default function Record({ auth }: PageProps<Props>) {
 
                     <div className={ ` mt-4 w-full text-center` }>
                         <Link href={ route('sys.index') } className={ `dark:text-white` }>Go to Dashboard</Link>
+
+                        {/* Theme */}
+                        <div className={ ` flex flex-row gap-4 rounded border p-2 dark:text-white` }>
+                            <ThemeToggle className={ ` flex flex-row gap-2 w-full` }/>
+                        </div>
                     </div>
                 </main>
             </div>

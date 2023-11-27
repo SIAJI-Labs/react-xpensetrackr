@@ -14,8 +14,9 @@ import RecordDeleteDialog from '@/Components/system/Record/RecordDeleteDialog';
 import PlannedPaymentDialog from '@/Components/system/PlannedPayment/PlannedPaymentDialog';
 import PlannedPaymentDeleteDialog from '@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog';
 import WalletDialog from '@/Components/system/Wallet/WalletDialog';
+import { useToast } from '@/Components/ui/use-toast';
 
-// Shadcn Component
+// Shadcn
 import { ThemeProvider } from '@/Components/template/theme-provider';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
@@ -23,8 +24,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import WalletDeleteDialog from '@/Components/system/Wallet/WalletDeleteDialog';
 import CategoryDialog from '@/Components/system/Category/WalletDialog';
 import CategoryDeleteDialog from '@/Components/system/Category/WalletDeleteDialog';
+import axios from 'axios';
+import { ToastAction } from '@radix-ui/react-toast';
 
 export default function SystemLayout({ user, header, children, fabAction = null }: PropsWithChildren<{ user: User, header?: ReactNode, fabAction?: any[] | null }>) {
+    const { toast } = useToast();
+    
     // Record Dialog
     const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
     const handleOpenRecordDialog = (isOpen: boolean) => {
@@ -65,8 +70,29 @@ export default function SystemLayout({ user, header, children, fabAction = null 
         setOpenCategoryDeleteDialog(isOpen);
     };
 
+    // Axios Global error handling
+    axios.interceptors.response.use((response) => response, (error) => {
+        // whatever you want to do with the error
+        console.log(error);
+
+        let errors = error.response.data;
+        if('message' in errors && errors.message === 'Unauthenticated.'){
+            console.log('Unauthenticated');
+            toast({
+                title: "419: Token Missmatch",
+                description: "Please refresh the page",
+                action: <ToastAction altText="Refresh" onClick={() => {
+                    location.reload();
+                }}>Refresh</ToastAction>,
+                duration: undefined
+            });
+        }
+
+        throw error;
+    });
+
     return (
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="light" storageKey="xtrackr-theme">
             <Head>
                 <meta name="description" content="Simplify your expenses, maximize your control" />
 
@@ -76,7 +102,7 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 {/* Manifest */}
                 <link rel="manifest" href="/build/manifest.webmanifest"/>
                 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff"/>
-                <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1f2937"/>
+                <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#55799d"/>
             </Head>
 
             <div className="min-h-screen bg-gray-100 dark:bg-background relative">

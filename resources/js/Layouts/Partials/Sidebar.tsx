@@ -145,10 +145,10 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
         }, {
             name: 'Tags',
             icon: 'fa-solid fa-tag',
-            route: null,
+            route: route('sys.tags.index'),
             sub: [],
-            active: [],
-            is_disabled: true,
+            active: ['sys.tags.index', 'sys.tags.show'],
+            is_disabled: false,
             is_header: false
         }, {
             name: 'Record Template',

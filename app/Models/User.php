@@ -60,6 +60,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Wallet::class, 'user_id');
     }
+    public function tags()
+    {
+        return $this->hasMany(\App\Models\Tags::class, 'user_id');
+    }
     public function record()
     {
         return $this->hasMany(\App\Models\Record::class, 'user_id');

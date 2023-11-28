@@ -168,6 +168,16 @@ export default function TemplateList({ record, deleteAction = true, editAction =
                         );
                     }
 
+                    // Tags
+                    if(record?.record_tags && record.record_tags.length > 0){
+                        information.push(
+                            <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_tags-${record?.uuid}` }>
+                                <i className={ `fa-solid fa-hashtag leading-none text-xs` }></i>
+                                <span>Tags</span>
+                            </Badge>
+                        );
+                    }
+
                     if(information.length > 0){
                         return <>
                             <div className={ ` mt-2 flex flex-row gap-2 flex-wrap` } key={ `record_information-${record?.uuid}` }>

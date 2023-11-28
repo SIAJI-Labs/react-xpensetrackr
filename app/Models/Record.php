@@ -72,6 +72,14 @@ class Record extends Model
     {
         return $this->hasOne(\App\Models\PlannedPaymentRecord::class, 'record_id');
     }
+    public function recordTags()
+    {
+        return $this->belongsToMany(\App\Models\Tags::class, 'record_tags', 'record_id', 'tags_id')
+            ->withPivot('tags_id')
+            ->using(\App\Models\RecordTags::class)
+            ->orderBy('name', 'asc')
+            ->withTimestamps();
+    }
     
     /**
      * Foreign Key Relation

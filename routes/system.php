@@ -53,4 +53,6 @@ Route::group([
 
     // Profile
     Route::get('profile', [\App\Http\Controllers\System\ProfileController::class, 'index'])->name('profile.index');
+    // Setting
+    Route::get('setting', [\App\Http\Controllers\System\SettingController::class, 'index'])->name('setting.index');
 });

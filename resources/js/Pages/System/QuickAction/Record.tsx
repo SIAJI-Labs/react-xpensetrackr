@@ -77,15 +77,15 @@ export default function Record({ auth }: PageProps<Props>) {
                     formData.append('key', keyValidation);
                     switch(keyValidation){
                         case 'wallet': {
-                            formData.append('type', valueRecordType);
-                            formData.append('from_wallet', valueRecordFromWallet);
-                            formData.append('to_wallet', valueRecordToWallet);
+                            formData.append('type', formType);
+                            formData.append('from_wallet', formFromWallet);
+                            formData.append('to_wallet', formToWallet);
                             break;
                         }
                         case 'amount': {
-                            formData.append('amount', String(valueRecordAmount ?? 0));
-                            formData.append('extra_amount', String(valueRecordExtraAmount ?? 0));
-                            formData.append('extra_type', valueRecordExtraType);
+                            formData.append('amount', String(formAmount ?? 0));
+                            formData.append('extra_amount', String(formExtraAmount ?? 0));
+                            formData.append('extra_type', formExtraType);
                         }
                     }
 
@@ -200,13 +200,13 @@ export default function Record({ auth }: PageProps<Props>) {
     }, [formIndex]);
     // Quick Action: Reset Form
     const formReset = () => {
-        setValueRecordType('expense');
-        setValueRecordFromWallet('');
-        setValueRecordToWallet('');
-        setValueRecordAmount(0);
-        setValueRecordExtraAmount(0);
-        setValueRecordExtraType('amount');
-        setValueRecordNotes('');
+        setFormType('expense');
+        setFormFromWallet('');
+        setFormToWallet('');
+        setFormAmount(0);
+        setFormExtraAmount(0);
+        setFormExtraType('amount');
+        setFormNotes('');
     }
     // Quick Action: Form Submit
     const [submitAbortController, setSubmitAbortController] = useState<AbortController | null>(null);
@@ -230,12 +230,13 @@ export default function Record({ auth }: PageProps<Props>) {
         setSubmitAbortController(abortController);
 
         let formData = new FormData;
-        formData.append('type', valueRecordType);
-        formData.append('from_wallet', valueRecordFromWallet);
-        formData.append('to_wallet', valueRecordToWallet);
-        formData.append('amount', String(valueRecordAmount ?? 0));
-        formData.append('extra_amount', String(valueRecordExtraAmount ?? 0));
-        formData.append('extra_type', valueRecordExtraType);
+        formData.append('type', formType);
+        formData.append('from_wallet', formFromWallet);
+        formData.append('to_wallet', formToWallet);
+        formData.append('amount', String(formAmount ?? 0));
+        formData.append('extra_amount', String(formExtraAmount ?? 0));
+        formData.append('extra_type', formExtraType);
+        formData.append('notes', formNotes);
         formData.append('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));
         formData.append('timezone', moment.tz.guess());
 
@@ -281,12 +282,12 @@ export default function Record({ auth }: PageProps<Props>) {
     const [validationAbortController, setValidationAbortController] = useState<AbortController | null>(null);
 
     // Record Type
-    const [valueRecordType, setValueRecordType] = useState<string>('expense');
+    const [formType, setFormType] = useState<string>('expense');
 
     // From Wallet Combobox
     let fromWalletComboboxTimeout: any;
     const [openRecordFromWallet, setOpenRecordFromWallet] = useState<boolean>(false);
-    const [valueRecordFromWallet, setValueRecordFromWallet] = useState<string>("");
+    const [formFromWallet, setFormFromWallet] = useState<string>("");
     const [fromWalletComboboxLabel, setFromWalletComboboxLabel] = useState<string>("Select an option");
     const [fromWalletComboboxList, setFromWalletComboboxList] = useState<string[] | any>([]);
     const [fromWalletComboboxInput, setFromWalletComboboxInput] = useState<string>("");
@@ -369,9 +370,9 @@ export default function Record({ auth }: PageProps<Props>) {
         }
     }, [fromWalletComboboxInput, openRecordFromWallet]);
     useEffect(() => {
-        if(valueRecordFromWallet !== '' && fromWalletComboboxList.length > 0){
+        if(formFromWallet !== '' && fromWalletComboboxList.length > 0){
             const selected: WalletItem | undefined = fromWalletComboboxList.find(
-                (options: WalletItem) => options?.uuid === valueRecordFromWallet
+                (options: WalletItem) => options?.uuid === formFromWallet
             ) as WalletItem | undefined;
 
             if (selected) {
@@ -380,12 +381,12 @@ export default function Record({ auth }: PageProps<Props>) {
         } else {
             setFromWalletComboboxLabel(`Select an option`);
         }
-    }, [valueRecordFromWallet]);
+    }, [formFromWallet]);
 
     // To Wallet Combobox
     let toWalletComboboxTimeout: any;
     const [openRecordToWallet, setOpenRecordToWallet] = useState<boolean>(false);
-    const [valueRecordToWallet, setValueRecordToWallet] = useState<string>("");
+    const [formToWallet, setFormToWallet] = useState<string>("");
     const [toWalletComboboxLabel, setToWalletComboboxLabel] = useState<string>("Select an option");
     const [toWalletComboboxList, setToWalletComboboxList] = useState<string[] | any>([]);
     const [toWalletComboboxInput, setToWalletComboboxInput] = useState<string>("");
@@ -468,9 +469,9 @@ export default function Record({ auth }: PageProps<Props>) {
         }
     }, [toWalletComboboxInput, openRecordToWallet]);
     useEffect(() => {
-        if(valueRecordToWallet !== '' && toWalletComboboxList.length > 0){
+        if(formToWallet !== '' && toWalletComboboxList.length > 0){
             const selected: WalletItem | undefined = toWalletComboboxList.find(
-                (options: WalletItem) => options?.uuid === valueRecordToWallet
+                (options: WalletItem) => options?.uuid === formToWallet
             ) as WalletItem | undefined;
 
             if (selected) {
@@ -479,29 +480,29 @@ export default function Record({ auth }: PageProps<Props>) {
         } else {
             setToWalletComboboxLabel(`Select an option`);
         }
-    }, [valueRecordToWallet]);
+    }, [formToWallet]);
 
     // Amount
-    const [valueRecordAmount, setValueRecordAmount] = useState<number>();
+    const [formAmount, setFormAmount] = useState<number>();
     // Extra
-    const [valueRecordExtraAmount, setValueRecordExtraAmount] = useState<number>();
-    const [valueRecordExtraType, setValueRecordExtraType] = useState<string>('amount');
+    const [formExtraAmount, setFormExtraAmount] = useState<number>();
+    const [formExtraType, setFormExtraType] = useState<string>('amount');
     // Final
-    const valueRecordFinalAmount = useMemo(() => {
+    const calculateFinalAmount = useMemo(() => {
         // Calculate Final Amount
-        let amount: number = valueRecordAmount ?? 0;
-        let extra: number = valueRecordExtraAmount ?? 0;
+        let amount: number = formAmount ?? 0;
+        let extra: number = formExtraAmount ?? 0;
 
         // Calculate extra value if extra type is percentage
-        if(valueRecordExtraType === 'percentage'){
+        if(formExtraType === 'percentage'){
             extra = (extra * amount) / 100;
         }
 
         return amount + extra;
-    }, [valueRecordAmount, valueRecordExtraAmount, valueRecordExtraType]);
+    }, [formAmount, formExtraAmount, formExtraType]);
 
     // Notes
-    const [valueRecordNotes, setValueRecordNotes] = useState<string>();
+    const [formNotes, setFormNotes] = useState<string>('');
     
     return (
         <PublicLayout>
@@ -540,8 +541,8 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                 let recordType: any[] = [];
                                                                 ['income', 'transfer', 'expense'].map((value, index) => {
                                                                     recordType.push(
-                                                                        <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ valueRecordType === value ? `bg-primary ` : ` dark:!text-white !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
-                                                                            setValueRecordType(value);
+                                                                        <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ formType === value ? `bg-primary ` : ` dark:!text-white !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
+                                                                            setFormType(value);
                                                                         }} key={ `record_type-${value}` }>
                                                                             <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
                                                                         </div>
@@ -587,12 +588,12 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                                             value={options?.uuid}
                                                                                             key={options?.uuid}
                                                                                             onSelect={(currentValue) => {
-                                                                                                setValueRecordFromWallet(currentValue === valueRecordFromWallet ? "" : currentValue)
+                                                                                                setFormFromWallet(currentValue === formFromWallet ? "" : currentValue)
                                                                                                 setOpenRecordFromWallet(false)
                                                                                             }}
                                                                                         >
                                                                                             <Check
-                                                                                                className={ `mr-2 h-4 w-4 ${valueRecordFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                                                className={ `mr-2 h-4 w-4 ${formFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                                             />
                                                                                             <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
                                                                                         </CommandItem>
@@ -610,7 +611,7 @@ export default function Record({ auth }: PageProps<Props>) {
 
                                                     {/* To Wallet */}
                                                     {(() => {
-                                                        if(valueRecordType === 'transfer'){
+                                                        if(formType === 'transfer'){
                                                             return <div className={ ` form--group  ${errorBag?.to_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-to_wallet` }>
                                                                 <label className={ ` form--label` }>To</label>
                                                                 <div>
@@ -638,12 +639,12 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                                                     value={options?.uuid}
                                                                                                     key={options?.uuid}
                                                                                                     onSelect={(currentValue) => {
-                                                                                                        setValueRecordToWallet(currentValue === valueRecordToWallet ? "" : currentValue)
+                                                                                                        setFormToWallet(currentValue === formToWallet ? "" : currentValue)
                                                                                                         setOpenRecordToWallet(false)
                                                                                                     }}
                                                                                                 >
                                                                                                     <Check
-                                                                                                        className={ `mr-2 h-4 w-4 ${valueRecordToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                                                        className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                                                     />
                                                                                                     <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
                                                                                                 </CommandItem>
@@ -674,7 +675,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                             type={ `text` }
                                                             placeholder={ `Amount` }
                                                             inputMode={ `numeric` }
-                                                            value={ (valueRecordAmount ?? 0).toString() }
+                                                            value={ (formAmount ?? 0).toString() }
                                                             className={ `${errorBag?.amount ? ` !border-red-500` : ''}` }
                                                             mask={ Number }
                                                             unmask={ true }
@@ -685,7 +686,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                 let value = (element.target as HTMLInputElement).value;
                                                                 value = value.replace(',', '');
 
-                                                                setValueRecordAmount(Number(value));
+                                                                setFormAmount(Number(value));
                                                             } }
                                                         />
 
@@ -704,7 +705,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                         type={ `text` }
                                                                         placeholder={ `Extra Amount` }
                                                                         inputMode={ `numeric` }
-                                                                        value={ (valueRecordExtraAmount ?? 0).toString() }
+                                                                        value={ (formExtraAmount ?? 0).toString() }
                                                                         className={ `${errorBag?.extra_amount ? ` !border-red-500` : ''}` }
                                                                         mask={ Number }
                                                                         unmask={ true }
@@ -715,7 +716,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                             let value = (element.target as HTMLInputElement).value;
                                                                             value = value.replace(',', '');
 
-                                                                            setValueRecordExtraAmount(Number(value));
+                                                                            setFormExtraAmount(Number(value));
                                                                         } }
                                                                     />
 
@@ -724,15 +725,15 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                 {/* Extra Type */}
                                                                 <div id={ `record_dialog-extra_type` }>
                                                                     <span className={ ` text-sm flex flex-row gap-1` }>
-                                                                        <span className={ ` cursor-pointer ${valueRecordExtraType === 'amount' ? ` font-semibold` : ''}` } onClick={() => {
-                                                                            if(valueRecordExtraType !== 'amount'){
-                                                                                setValueRecordExtraType('amount');
+                                                                        <span className={ ` cursor-pointer ${formExtraType === 'amount' ? ` font-semibold` : ''}` } onClick={() => {
+                                                                            if(formExtraType !== 'amount'){
+                                                                                setFormExtraType('amount');
                                                                             }
                                                                         }}>Amount</span>
                                                                         <span>/</span>
-                                                                        <span className={ ` cursor-pointer ${valueRecordExtraType === 'percentage' ? ` font-semibold` : ''}` } onClick={() => {
-                                                                            if(valueRecordExtraType !== 'percentage'){
-                                                                                setValueRecordExtraType('percentage');
+                                                                        <span className={ ` cursor-pointer ${formExtraType === 'percentage' ? ` font-semibold` : ''}` } onClick={() => {
+                                                                            if(formExtraType !== 'percentage'){
+                                                                                setFormExtraType('percentage');
                                                                             }
                                                                         }}>Percentage</span>
                                                                     </span>
@@ -747,7 +748,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                 type={ `text` }
                                                                 placeholder={ `Final Amount` }
                                                                 inputMode={ `numeric` }
-                                                                value={ (valueRecordFinalAmount ?? 0).toString() }
+                                                                value={ (calculateFinalAmount ?? 0).toString() }
                                                                 className={ `${errorBag?.final_amount ? ` !border-red-500` : ''}` }
                                                                 mask={ Number }
                                                                 unmask={ true }
@@ -768,8 +769,8 @@ export default function Record({ auth }: PageProps<Props>) {
                                                     {/* Record Note */}
                                                     <div className={ ` form--group  ${errorBag?.notes ? ` is--invalid` : ''}` } id={ `record_dialog-note` }>
                                                         <label className={ ` form--label` }>Note</label>
-                                                        <Textarea className={ ` w-full ${errorBag?.notes ? ` !border-red-500` : ''}` } placeholder="Type your message here." value={ valueRecordNotes } onChange={(e) => {
-                                                            setValueRecordNotes(e.target.value);
+                                                        <Textarea className={ ` w-full ${errorBag?.notes ? ` !border-red-500` : ''}` } placeholder="Type your message here." value={ formNotes } onChange={(e) => {
+                                                            setFormNotes(e.target.value);
                                                         }}/>
                                                     
                                                         <ErrorMessage message={ errorBag?.notes }/>
@@ -782,7 +783,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                     {/* Typw */}
                                                     <div className={ ` mb-4` }>
                                                         <span className={ ` block font-semibold` }>Type</span>
-                                                        <Badge>{ ucwords(valueRecordType) }</Badge>
+                                                        <Badge>{ ucwords(formType) }</Badge>
                                                     </div>
 
                                                     {/* Wallet */}
@@ -793,7 +794,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                         </div>
 
                                                         {(() => {
-                                                            if(valueRecordType === 'transfer'){
+                                                            if(formType === 'transfer'){
                                                                 return <div className={ ` w-full overflow-hidden text-right` }>
                                                                     <span className={ ` block font-semibold` }>To Wallet</span>
                                                                     <span className={ ` whitespace-nowrap` }>{ toWalletComboboxLabel }</span>
@@ -810,31 +811,31 @@ export default function Record({ auth }: PageProps<Props>) {
                                                             <i className="fa-solid fa-align-left"></i>
                                                             <strong>Note(s)</strong>
                                                         </span>
-                                                        <span className=" block mt-2">{ valueRecordNotes ?? 'No description provided' }</span>
+                                                        <span className=" block mt-2">{ formNotes ?? 'No description provided' }</span>
                                                     </div>
 
                                                     {/* Amount, etc */}
                                                     <div className={ `mt-4` }>
                                                         <div className={ `flex justify-between mt-2 text-sm` }>
                                                             <span>Amount</span>
-                                                            <span data-review="amount">{ formatRupiah(valueRecordAmount ?? 0) }</span>
+                                                            <span data-review="amount">{ formatRupiah(formAmount ?? 0) }</span>
                                                         </div>
                                                         <div className={ `flex justify-between mt-1 text-sm` }>
                                                             <span>
                                                                 <span>Extra</span>
                                                                 {(() => {
-                                                                    if(valueRecordExtraType === 'percentage'){
-                                                                        return <span className={ `text-xs` }>({ valueRecordExtraAmount ?? 0 }%)</span>;
+                                                                    if(formExtraType === 'percentage'){
+                                                                        return <span className={ `text-xs` }>({ formExtraAmount ?? 0 }%)</span>;
                                                                     }
                                                                     return <></>;
                                                                 })()}
                                                             </span>
-                                                            <span data-review="extra_amount">{ formatRupiah((valueRecordFinalAmount ?? 0) - (valueRecordAmount ?? 0)) }</span>
+                                                            <span data-review="extra_amount">{ formatRupiah((calculateFinalAmount ?? 0) - (formAmount ?? 0)) }</span>
                                                         </div>
                                                         <hr className={ `my-1` }/>
                                                         <div className={ `flex justify-between mt-2` }>
                                                             <span className={ `font-semibold` }>Final Amount</span>
-                                                            <span className={ `font-semibold` } data-review="final_amount">{ formatRupiah(valueRecordFinalAmount ?? 0) }</span>
+                                                            <span className={ `font-semibold` } data-review="final_amount">{ formatRupiah(calculateFinalAmount ?? 0) }</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -857,40 +858,46 @@ export default function Record({ auth }: PageProps<Props>) {
                         </CardContent>
                         <CardFooter>
                             <div className={ ` flex justify-between w-full gap-4` }>
-                                <Button variant={ `outline` } className={ formIndex === 0 ? ` !opacity-0` : `` } disabled={ formIndex === 0 } onClick={($refs) => {
-                                    wizardPagination('prev', $refs);
-                                }}>Prev</Button>
+                                <div className={ ` w-5/12` }>
+                                    <Button variant={ `outline` } className={ formIndex === 0 ? ` !opacity-0` : `` } disabled={ formIndex === 0 } onClick={($refs) => {
+                                        wizardPagination('prev', $refs);
+                                    }}>Prev</Button>
+                                </div>
                                 
                                 {(() => {
                                     if(formIndex > 0){
-                                        return <Button variant={ `destructive` } className={ `w-full` } onClick={($refs) => {
+                                        return <Button variant={ `ghost` } className={ `w-3/12` } onClick={($refs) => {
                                             formReset();
                                             setFormIndex(0);
-                                        }}>Reset</Button>
+                                        }}>
+                                            <span className={ `text-destructive` }>Reset</span>
+                                        </Button>
                                     }
                                     return <></>;
                                 })()}
 
-                                {(() => {
-                                    if(formIndex === formLastIndex){
-                                        // Submit
-                                        return <Button className={ ` w-1/2` } onClick={($refs) => {
-                                            formSubmit($refs);
-                                        }}>Submit</Button>
-                                    } else {
-                                        // Next action
-                                        return <Button variant={ `outline` } disabled={ formIndex === formLastIndex } onClick={($refs) => {
-                                            wizardPagination('next', $refs);
-                                        }}>Next</Button>
-                                    }
-                                    
-                                    return <></>;
-                                })()}
+                                <div className={ ` w-5/12 flex flex-col items-end` }>
+                                    {(() => {
+                                        if(formIndex === formLastIndex){
+                                            // Submit
+                                            return <Button className={ ` w-full` } onClick={($refs) => {
+                                                formSubmit($refs);
+                                            }}>Submit</Button>
+                                        } else {
+                                            // Next action
+                                            return <Button variant={ `outline` } disabled={ formIndex === formLastIndex } onClick={($refs) => {
+                                                wizardPagination('next', $refs);
+                                            }}>Next</Button>
+                                        }
+                                        
+                                        return <></>;
+                                    })()}
+                                </div>
                             </div>
                         </CardFooter>
                     </Card>
 
-                    <div className={ ` mt-4 w-full text-center` }>
+                    <div className={ ` mt-10 flex flex-col gap-6 w-full text-center` }>
                         <Link href={ route('sys.index') } className={ `dark:text-white` }>Go to Dashboard</Link>
 
                         {/* Theme */}

@@ -172,6 +172,18 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
+                                        {/* Refresh Action */}
+                                        <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
+                                            router.reload();
+                                            fetchPlannedItem();
+                                            
+                                            setTimeout(() => {
+                                                setOpenDropdown(false);
+                                            }, 100);
+                                        }}>
+                                            <span className={ `` }>Refresh</span>
+                                        </DropdownMenuItem>
+
                                         {/* Edit Action */}
                                         {(() => {
                                             // Check if record dialog form is exists
@@ -333,13 +345,13 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                         </div>
 
                         {/* Amount, etc */}
-                        <div className={ `` }>
-                            <div className={ `flex justify-between mt-2 text-sm` }>
+                        <div className={ ` flex flex-col` }>
+                            <div className={ `flex justify-between text-sm` }>
                                 <span>Amount</span>
                                 <span data-review="amount">{ formatRupiah(data.amount ?? 0) }</span>
                             </div>
-                            <div className={ `flex justify-between mt-1 text-sm` }>
-                                <span>
+                            <div className={ `flex justify-between text-sm` }>
+                                <span className={ ` flex flex-row gap-1 items-center` }>
                                     <span>Extra</span>
                                     {(() => {
                                         if(data.extra_type === 'percentage'){

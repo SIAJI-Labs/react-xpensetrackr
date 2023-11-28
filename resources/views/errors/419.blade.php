@@ -26,8 +26,8 @@
                 <button type="button" class=" px-4 py-2 rounded border w-full flex flex-row items-center justify-center gap-1" onclick="window.top.location.reload();">
                     <span>Refresh</span>
                 </button>
-                <a href="{{ route('public.index') }}" class=" px-4 py-2 rounded bg-primary text-white w-full flex flex-row items-center justify-center gap-1">
-                    <span>Homepage</span>
+                <a href="{{ route(auth()->check() ? 'sys.index' : 'public.index') }}" class=" px-4 py-2 rounded bg-primary text-white w-full flex flex-row items-center justify-center gap-1">
+                    <span>{{ auth()->check() ? 'Dashboard' : 'Homepage' }}</span>
                 </a>
             </div>
         </div>

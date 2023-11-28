@@ -257,7 +257,7 @@ class PlannedPaymentController extends Controller
             ->firstOrFail();
 
         // Validate date start must be greater or equal with today
-        if(date('Y-m-d', strtotime($request->date)) < date('Y-m-d')){
+        if(date('Y-m-d', strtotime($request->date)) < date('Y-m-d', strtotime($data->date_start))){
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'date' => 'Start at value is invalid, value cannot be less than previous value ('.(date('d F, Y', strtotime($data->date_start))).')!'
             ]);

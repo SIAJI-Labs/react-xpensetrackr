@@ -249,9 +249,9 @@ export default function Notification({ user, className = '' }: PropsWithChildren
     return <>
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant={ `ghost` } className={ ` dark:text-white` }><i className={ `fa-regular fa-bell ${plannedOverdueItem && plannedOverdueItem.length > 0 || plannedTodayItem && plannedTodayItem.length > 0 || plannedUpcomingItem && plannedUpcomingItem.length > 0 ? `fa-shake` : ``}` } data-type="notification-bell"></i></Button>
+                <Button variant={ `ghost` } className={ ` dark:text-white aspect-square` }><i className={ `fa-regular fa-bell ${plannedOverdueItem && plannedOverdueItem.length > 0 || plannedTodayItem && plannedTodayItem.length > 0 || plannedUpcomingItem && plannedUpcomingItem.length > 0 ? `fa-shake` : ``}` } data-type="notification-bell"></i></Button>
             </SheetTrigger>
-            <SheetContent side={ `right` } className={ `p-0 w-screen md:w-72 dark:!text-white` }>
+            <SheetContent side={ `right` } className={ `p-0 w-screen md:w-96 dark:!text-white` }>
                 <ScrollArea className={ ` h-screen p-6 py-0` }>
                     <div className={ ` flex flex-col gap-6 my-6` }>
                         <SheetHeader className={ ` flex flex-col items-start gap-2` }>
@@ -355,9 +355,9 @@ export default function Notification({ user, className = '' }: PropsWithChildren
                                                                                 {/* Action */}
                                                                                 <div className={ ` flex flex-row justify-between gap-4` }>
                                                                                     <Link href={ route('sys.planned-payment.show', planned.uuid) } className={ ` w-full` }>
-                                                                                        <Button variant={ `outline` } className={ ` w-full` }>Detail</Button>
+                                                                                        <Button variant={ `outline` } className={ ` w-full !h-auto py-2 leading-none` }><span className={ `leading-none` }>Detail</span></Button>
                                                                                     </Link>
-                                                                                    <Button variant={ `default` } className={ ` w-full` } onClick={($refs) => {
+                                                                                    <Button variant={ `default` } className={ ` w-full !h-auto py-2 leading-none` } onClick={($refs) => {
                                                                                         let el = $refs.target as HTMLElement;
                                                                                         if(el){
                                                                                             let originalText = el.innerHTML;
@@ -379,7 +379,7 @@ export default function Notification({ user, className = '' }: PropsWithChildren
                                                                                                 uuid: planned && 'uuid' in planned ? planned.uuid : null
                                                                                             }
                                                                                         }))
-                                                                                    }}>Approve</Button>
+                                                                                    }}><span className={ ` leading-none` }>Approve</span></Button>
                                                                                 </div>
                                                                             </div>
                                                                         );

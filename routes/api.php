@@ -197,6 +197,23 @@ Route::group([
             // Delete
             Route::delete('{uuid}', [\App\Http\Controllers\Api\v1\WalletController::class, 'destroy'])->name('destroy');
         });
+
+        // Balance Adjustment
+        Route::group([
+            'prefix' => 'balance-adjustment',
+            'as' => 'balance-adjustment.'
+        ], function(){
+            // v1
+            Route::group([
+                'prefix' => 'v1',
+                'as' => 'v1.'
+            ], function(){
+                // Store
+                Route::post('store', [\App\Http\Controllers\Api\v1\WalletBalanceAdjustmentController::class, 'store'])->name('store');
+                // Update
+                Route::put('{uuid}', [\App\Http\Controllers\Api\v1\WalletBalanceAdjustmentController::class, 'update'])->name('update');
+            });
+        });
     });
 
     // Profile

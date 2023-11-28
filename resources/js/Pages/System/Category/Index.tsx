@@ -10,7 +10,7 @@ import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
 import ListSkeleton from "@/Components/template/Category/SkeletonList";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
@@ -166,22 +166,21 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
                                 <CardTitle>
                                     <div>Category: List</div>
                                 </CardTitle>
+                                <CardDescription>List of your available Categories</CardDescription>
                             </div>
                             <div className={ `flex items-center gap-2` }>
                                 {/* Refresh Button */}
-                                {(() => {
-                                    return <Button variant={ `outline` } onClick={() => {
-                                        // Cancel previous request
-                                        if(categoryItemAbortController instanceof AbortController){
-                                            categoryItemAbortController.abort();
-                                        }
-                                        
-                                        // Fetch Pending Count
-                                        fetchCategoryData();
-                                    }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
-                                })()}
+                                <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
+                                    // Cancel previous request
+                                    if(categoryItemAbortController instanceof AbortController){
+                                        categoryItemAbortController.abort();
+                                    }
+                                    
+                                    // Fetch Pending Count
+                                    fetchCategoryData();
+                                }}><i className={ `fa-solid fa-rotate-right` }></i></Button>
                                 {/* Add new Button */}
-                                <Button variant={ `outline` } onClick={() => {
+                                <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
                                     document.dispatchEvent(new CustomEvent('category.edit-action', {
                                             bubbles: true,
                                         }
@@ -195,19 +194,18 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
                     <CardContent>
                         <div className={ `flex flex-col gap-6` }>
                             {/* Filter */}
-                            <div className={ ` flex flex-row gap-4` }>
+                            <div className={ ` flex flex-row gap-2` }>
                                 <Input placeholder={ `Search by Category name` } value={ filterKeyword } onChange={(event) => {
                                     setFilterKeyword(event.target.value);
                                 }}/>
 
-                                <Button disabled>
-                                    <i className={ `fa-solid fa-filter` }></i>
-                                </Button>
-                                <Link href={ route('sys.category.re-order.index') }>
-                                    <Button variant={ `outline` }>
-                                        <i className={ `fa-solid fa-sort` }></i>
-                                    </Button>
-                                </Link>
+                                <div className={ ` flex flex-row gap-2` }>
+                                    <Link href={ route('sys.category.re-order.index') } className={ `aspect-square` }>
+                                        <Button variant={ `outline` } className={ ` w-10 aspect-square` }>
+                                            <i className={ `fa-solid fa-sort` }></i>
+                                        </Button>
+                                    </Link>
+                                </div>
                             </div>
                             {/* Content */}
                             <div className={ ` flex flex-col gap-4` }>

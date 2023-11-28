@@ -149,12 +149,12 @@ export default function PlannedPaymentList({ auth, activeType }: PageProps<Plann
     return (<>
         <div className={ `flex flex-col gap-6` }>
             {/* Filter */}
-            <div className={ ` flex flex-row gap-4` }>
+            <div className={ ` flex flex-row gap-2` }>
                 <Input placeholder={ `Search by Planned Payment name` } value={ plannedFilterKeyword } onChange={(event) => {
                     setPlannedFilterKeyword(event.target.value);
                 }}/>
 
-                <Button>
+                <Button className={ ` w-10 aspect-square` } disabled>
                     <i className={ `fa-solid fa-filter` }></i>
                 </Button>
             </div>

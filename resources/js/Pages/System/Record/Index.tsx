@@ -14,12 +14,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import ListSkeleton from '@/Components/template/Record/SkeletonList';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
+import { ucwords } from '@/function';
 
 // Props
 type RecordIndexProps = {
+    type?: string
 }
 
-export default function Index({ auth }: PageProps<RecordIndexProps>) {
+export default function Index({ auth, type = 'complete' }: PageProps<RecordIndexProps>) {
     const isFirstRender = useIsFirstRender();
     // Record List - Template
     const recordListTemplate = (obj:RecordItem) => {
@@ -29,8 +32,9 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
     let skeletonTemplate = <ListSkeleton/>;
 
     // Record Filter
+    const [recordFilterOpen, setRecordFilterOpen] = useState<boolean>(false);
     const [recordFilterKeyword, setRecordFilterKeyword] = useState<string>('');
-    const [recordFilterStatus, setRecordFilterStatus] = useState<string>('complete');
+    const [recordFilterStatus, setRecordFilterStatus] = useState<string>(type);
     useEffect(() => {
         if(!isFirstRender){
             const timer = setTimeout(() => {
@@ -43,7 +47,8 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                 clearTimeout(timer);
             };
         }
-    }, [recordFilterKeyword]);
+    }, [recordFilterKeyword, recordFilterOpen]);
+
     // Record List - Variable Init
     let paginate_item = 5;
     const [recordCountShown, setRalletCountShown] = useState<number>(0);
@@ -165,18 +170,17 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                                 </div>
 
                                 <div className={ `flex items-center gap-2` }>
-                                    {(() => {
-                                        return <Button variant={ `outline` } onClick={() => {
-                                            // Cancel previous request
-                                            if(recordItemAbortController instanceof AbortController){
-                                                recordItemAbortController.abort();
-                                            }
-                                            
-                                            // Fetch Pending Count
-                                            fetchRecordList();
-                                        }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
-                                    })()}
-                                    <Button variant={ `outline` } onClick={() => {
+                                    <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
+                                        // Cancel previous request
+                                        if(recordItemAbortController instanceof AbortController){
+                                            recordItemAbortController.abort();
+                                        }
+                                        
+                                        // Fetch Pending Count
+                                        fetchRecordList();
+                                    }}><i className={ `fa-solid fa-rotate-right` }></i></Button>
+
+                                    <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
                                         document.dispatchEvent(new CustomEvent('record.edit-action', {
                                                 bubbles: true,
                                             }
@@ -189,14 +193,50 @@ export default function Index({ auth }: PageProps<RecordIndexProps>) {
                         </CardHeader>
                         <CardContent className={ ` flex flex-col gap-6` }>
                             {/* Filter */}
-                            <div className={ ` flex flex-row gap-4` }>
+                            <div className={ ` flex flex-row gap-2` }>
                                 <Input placeholder={ `Search by record notes` } value={recordFilterKeyword} onChange={(event) => {
                                     setRecordFilterKeyword(event.target.value);
                                 }}/>
 
-                                <Button>
-                                    <i className={ `fa-solid fa-filter` }></i>
-                                </Button>
+                                <Dialog open={ recordFilterOpen } onOpenChange={ setRecordFilterOpen }>
+                                    <DialogTrigger asChild>
+                                        <Button className={ ` w-10 aspect-square` }>
+                                            <i className={ `fa-solid fa-filter` }></i>
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className=" h-full md:h-auto lg:min-w-[800px] max-md:!max-h-[85vh] flex flex-col gap-6" data-type="record-dialog">
+                                        <DialogHeader>
+                                            <DialogTitle>Record: Filter</DialogTitle>
+                                            <DialogDescription>
+                                                <span>Show record data based on certain condition</span>
+                                            </DialogDescription>
+                                        </DialogHeader>
+
+                                        <div className={ ` flex flex-col gap-4` }>
+                                            <div className={ ` flex flex-row gap-1 w-full border p-1 rounded-md` }>
+                                                {/* Status Type */}
+                                                {(() => {
+                                                    let pageTypeEl: any[] = [];
+                                                    ['complete', 'pending'].map((value, index) => {
+                                                        pageTypeEl.push(
+                                                            <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ recordFilterStatus === value ? `bg-primary ` : ` dark:!text-white !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
+                                                                setRecordFilterStatus(value);
+                                                            }} key={ `record_type-${value}` }>
+                                                                <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
+                                                            </div>
+                                                        );
+                                                    });
+
+                                                    if(pageTypeEl.length > 0){
+                                                        return pageTypeEl;
+                                                    }
+
+                                                    return <></>;
+                                                })()}
+                                            </div>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
 
                             {/* Content */}

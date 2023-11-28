@@ -47,7 +47,7 @@ export default function Index({ auth, type = 'list' }: PageProps<PlannedPaymentI
                     {/* Content */}
                     <Card className={ `` }>
                         <CardHeader>
-                            <div className={ ` flex flex-row justify-between items-start` }>
+                            <div className={ ` flex flex-row gap-4 justify-between items-start` }>
                                 <div>
                                     <CardTitle>
                                             <div>Planned Payment: { ucwords(pageType) }</div>
@@ -56,13 +56,12 @@ export default function Index({ auth, type = 'list' }: PageProps<PlannedPaymentI
                                 </div>
                                 <div className={ `flex items-center gap-2` }>
                                     {/* Refresh Button */}
-                                    {(() => {
-                                        return <Button variant={ `outline` } onClick={() => {
-                                            document.dispatchEvent(new CustomEvent('planned-payment.refresh', {bubbles: true}));
-                                        }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
-                                    })()}
+                                    <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
+                                        document.dispatchEvent(new CustomEvent('planned-payment.refresh', {bubbles: true}));
+                                    }}><i className={ `fa-solid fa-rotate-right` }></i></Button>
+
                                     {/* Add new Button */}
-                                    <Button variant={ `outline` } onClick={() => {
+                                    <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
                                         document.dispatchEvent(new CustomEvent('planned-payment.edit-action', {
                                                 bubbles: true,
                                             }

@@ -56,7 +56,11 @@ class Tags extends Model
      * 
      * @return model
      */
-    // 
+    public function recordTags()
+    {
+        return $this->belongsToMany(\App\Models\Record::class, 'record_tags', 'tags_id', 'record_id')
+            ->using(\App\Models\RecordTags::class);
+    }
 
     /**
      * Foreign Key Relation

@@ -33,7 +33,7 @@ class RecordController extends Controller
         $user = $request->user();
         $related = null;
 
-        $data = \App\Models\Record::with('category.parent', 'fromWallet.parent', 'toWallet.parent', 'plannedPaymentRecord.plannedPayment')
+        $data = \App\Models\Record::with('category.parent', 'fromWallet.parent', 'toWallet.parent', 'plannedPaymentRecord.plannedPayment', 'recordTags')
             ->withTrashed()
             ->where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)

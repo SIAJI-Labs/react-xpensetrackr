@@ -20,7 +20,7 @@ class RecordController extends Controller
         $user = $request->user();
 
         $data = \App\Models\Record::query()
-            ->with('category.parent', 'fromWallet.parent', 'toWallet.parent')
+            ->with('category.parent', 'fromWallet.parent', 'toWallet.parent', 'recordTags')
             ->where('user_id', $user->id);
 
         // Apply Filter
@@ -92,7 +92,8 @@ class RecordController extends Controller
             'date' => ['required', 'string'],
             'hours' => ['required', 'numeric', 'between:0,23'],
             'minutes' => ['required', 'numeric', 'between:0,59'],
-            'notes' => ['nullable', 'string']
+            'notes' => ['nullable', 'string'],
+            'tags.*' => ['nullable', 'string', 'exists:'.(new \App\Models\Tags())->getTable().',uuid']
         ]);
 
         // Store to database
@@ -184,6 +185,19 @@ class RecordController extends Controller
                 $plannedRecord->period = $plannedPayment->date_start;
                 $plannedRecord->save();
             }
+
+            // Handle tags
+            if($request->has('tags') && is_array($request->tags)){
+                $tags = \App\Models\Tags::where('user_id', $user->id)
+                    ->whereIn(DB::raw('BINARY `uuid`'), $request->tags)
+                    ->pluck('id')
+                    ->toArray();
+
+                if(!empty($tags)){
+                    // Record Tags
+                    $data->recordTags()->sync($tags);
+                }
+            }
         });
 
         // \Log::debug("Debug on Record API Controller", [
@@ -200,7 +214,7 @@ class RecordController extends Controller
     {
         $user = $request->user();
 
-        $data = \App\Models\Record::with('category.parent', 'fromWallet.parent', 'toWallet.parent')
+        $data = \App\Models\Record::with('category.parent', 'fromWallet.parent', 'toWallet.parent', 'recordTags')
             ->where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
@@ -239,7 +253,8 @@ class RecordController extends Controller
             'date' => ['required', 'string'],
             'hours' => ['required', 'numeric', 'between:0,23'],
             'minutes' => ['required', 'numeric', 'between:0,59'],
-            'notes' => ['nullable', 'string']
+            'notes' => ['nullable', 'string'],
+            'tags.*' => ['nullable', 'string', 'exists:'.(new \App\Models\Tags())->getTable().',uuid']
         ]);
 
         $user = $request->user();
@@ -317,6 +332,22 @@ class RecordController extends Controller
             $data->is_pending = false;
             $data->timezone = $timezone;
             $data->save();
+
+            // Handle tags
+            $tags = [];
+            if($request->has('tags') && is_array($request->tags)){
+                $tags = \App\Models\Tags::where('user_id', $user->id)
+                    ->whereIn(DB::raw('BINARY `uuid`'), $request->tags)
+                    ->pluck('id')
+                    ->toArray();
+            }
+            // Record Tags
+            $data->recordTags()->sync($tags);
+            // Update tags for related (if transfer)
+            if(!empty($data->uuid) && !empty($data->getRelated())){
+                $related = $data->getRelated();
+                $related->recordTags()->sync($tags);
+            }
         });
 
         return $this->formatedJsonResponse(200, 'Data Updated', []);

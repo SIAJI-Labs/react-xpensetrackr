@@ -58,7 +58,8 @@ export interface RecordItem {
     time: string,
     datetime: string,
     note: string,
-    planned_payment_record: PlannedRecord
+    planned_payment_record: PlannedRecord,
+    record_tags?: TagsItem[]
 }
 export interface PlannedItem {
     id: number,

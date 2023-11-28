@@ -15,6 +15,7 @@ import moment from 'moment-timezone';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
 
 type RecordShowProps = {
     record: RecordItem,
@@ -95,7 +96,7 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                                         document.addEventListener('dialog.record.shown', revertToOriginalText);
                                                     }
 
-                                                    document.dispatchEvent(new CustomEvent('recordDialogEditAction', {
+                                                    document.dispatchEvent(new CustomEvent('record.edit-action', {
                                                         bubbles: true,
                                                         detail: {
                                                             uuid: record?.uuid
@@ -260,6 +261,32 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                 <span className={ `font-semibold` } data-review="final_amount">{ formatRupiah(record.amount + record.extra_amount) }</span>
                             </div>
                         </div>
+
+                        {(() => {
+                            if(record.record_tags && record.record_tags.length > 0){
+                                let tags: any[] = [];
+                                (record.record_tags).forEach((value, index) => {
+                                    tags.push(
+                                        <Link href={ route('sys.tags.show', value.uuid) } key={ `tags_${value.uuid}` }>
+                                            <Badge>{ value.name }</Badge>
+                                        </Link>
+                                    );
+                                });
+
+                                return (
+                                    <div className={ ` flex flex-row gap-2 flex-wrap` }>
+                                        <span className={ ` flex flex-row gap-1 items-center text-sm` }>
+                                            <i className={ ` fa-solid fa-hashtag` }></i>
+                                            <span>Tags:</span>
+                                        </span>
+
+                                        { tags }
+                                    </div>
+                                );
+                            }
+
+                            return <></>;
+                        })()}
                     </CardContent>
                 </Card>
 

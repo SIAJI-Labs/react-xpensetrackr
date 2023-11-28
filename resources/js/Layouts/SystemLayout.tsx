@@ -19,8 +19,10 @@ import PlannedPaymentDeleteDialog from '@/Components/system/PlannedPayment/Plann
 import WalletDialog from '@/Components/system/Wallet/WalletDialog';
 import WalletDeleteDialog from '@/Components/system/Wallet/WalletDeleteDialog';
 import WalletBalanceAdjustmentDialog from '@/Components/system/Wallet/WalletBalanceAdjustmentDialog';
-import CategoryDialog from '@/Components/system/Category/WalletDialog';
-import CategoryDeleteDialog from '@/Components/system/Category/WalletDeleteDialog';
+import CategoryDialog from '@/Components/system/Category/CategoryDialog';
+import CategoryDeleteDialog from '@/Components/system/Category/CategoryDeleteDialog';
+import TagsDialog from '@/Components/system/Tags/TagsDialog';
+import TagsDeleteDialog from '@/Components/system/Tags/TagsDeleteDialog';
 
 // Shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
@@ -52,6 +54,16 @@ export default function SystemLayout({ user, header, children, fabAction = null 
         setOpenPlannedPaymentDeleteDialog(isOpen);
     };
 
+    // Category Dialog
+    const [openCategoryDialog, setOpenCategoryDialog] = useState<boolean>(false);
+    const handleOpenCategoryDialog = (isOpen: boolean) => {
+        setOpenCategoryDialog(isOpen);
+    };
+    const [openCategoryDeleteDialog, setOpenCategoryDeleteDialog] = useState<boolean>(false);
+    const handleOpenCategoryDeleteDialog = (isOpen: boolean) => {
+        setOpenCategoryDeleteDialog(isOpen);
+    };
+
     // Wallet Dialog
     const [openWalletDialog, setOpenWalletDialog] = useState<boolean>(false);
     const handleOpenWalletDialog = (isOpen: boolean) => {
@@ -66,14 +78,14 @@ export default function SystemLayout({ user, header, children, fabAction = null 
         setOpenWalletBalanceAdjustmentDialog(isOpen);
     };
 
-    // Category Dialog
-    const [openCategoryDialog, setOpenCategoryDialog] = useState<boolean>(false);
-    const handleOpenCategoryDialog = (isOpen: boolean) => {
-        setOpenCategoryDialog(isOpen);
+    // Tags Dialog
+    const [openTagsDialog, setOpenTagsDialog] = useState<boolean>(false);
+    const handleOpenTagsDialog = (isOpen: boolean) => {
+        setOpenTagsDialog(isOpen);
     };
-    const [openCategoryDeleteDialog, setOpenCategoryDeleteDialog] = useState<boolean>(false);
-    const handleOpenCategoryDeleteDialog = (isOpen: boolean) => {
-        setOpenCategoryDeleteDialog(isOpen);
+    const [openTagsDeleteDialog, setOpenTagsDeleteDialog] = useState<boolean>(false);
+    const handleOpenTagsDeleteDialog = (isOpen: boolean) => {
+        setOpenTagsDeleteDialog(isOpen);
     };
 
     // Axios Global error handling
@@ -177,6 +189,20 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                                 </DropdownMenuItem>
                             );
                         }
+                        // Push wallet action
+                        if(fabAction.includes('tags')){
+                            action.push(
+                                <DropdownMenuItem onClick={() => {
+                                    document.dispatchEvent(new CustomEvent('tags.edit-action', {
+                                            bubbles: true,
+                                        }
+                                    ));
+                                }} className={ `cursor-pointer flex items-center gap-2` } key={ `fab-tags` }>
+                                    <i className={ `fa-solid fa-tags h-4 w-4 text-center` }></i>
+                                    <span className={ `` }>Tags</span>
+                                </DropdownMenuItem>
+                            );
+                        }
 
                         // Push record action
                         action.push(
@@ -212,14 +238,18 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 <PlannedPaymentDialog openState={ openPlannedPaymentDialog } setOpenState={ handleOpenPlannedPaymentDialog }/>
                 <PlannedPaymentDeleteDialog openState={ openPlannedPaymentDeleteDialog } setOpenState={ handleOpenPlannedPaymentDeleteDialog }/>
 
+                {/* Category Modal - Dialog */}
+                <CategoryDialog openState={ openCategoryDialog } setOpenState={ handleOpenCategoryDialog }/>
+                <CategoryDeleteDialog openState={ openCategoryDeleteDialog } setOpenState={ handleOpenCategoryDeleteDialog }/>
+
                 {/* Wallet Modal - Dialog */}
                 <WalletDialog openState={ openWalletDialog } setOpenState={ handleOpenWalletDialog }/>
                 <WalletDeleteDialog openState={ openWalletDeleteDialog } setOpenState={ handleOpenWalletDeleteDialog }/>
                 <WalletBalanceAdjustmentDialog openState={ openWalletBalanceAdjustmentDialog } setOpenState={ handleOpenWalletBalanceAdjustmentDialog }/>
 
-                {/* Category Modal - Dialog */}
-                <CategoryDialog openState={ openCategoryDialog } setOpenState={ handleOpenCategoryDialog }/>
-                <CategoryDeleteDialog openState={ openCategoryDeleteDialog } setOpenState={ handleOpenCategoryDeleteDialog }/>
+                {/* Tags Modal - Dialog */}
+                <TagsDialog openState={ openTagsDialog } setOpenState={ handleOpenTagsDialog }/>
+                <TagsDeleteDialog openState={ openTagsDeleteDialog } setOpenState={ handleOpenTagsDeleteDialog }/>
             </div>
 
             <Toaster />

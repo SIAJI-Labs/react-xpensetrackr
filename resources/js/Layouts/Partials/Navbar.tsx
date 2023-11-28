@@ -87,7 +87,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                     { name: 'Record', icon: '', link: route('sys.record.index') },
                                     { name: 'Record Template', icon: '', link: null },
                                     { name: 'Shopping List', icon: '', link: null },
-                                    { name: 'Tags', icon: '', link: null },
+                                    { name: 'Tags', icon: '', link: route('sys.tags.index') },
                                     { name: 'Wallet', icon: '', link: route('sys.wallet.index') },
                                     { name: 'Wallet Group', icon: '', link: null },
                                     { name: 'Wallet Share', icon: '', link: null },
@@ -207,10 +207,12 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                                     <span className=' w-11/12'>Category</span>
                                                 </DropdownMenuItem>
                                             </Link>
-                                            <DropdownMenuItem className={ ` flex flex-row gap-2 opacity-50` }>
-                                                <i className={ `fa-solid fa-tags w-1/12` }></i>
-                                                <span className=' w-11/12'>Tags</span>
-                                            </DropdownMenuItem>
+                                            <Link href={ route('sys.tags.index') }>
+                                                <DropdownMenuItem className={ ` flex flex-row gap-2 opacity-50` }>
+                                                    <i className={ `fa-solid fa-tags w-1/12` }></i>
+                                                    <span className=' w-11/12'>Tags</span>
+                                                </DropdownMenuItem>
+                                            </Link>
                                             <Link href={ route('sys.wallet.index') }>
                                                 <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-pointer` }>
                                                     <i className={ `fa-solid fa-wallet w-1/12` }></i>

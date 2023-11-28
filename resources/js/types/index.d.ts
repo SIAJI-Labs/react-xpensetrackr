@@ -30,6 +30,14 @@ export interface WalletItem {
     balance?: number,
     deleted_at?: string | null
 }
+export interface TagsItem {
+    id: number,
+    uuid: string,
+    user_id: number,
+    name: string,
+    deleted_at?: string | null
+}
+
 export interface RecordItem {
     id: number,
     uuid: string,

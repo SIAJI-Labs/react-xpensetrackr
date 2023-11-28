@@ -51,6 +51,10 @@ Route::group([
     Route::get('wallet/{uuid}', [\App\Http\Controllers\System\WalletController::class, 'show'])->name('wallet.show');
     Route::get('wallet', [\App\Http\Controllers\System\WalletController::class, 'index'])->name('wallet.index');
 
+    // Wallet
+    Route::get('tags/{uuid}', [\App\Http\Controllers\System\TagsController::class, 'show'])->name('tags.show');
+    Route::get('tags', [\App\Http\Controllers\System\TagsController::class, 'index'])->name('tags.index');
+
     // Profile
     Route::get('profile', [\App\Http\Controllers\System\ProfileController::class, 'index'])->name('profile.index');
     // Setting

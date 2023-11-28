@@ -162,7 +162,8 @@ Route::group([
             // Re-Order
             Route::post('re-order', [\App\Http\Controllers\Api\v1\CategoryController::class, 'reOrder'])->name('re-order');
             // List
-            Route::get('list', [\App\Http\Controllers\Api\v1\CategoryController::class, 'index'])->name('list');// Show
+            Route::get('list', [\App\Http\Controllers\Api\v1\CategoryController::class, 'index'])->name('list');
+            // Show
             Route::get('{uuid}', [\App\Http\Controllers\Api\v1\CategoryController::class, 'show'])->name('show');
             
             // Store
@@ -187,7 +188,8 @@ Route::group([
             // Re-Order
             Route::post('re-order', [\App\Http\Controllers\Api\v1\WalletController::class, 'reOrder'])->name('re-order');
             // List
-            Route::get('list', [\App\Http\Controllers\Api\v1\WalletController::class, 'index'])->name('list');// Show
+            Route::get('list', [\App\Http\Controllers\Api\v1\WalletController::class, 'index'])->name('list');
+            // Show
             Route::get('{uuid}', [\App\Http\Controllers\Api\v1\WalletController::class, 'show'])->name('show');
             
             // Store
@@ -213,6 +215,30 @@ Route::group([
                 // Update
                 Route::put('{uuid}', [\App\Http\Controllers\Api\v1\WalletBalanceAdjustmentController::class, 'update'])->name('update');
             });
+        });
+    });
+
+    // Tags
+    Route::group([
+        'prefix' => 'tags',
+        'as' => 'tags.'
+    ], function(){
+        // v1
+        Route::group([
+            'prefix' => 'v1',
+            'as' => 'v1.'
+        ], function(){
+            // List
+            Route::get('list', [\App\Http\Controllers\Api\v1\TagsController::class, 'index'])->name('list');
+            // Show
+            Route::get('{uuid}', [\App\Http\Controllers\Api\v1\TagsController::class, 'show'])->name('show');
+
+            // Store
+            Route::post('store', [\App\Http\Controllers\Api\v1\TagsController::class, 'store'])->name('store');
+            // Update
+            Route::put('{uuid}', [\App\Http\Controllers\Api\v1\TagsController::class, 'update'])->name('update');
+            // Delete
+            Route::delete('{uuid}', [\App\Http\Controllers\Api\v1\TagsController::class, 'destroy'])->name('destroy');
         });
     });
 

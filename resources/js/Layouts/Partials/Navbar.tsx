@@ -23,8 +23,8 @@ import { handleUserAvatar } from '@/function';
 import Notification from './Notification';
 
 export default function Navbar({ user, className = '' }: PropsWithChildren<{ user: User, className?: string }>) {
-
     const [avatar, setAvatar] = useState<string>();
+
     // Search Command
     const [openSearchCommand, setOpenSearchCommand] = useState<boolean>(false)
     useEffect(() => {
@@ -33,7 +33,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
         });
 
         const down = (e: KeyboardEvent) => {
-            if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+            if (e.key === "/" && (e.metaKey || e.ctrlKey)) {
                 // Show command on control + k
                 e.preventDefault()
                 setOpenSearchCommand((openSearchCommand) => !openSearchCommand)
@@ -65,111 +65,85 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
 
-                    {/* Feature */}
                     {(() => {
-                        let el: any[] = []
-                        let suggestions: { name: string, icon?: string, link?: any}[] = [
-                            { name: 'Quick Action: Create new Record', icon: '', link: route('sys.quick-action.record') },
-                            { name: 'Quick Action: Planned Payment Summary', icon: '', link: route('sys.planned-payment.index', {
-                                type: 'summary'
-                            }) },
-                            { name: 'Quick Action: Show Pending Record', icon: '', link: null },
+                        let el: any[] = [];
+                        let items: any = [
+                            { // Suggestion Group
+                                name: 'Suggestion',
+                                items: [
+                                    { name: 'Quick Action: Create new Record', icon: '', link: route('sys.quick-action.record') },
+                                    { name: 'Quick Action: Planned Payment Summary', icon: '', link: route('sys.planned-payment.index', { type: 'summary' }) },
+                                    { name: 'Quick Action: Show Pending Record', icon: '', link: route('sys.record.index', { type: 'pending' }) },
+                                ]
+                            }, { // Feature Group
+                                name: 'Feature',
+                                items: [
+                                    { name: 'Dashboard', icon: '', link: route('sys.index') },
+                                    { name: 'Budget', icon: '', link: null },
+                                    { name: 'Category', icon: '', link: route('sys.category.index') },
+                                    { name: 'Debt', icon: '', link: null },
+                                    { name: 'Goals', icon: '', link: null },
+                                    { name: 'Planned Payment', icon: '', link: route('sys.planned-payment.index') },
+                                    { name: 'Record', icon: '', link: route('sys.record.index') },
+                                    { name: 'Record Template', icon: '', link: null },
+                                    { name: 'Shopping List', icon: '', link: null },
+                                    { name: 'Tags', icon: '', link: null },
+                                    { name: 'Wallet', icon: '', link: route('sys.wallet.index') },
+                                    { name: 'Wallet Group', icon: '', link: null },
+                                    { name: 'Wallet Share', icon: '', link: null },
+                                ]
+                            }, { // Misc Group
+                                name: 'Miscellaneous',
+                                items: [
+                                    { name: 'Profile', icon: ' fa-solid fa-user', link: route('sys.profile.index') },
+                                    { name: 'Setting', icon: 'fa-solid fa-cog', link: route('sys.setting.index') },
+                                ]
+                            }
                         ];
 
-                        suggestions.map((obj, index) => {
-                            if(obj.link){
-                                el.push(
-                                    <Link href={ obj.link } className={ `cursor-pointer` } key={ `command_item_suggestion-${index}` }>
-                                        <CommandItem className={ ` flex flex-row gap-2 !py-2 cursor-pointer` }>
-                                            <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
-                                            <span>{obj.name}</span>
+                        if(items.length > 0){
+                            items.forEach((item: any) => {
+                                let submenu: any[] = [];
+                                if(item.items && (item.items).length > 0){
+                                    (item.items).forEach((sub: any)=> {
+                                        let icon = <div className={ `w-6 flex items-center justify-center` }>
+                                            <i className={ `text-center ${sub.icon && sub.icon !== '' ? sub.icon : ` fa-regular fa-circle`}` }></i>
+                                        </div>
+                                        let content = <CommandItem className={ ` flex flex-row gap-2 !py-2 ${sub.link ? ` cursor-pointer` : `cursor-not-allowed opacity-50`}` } key={ `cmg_${(item.name).toLowerCase()}-${(sub.name).toLowerCase()}` }>
+                                            { icon }
+                                            <span>{sub.name}</span>
                                         </CommandItem>
-                                    </Link>
-                                );
-                            } else {
-                                el.push(
-                                    <CommandItem className={ ` flex flex-row gap-2 !py-2 opacity-50 cursor-not-allowed` } key={ `command_item_suggestion-${index}` }>
-                                        <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
-                                        <span>{obj.name}</span>
-                                    </CommandItem>
-                                );
+
+                                        if(sub.link){
+                                            content = <Link href={ sub.link } className={ `cursor-pointer` } key={ `cmg_${(item.name).toLowerCase()}-${(sub.name).toLowerCase()}` }>
+                                                { content }
+                                            </Link>
+                                        }
+
+                                        submenu.push(content)
+                                    });
+                                }
+
+                                if(submenu.length > 0){
+                                    el.push(
+                                        <CommandGroup heading={ item.name } className={ ` !pb-2` } key={ `command_group-${(item.name).toLowerCase()}` }>
+                                            { submenu }
+                                        </CommandGroup>
+                                    );
+                                }
+                            });
+
+                            if(el.length > 0){
+                                return el;
                             }
-                        });
-                        if(el.length > 0){
-                            return <>
-                                <CommandGroup heading="Suggestion">
-                                    {el}
-                                </CommandGroup>
-                            </>;
                         }
 
                         return <></>;
                     })()}
-
-                    {/* Feature */}
-                    {(() => {
-                        let el: any[] = []
-                        let feature: { name: string, icon?: string, link?: any}[] = [
-                            { name: 'Dashboard', icon: '', link: route('sys.index') },
-                            { name: 'Budget', icon: '', link: null },
-                            { name: 'Category', icon: '', link: route('sys.category.index') },
-                            { name: 'Debt', icon: '', link: null },
-                            { name: 'Goals', icon: '', link: null },
-                            { name: 'Planned Payment', icon: '', link: route('sys.planned-payment.index') },
-                            { name: 'Record', icon: '', link: route('sys.record.index') },
-                            { name: 'Record Template', icon: '', link: null },
-                            { name: 'Shopping List', icon: '', link: null },
-                            { name: 'Wallet', icon: '', link: route('sys.wallet.index') },
-                            { name: 'Wallet Group', icon: '', link: null },
-                            { name: 'Wallet Share', icon: '', link: null },
-                        ];
-                        feature.map((obj, index) => {
-                            if(obj.link){
-                                el.push(
-                                    <Link href={ obj.link } className={ `cursor-pointer` } key={ `command_item_feature-${index}` }>
-                                        <CommandItem className={ ` flex flex-row gap-2 !py-2 cursor-pointer` }>
-                                            <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
-                                            <span>{obj.name}</span>
-                                        </CommandItem>
-                                    </Link>
-                                );
-                            } else {
-                                el.push(
-                                    <CommandItem className={ ` flex flex-row gap-2 !py-2 opacity-50 cursor-not-allowed` } key={ `command_item_feature-${index}` }>
-                                        <i className={ ` w-4 text-center fa-solid fa-angle-right` }></i>
-                                        <span>{obj.name}</span>
-                                    </CommandItem>
-                                );
-                            }
-                        });
-                        if(el.length > 0){
-                            // Generate random string as section-key
-                            let r = (Math.random() + 1).toString(36).substring(7);
-
-                            return <div key={ r }>
-                                <CommandGroup heading="Feature" key={ r }>
-                                    {el}
-                                </CommandGroup>
-                            </div>;
-                        }
-
-                        return <></>;
-                    })()}
-
-                    <CommandGroup heading="Settings" className={ ` !pb-2` }>
-                        <CommandItem className={ ` flex flex-row gap-2 !py-2` }>
-                            <i className={ ` w-4 text-center fa-solid fa-user` }></i>
-                            <span>Profile</span>
-                        </CommandItem>
-                        <CommandItem className={ ` flex flex-row gap-2 !py-2` }>
-                            <i className={ ` w-4 text-center fa-solid fa-cog` }></i>
-                            <span>Setting</span>
-                        </CommandItem>
-                    </CommandGroup>
                 </CommandList>
             </CommandDialog>
             
-            <nav className="bg-white dark:bg-background border-b fixed w-full z-10">
+            <nav className=" bg-background/75 backdrop-blur border-b fixed w-full z-10">
                 {/* Navbar */}
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="flex justify-between h-16 relative">
@@ -204,7 +178,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                         })()}
                                     </span>
                                     <span className=" text-xs leading-none">+</span>
-                                    <span className=" text-xs leading-none">K</span>
+                                    <span className=" text-xs leading-none">/</span>
                                 </kbd>
                             </div>
                         </div>
@@ -227,20 +201,6 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
 
                                         <DropdownMenuSeparator />
                                         <DropdownMenuGroup>
-                                            <Link href={ route('sys.profile.index') }>
-                                                <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-pointer` }>
-                                                    <i className={ `fa-solid fa-user w-1/12` }></i>
-                                                    <span className={ ` w-11/12` }>Profile</span>
-                                                </DropdownMenuItem>
-                                            </Link>
-                                            <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-not-allowed opacity-50` }>
-                                                <i className={ `fa-solid fa-gear w-1/12` }></i>
-                                                <span className=' w-11/12'>Setting</span>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuGroup>
                                             <Link href={ route('sys.category.index') }>
                                                 <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-pointer` }>
                                                     <i className={ `fa-solid fa-bookmark w-1/12` }></i>
@@ -255,6 +215,22 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                                 <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-pointer` }>
                                                     <i className={ `fa-solid fa-wallet w-1/12` }></i>
                                                     <span className=' w-11/12'>Wallet</span>
+                                                </DropdownMenuItem>
+                                            </Link>
+                                        </DropdownMenuGroup>
+
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup>
+                                            <Link href={ route('sys.profile.index') }>
+                                                <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-pointer` }>
+                                                    <i className={ `fa-solid fa-user w-1/12` }></i>
+                                                    <span className={ ` w-11/12` }>Profile</span>
+                                                </DropdownMenuItem>
+                                            </Link>
+                                            <Link href={ route('sys.setting.index') }>
+                                                <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-pointer` }>
+                                                    <i className={ `fa-solid fa-gear w-1/12` }></i>
+                                                    <span className=' w-11/12'>Setting</span>
                                                 </DropdownMenuItem>
                                             </Link>
                                         </DropdownMenuGroup>

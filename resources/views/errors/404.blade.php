@@ -23,9 +23,14 @@
             </div>
 
             <div class=" mt-4 flex flex-row gap-4 w-3/5">
-                <a href="{{ route('public.index') }}" class=" px-4 py-2 rounded bg-primary text-white w-full flex flex-row items-center justify-center gap-1">
+                <a href="{{ route('public.index') }}" class=" px-4 py-2 rounded {{ auth()->check() ? 'border border-primary' : 'bg-primary text-white' }} w-full flex flex-row items-center justify-center gap-1">
                     <span>Homepage</span>
                 </a>
+                @if (auth()->check())
+                    <a href="{{ route('sys.index') }}" class=" px-4 py-2 rounded bg-primary text-white w-full flex flex-row items-center justify-center gap-1">
+                        <span>Dashboard</span>
+                    </a>
+                @endif
             </div>
         </div>
     </body>

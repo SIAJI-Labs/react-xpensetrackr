@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
+import SkeletonList from '@/Components/template/Record/SkeletonList';
 
 type ContentProps = {
     inspire: string,
@@ -22,9 +23,6 @@ type ContentProps = {
 
 export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
-
-    // Global Variable
-    const [refreshLoading, setRefreshLoading] = useState<boolean>(false);
 
     // Record List - Variable Init
     const [recordFilterStatus, setRecordFilterStatus] = useState<string>('complete');
@@ -35,42 +33,13 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
     const [recordPendingCount, setRecordPendingCount] = useState<number>(0);
     
     // Record List - Skeleton
-    let skeletonTemplate = <>
-        <div className={ ` flex flex-col gap-2 border rounded p-4` }>
-            <div className={ ` flex flex-row justify-between` }>
-                <Skeleton className="w-[100px] h-[20px] rounded-full" />
-
-                <div className={ ` flex flex-row gap-2` }>
-                    <Skeleton className="w-[75px] h-[20px] rounded-full" />
-                    <Skeleton className="w-[10px] h-[20px] rounded-full" />
-                </div>
-            </div>
-
-            <div className={ ` flex flex-row gap-4 items-center` }>
-                <div className={ `` }>
-                    <Skeleton className="w-[50px] h-[50px] rounded-full" />
-                </div>
-                <div className={ ` flex flex-col gap-2` }>
-                    <Skeleton className="w-[150px] h-[15px] rounded-full" />
-                    <Skeleton className="w-[75px] h-[10px] rounded-full" />
-                </div>
-            </div>
-
-            <div className={ ` flex flex-row gap-4` }>
-                <Skeleton className="w-[50px] h-[20px] rounded-full" />
-                <Skeleton className="w-[50px] h-[20px] rounded-full" />
-                <Skeleton className="w-[50px] h-[20px] rounded-full" />
-            </div>
-        </div>
-    </>;
+    let skeletonTemplate = <SkeletonList/>;
     // Record List - Template
     const recordListTemplate = (obj:RecordItem) => {
         return <TemplateListRecord record={obj}></TemplateListRecord>;
     }
     // Create API Call
     const fetchRecordList = async () => {
-        setRefreshLoading(true);
-
         // Cancel previous request
         if(recordItemAbortController instanceof AbortController){
             recordItemAbortController.abort();
@@ -108,7 +77,6 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
 
             // Remove loading state
             setRecordIsLoading(false);
-            setRefreshLoading(false);
             // Clear the AbortController from state
             setRecordItemAbortController(null);
           } catch (error) {
@@ -123,27 +91,24 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
         }
     }
     useEffect(() => {
-        if(!isFirstRender){
-            // Update record list
-            fetchPending();
-        }
-    }, [recordFilterStatus]);
-    useEffect(() => {
         // Update skeleton count to match loaded record item
         setRecordSkeletonCount(recordItem.length > 0 ? recordItem.length : 3);
     }, [recordItem]);
 
     // Create Request to check pending count
-    const fetchPending = async () => {
-        setRefreshLoading(true);
-
+    useEffect(() => {
+        if(!isFirstRender){
+            // Update record list
+            fetchPendingCount();
+        }
+    }, [recordFilterStatus]);
+    const fetchPendingCount = async () => {
         try {
             const response = await axios.get(route('api.record.v1.count-pending'));
         
             // Use response.data instead of req.json() to get the JSON data
             let jsonResponse = response.data;
             setRecordPendingCount(jsonResponse?.result?.data);
-            setRefreshLoading(false);
 
             // Fetch newest record-item
             fetchRecordList();
@@ -159,15 +124,16 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
     }
     useEffect(() => {
         // First fetch pending count
-        fetchPending();
+        fetchPendingCount();
     }, []);
+    
     useEffect(() => {
         if(!isFirstRender){
             // Listen to Record Dialog event
             const handleDialogRecord = (event: any) => {
                 setTimeout(() => {
                     // Update record list
-                    fetchPending();
+                    fetchPendingCount();
                 }, 100);
             }
             document.addEventListener('dialog.record.hidden', handleDialogRecord);
@@ -208,27 +174,19 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
                         <div className={ ` flex flex-row justify-between items-center` }>
                             <div>
                                 <CardTitle>
-                                        <div>Record: List</div>
+                                    <div>Record: List</div>
                                 </CardTitle>
                                 <CardDescription>See your latest transaction</CardDescription>
                             </div>
-                            {(() => {
-                                if(refreshLoading){
-                                    return <Button disabled>
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    </Button>
+                            <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={($refs) => {
+                                // Cancel previous request
+                                if(recordItemAbortController instanceof AbortController){
+                                    recordItemAbortController.abort();
                                 }
-
-                                return <Button variant={ `outline` } onClick={() => {
-                                    // Cancel previous request
-                                    if(recordItemAbortController instanceof AbortController){
-                                        recordItemAbortController.abort();
-                                    }
-                                    
-                                    // Fetch Pending Count
-                                    fetchPending();
-                                }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
-                            })()}
+                                
+                                // Fetch Pending Count
+                                fetchPendingCount();
+                            }}><i className={ `fa-solid fa-rotate-right` }></i></Button>
                         </div>
                     </CardHeader>
                     <CardContent className={ ` flex flex-col gap-6` }>

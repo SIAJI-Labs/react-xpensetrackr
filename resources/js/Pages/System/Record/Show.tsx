@@ -140,7 +140,7 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                         </div>
 
                         {(() => {
-                            if(record && 'planned_payment_record' in record){
+                            if(record && 'planned_payment_record' in record && record.planned_payment_record){
                                 return (
                                     <>
                                         <div className=" w-full p-4 rounded-lg border-2 border-dashed">

@@ -22,7 +22,7 @@ export default function Guest({ children }: PropsWithChildren) {
                 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#55799d"/>
             </Head>
 
-            <div className="min-h-screen w-full bg-slate-100 dark:bg-background">
+            <div className="min-h-screen w-full bg-slate-50 dark:bg-background">
                 {children}
 
                 <Toaster />

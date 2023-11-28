@@ -150,7 +150,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
         }
     }, [formParent]);
 
-    // Planned Payment Dialog - Forms
+    // Wallet Dialog - Forms
     const resetWalletDialog = () => {
         setFormUuid('');
         setFormParent('');
@@ -446,7 +446,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                             <ErrorMessage message={ errorFormDialog?.starting_balance }/>
                         </div>
 
-                        {/* Keep open Planned Payment dialog? */}
+                        {/* Keep open Wallet dialog? */}
                         <div className={ `form-group` }>
                             <div className={ `flex items-center space-x-2` }>
                                 <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
@@ -473,7 +473,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                             if(document.getElementById('wallet-dialogForms')){
                                 (document.getElementById('wallet-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
                             }
-                        }} id='plannedPayment_dialog-submit'>Submit</Button>
+                        }} id='wallet_dialog-submit'>Submit</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

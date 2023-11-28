@@ -165,7 +165,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                 setComboboxCategoryLabel(`Select an option`);
             }
         } else {
-            if(!formUuid){
+            if(!formUuid && formCategory === ''){
                 setComboboxCategoryLabel(`Select an option`);
             }
         }
@@ -269,7 +269,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                 setComboboxFromWalletLabel(`Select an option`);
             }
         } else {
-            if(!formUuid){
+            if(!formUuid && formCategory === ''){
                 setComboboxFromWalletLabel(`Select an option`);
             }
         }
@@ -373,7 +373,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                 setComboboxToWalletLabel(`Select an option`);
             }
         } else {
-            if(!formUuid){
+            if(!formUuid && formCategory === ''){
                 setComboboxToWalletLabel(`Select an option`);
             }
         }
@@ -718,6 +718,8 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
                 // Fetch Data
                 fetchPlannedPaymentData(uuid).then((data: PlannedItem) => {
+                    console.log(data);
+
                     setFormPlannedPaymentUuid(data.uuid);
                     setFormPlannedPaymentName(data.name);
 
@@ -1200,6 +1202,11 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                         </div>
                     </form>
                     <DialogFooter className={ ` p-6 pt-2` }>
+                        <Button variant={ `ghost` } onClick={() => {
+                            resetFormDialog();
+                        }}>
+                            <span>Reset</span>
+                        </Button>
                         <Button type='button' onClick={() => {
                             if(document.getElementById('record-dialogForms')){
                                 (document.getElementById('record-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))

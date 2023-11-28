@@ -31,7 +31,7 @@ export default function TemplateListRecord({ plannedPayment }: PropsWithChildren
                         <section key={r} onClick={($refs) => {
                             setOpenDropdown(true);
                         }}>
-                            <div className={ ` flex flex-col gap-2 border rounded-lg p-4 cursor-pointer` }>
+                            <div className={ ` flex flex-col gap-2 border border-green-500 rounded-lg p-4 cursor-pointer` }>
                                 {/* Date, amount and action */}
                                 <div className={ ` flex flex-row gap-6 justify-between` }>
                                     <span className={ ` font-medium w-full md:w-auto` }>

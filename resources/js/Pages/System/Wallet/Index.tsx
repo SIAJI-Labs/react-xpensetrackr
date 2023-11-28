@@ -142,10 +142,12 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
         }
 
         document.addEventListener('dialog.wallet.hidden', handleDialogRecord);
+        document.addEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogRecord);
         document.addEventListener('wallet.deleted-action', handleDialogRecord);
         // Remove the event listener when the component unmounts
         return () => {
             document.removeEventListener('dialog.wallet.hidden', handleDialogRecord);
+            document.removeEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogRecord);
             document.removeEventListener('wallet.deleted-action', handleDialogRecord);
         };
     });
@@ -169,19 +171,18 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                             </div>
                             <div className={ `flex items-center gap-2` }>
                                 {/* Refresh Button */}
-                                {(() => {
-                                    return <Button variant={ `outline` } onClick={() => {
-                                        // Cancel previous request
-                                        if(walletItemAbortController instanceof AbortController){
-                                            walletItemAbortController.abort();
-                                        }
-                                        
-                                        // Fetch Pending Count
-                                        fetchWalletData();
-                                    }}><i className={ `fa-solid fa-rotate-right` }></i></Button>;
-                                })()}
+                                <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
+                                    // Cancel previous request
+                                    if(walletItemAbortController instanceof AbortController){
+                                        walletItemAbortController.abort();
+                                    }
+                                    
+                                    // Fetch Pending Count
+                                    fetchWalletData();
+                                }}><i className={ `fa-solid fa-rotate-right` }></i></Button>
+                                
                                 {/* Add new Button */}
-                                <Button variant={ `outline` } onClick={() => {
+                                <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
                                     document.dispatchEvent(new CustomEvent('wallet.edit-action', {
                                             bubbles: true,
                                         }
@@ -195,16 +196,13 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                     <CardContent>
                         <div className={ `flex flex-col gap-6` }>
                             {/* Filter */}
-                            <div className={ ` flex flex-row gap-4` }>
+                            <div className={ ` flex flex-row gap-2` }>
                                 <Input placeholder={ `Search by Wallet name` } value={ filterKeyword } onChange={(event) => {
                                     setFilterKeyword(event.target.value);
                                 }}/>
 
-                                <Button disabled>
-                                    <i className={ `fa-solid fa-filter` }></i>
-                                </Button>
                                 <Link href={ route('sys.wallet.re-order.index') }>
-                                    <Button variant={ `outline` }>
+                                    <Button variant={ `outline` } className={ ` w-10 aspect-square` }>
                                         <i className={ `fa-solid fa-sort` }></i>
                                     </Button>
                                 </Link>

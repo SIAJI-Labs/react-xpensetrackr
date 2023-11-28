@@ -1,31 +1,33 @@
 import React, { useState, PropsWithChildren, ReactNode, useEffect, useMemo, FormEventHandler, useRef } from 'react';
 import { Head } from '@inertiajs/react';
 import { User } from '@/types';
+import axios from 'axios';
+
 // Script
-import '@/function';
 import '@/service-worker/service-worker'
+import '@/function';
 // Plugins
 import '@/../plugins/fontawesome/all.scss';
 
 // Partials
+import { ThemeProvider } from '@/Components/template/theme-provider';
 import Navbar from './Partials/Navbar';
 import RecordDialog from '@/Components/system/Record/RecordDialog';
 import RecordDeleteDialog from '@/Components/system/Record/RecordDeleteDialog';
 import PlannedPaymentDialog from '@/Components/system/PlannedPayment/PlannedPaymentDialog';
 import PlannedPaymentDeleteDialog from '@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog';
 import WalletDialog from '@/Components/system/Wallet/WalletDialog';
-import { useToast } from '@/Components/ui/use-toast';
-
-// Shadcn
-import { ThemeProvider } from '@/Components/template/theme-provider';
-import { Toaster } from "@/Components/ui/toaster";
-import { Button } from '@/Components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import WalletDeleteDialog from '@/Components/system/Wallet/WalletDeleteDialog';
+import WalletBalanceAdjustmentDialog from '@/Components/system/Wallet/WalletBalanceAdjustmentDialog';
 import CategoryDialog from '@/Components/system/Category/WalletDialog';
 import CategoryDeleteDialog from '@/Components/system/Category/WalletDeleteDialog';
-import axios from 'axios';
-import { ToastAction } from '@radix-ui/react-toast';
+
+// Shadcn
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
+import { useToast } from '@/Components/ui/use-toast';
+import { ToastAction } from '@/Components/ui/toast';
+import { Toaster } from "@/Components/ui/toaster";
+import { Button } from '@/Components/ui/button';
 
 export default function SystemLayout({ user, header, children, fabAction = null }: PropsWithChildren<{ user: User, header?: ReactNode, fabAction?: any[] | null }>) {
     const { toast } = useToast();
@@ -59,6 +61,10 @@ export default function SystemLayout({ user, header, children, fabAction = null 
     const handleOpenWalletDeleteDialog = (isOpen: boolean) => {
         setOpenWalletDeleteDialog(isOpen);
     };
+    const [openWalletBalanceAdjustmentDialog, setOpenWalletBalanceAdjustmentDialog] = useState<boolean>(false);
+    const handleOpenWalletBalanceAdjustmentDialog = (isOpen: boolean) => {
+        setOpenWalletBalanceAdjustmentDialog(isOpen);
+    };
 
     // Category Dialog
     const [openCategoryDialog, setOpenCategoryDialog] = useState<boolean>(false);
@@ -72,20 +78,19 @@ export default function SystemLayout({ user, header, children, fabAction = null 
 
     // Axios Global error handling
     axios.interceptors.response.use((response) => response, (error) => {
-        // whatever you want to do with the error
-        console.log(error);
-
-        let errors = error.response.data;
-        if('message' in errors && errors.message === 'Unauthenticated.'){
-            console.log('Unauthenticated');
-            toast({
-                title: "419: Token Missmatch",
-                description: "Please refresh the page",
-                action: <ToastAction altText="Refresh" onClick={() => {
-                    location.reload();
-                }}>Refresh</ToastAction>,
-                duration: undefined
-            });
+        if(error.response && error.response.data){
+            let errors = error.response.data;
+            if('message' in errors && errors.message === 'Unauthenticated.'){
+                // 401 due to 419 or other
+                toast({
+                    title: "419: Token Missmatch",
+                    description: "Please refresh the page",
+                    action: <ToastAction altText="Refresh" onClick={() => {
+                        location.reload();
+                    }}>Refresh</ToastAction>,
+                    duration: undefined
+                });
+            }
         }
 
         throw error;
@@ -105,7 +110,8 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#55799d"/>
             </Head>
 
-            <div className="min-h-screen bg-gray-100 dark:bg-background relative">
+            {/* <div className="min-h-screen bg-gray-50 dark:bg-background relative"> */}
+            <div className="min-h-screen bg-slate-50 dark:bg-background relative">
                 {/* Navbar */}
                 <Navbar
                     user={user}
@@ -133,7 +139,7 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                         if(fabAction.includes('plannedPayment')){
                             action.push(
                                 <DropdownMenuItem onClick={() => {
-                                    document.dispatchEvent(new CustomEvent('plannedPayment.edit-action', {
+                                    document.dispatchEvent(new CustomEvent('planned-payment.edit-action', {
                                             bubbles: true,
                                         }
                                     ));
@@ -209,6 +215,7 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 {/* Wallet Modal - Dialog */}
                 <WalletDialog openState={ openWalletDialog } setOpenState={ handleOpenWalletDialog }/>
                 <WalletDeleteDialog openState={ openWalletDeleteDialog } setOpenState={ handleOpenWalletDeleteDialog }/>
+                <WalletBalanceAdjustmentDialog openState={ openWalletBalanceAdjustmentDialog } setOpenState={ handleOpenWalletBalanceAdjustmentDialog }/>
 
                 {/* Category Modal - Dialog */}
                 <CategoryDialog openState={ openCategoryDialog } setOpenState={ handleOpenCategoryDialog }/>

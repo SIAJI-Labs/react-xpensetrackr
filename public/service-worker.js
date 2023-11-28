@@ -1,11 +1,11 @@
-var te = String.prototype.replace, ne = /%20/g, C = {
+var re = String.prototype.replace, te = /%20/g, C = {
   RFC1738: "RFC1738",
   RFC3986: "RFC3986"
 }, B = {
   default: C.RFC3986,
   formatters: {
     RFC1738: function(f) {
-      return te.call(f, ne, "+");
+      return re.call(f, te, "+");
     },
     RFC3986: function(f) {
       return String(f);
@@ -13,11 +13,11 @@ var te = String.prototype.replace, ne = /%20/g, C = {
   },
   RFC1738: C.RFC1738,
   RFC3986: C.RFC3986
-}, ie = B, A = Object.prototype.hasOwnProperty, O = Array.isArray, b = function() {
+}, ne = B, A = Object.prototype.hasOwnProperty, O = Array.isArray, b = function() {
   for (var f = [], e = 0; e < 256; ++e)
     f.push("%" + ((e < 16 ? "0" : "") + e.toString(16)).toUpperCase());
   return f;
-}(), ae = function(e) {
+}(), ie = function(e) {
   for (; e.length > 1; ) {
     var r = e.pop(), t = r.obj[r.prop];
     if (O(t)) {
@@ -26,11 +26,11 @@ var te = String.prototype.replace, ne = /%20/g, C = {
       r.obj[r.prop] = l;
     }
   }
-}, G = function(e, r) {
+}, W = function(e, r) {
   for (var t = r && r.plainObjects ? /* @__PURE__ */ Object.create(null) : {}, l = 0; l < e.length; ++l)
     typeof e[l] < "u" && (t[l] = e[l]);
   return t;
-}, oe = function f(e, r, t) {
+}, ae = function f(e, r, t) {
   if (!r)
     return e;
   if (typeof r != "object") {
@@ -45,7 +45,7 @@ var te = String.prototype.replace, ne = /%20/g, C = {
   if (!e || typeof e != "object")
     return [e].concat(r);
   var l = e;
-  return O(e) && !O(r) && (l = G(e, t)), O(e) && O(r) ? (r.forEach(function(n, i) {
+  return O(e) && !O(r) && (l = W(e, t)), O(e) && O(r) ? (r.forEach(function(n, i) {
     if (A.call(e, i)) {
       var a = e[i];
       a && typeof a == "object" && n && typeof n == "object" ? e[i] = f(a, n, t) : e.push(n);
@@ -55,11 +55,11 @@ var te = String.prototype.replace, ne = /%20/g, C = {
     var a = r[i];
     return A.call(n, i) ? n[i] = f(n[i], a, t) : n[i] = a, n;
   }, l);
-}, ue = function(e, r) {
+}, oe = function(e, r) {
   return Object.keys(r).reduce(function(t, l) {
     return t[l] = r[l], t;
   }, e);
-}, fe = function(f, e, r) {
+}, ue = function(f, e, r) {
   var t = f.replace(/\+/g, " ");
   if (r === "iso-8859-1")
     return t.replace(/%[0-9a-f]{2}/gi, unescape);
@@ -68,7 +68,7 @@ var te = String.prototype.replace, ne = /%20/g, C = {
   } catch {
     return t;
   }
-}, le = function(e, r, t, l, n) {
+}, fe = function(e, r, t, l, n) {
   if (e.length === 0)
     return e;
   var i = e;
@@ -78,7 +78,7 @@ var te = String.prototype.replace, ne = /%20/g, C = {
     });
   for (var a = "", o = 0; o < i.length; ++o) {
     var u = i.charCodeAt(o);
-    if (u === 45 || u === 46 || u === 95 || u === 126 || u >= 48 && u <= 57 || u >= 65 && u <= 90 || u >= 97 && u <= 122 || n === ie.RFC1738 && (u === 40 || u === 41)) {
+    if (u === 45 || u === 46 || u === 95 || u === 126 || u >= 48 && u <= 57 || u >= 65 && u <= 90 || u >= 97 && u <= 122 || n === ne.RFC1738 && (u === 40 || u === 41)) {
       a += i.charAt(o);
       continue;
     }
@@ -97,38 +97,38 @@ var te = String.prototype.replace, ne = /%20/g, C = {
     o += 1, u = 65536 + ((u & 1023) << 10 | i.charCodeAt(o) & 1023), a += b[240 | u >> 18] + b[128 | u >> 12 & 63] + b[128 | u >> 6 & 63] + b[128 | u & 63];
   }
   return a;
-}, ce = function(e) {
+}, le = function(e) {
   for (var r = [{ obj: { o: e }, prop: "o" }], t = [], l = 0; l < r.length; ++l)
     for (var n = r[l], i = n.obj[n.prop], a = Object.keys(i), o = 0; o < a.length; ++o) {
       var u = a[o], c = i[u];
       typeof c == "object" && c !== null && t.indexOf(c) === -1 && (r.push({ obj: i, prop: u }), t.push(c));
     }
-  return ae(r), e;
-}, se = function(e) {
+  return ie(r), e;
+}, ce = function(e) {
   return Object.prototype.toString.call(e) === "[object RegExp]";
-}, de = function(e) {
+}, se = function(e) {
   return !e || typeof e != "object" ? !1 : !!(e.constructor && e.constructor.isBuffer && e.constructor.isBuffer(e));
-}, pe = function(e, r) {
+}, de = function(e, r) {
   return [].concat(e, r);
-}, he = function(e, r) {
+}, pe = function(e, r) {
   if (O(e)) {
     for (var t = [], l = 0; l < e.length; l += 1)
       t.push(r(e[l]));
     return t;
   }
   return r(e);
-}, K = {
-  arrayToObject: G,
-  assign: ue,
-  combine: pe,
-  compact: ce,
-  decode: fe,
-  encode: le,
-  isBuffer: de,
-  isRegExp: se,
-  maybeMap: he,
-  merge: oe
-}, T = K, P = B, ye = Object.prototype.hasOwnProperty, M = {
+}, G = {
+  arrayToObject: W,
+  assign: oe,
+  combine: de,
+  compact: le,
+  decode: ue,
+  encode: fe,
+  isBuffer: se,
+  isRegExp: ce,
+  maybeMap: pe,
+  merge: ae
+}, T = G, P = B, he = Object.prototype.hasOwnProperty, M = {
   brackets: function(e) {
     return e + "[]";
   },
@@ -139,9 +139,9 @@ var te = String.prototype.replace, ne = /%20/g, C = {
   repeat: function(e) {
     return e;
   }
-}, j = Array.isArray, ve = String.prototype.split, me = Array.prototype.push, X = function(f, e) {
-  me.apply(f, j(e) ? e : [e]);
-}, ge = Date.prototype.toISOString, W = P.default, m = {
+}, j = Array.isArray, ye = String.prototype.split, ve = Array.prototype.push, K = function(f, e) {
+  ve.apply(f, j(e) ? e : [e]);
+}, me = Date.prototype.toISOString, Z = P.default, m = {
   addQueryPrefix: !1,
   allowDots: !1,
   charset: "utf-8",
@@ -150,18 +150,18 @@ var te = String.prototype.replace, ne = /%20/g, C = {
   encode: !0,
   encoder: T.encode,
   encodeValuesOnly: !1,
-  format: W,
-  formatter: P.formatters[W],
+  format: Z,
+  formatter: P.formatters[Z],
   // deprecated
   indices: !1,
   serializeDate: function(e) {
-    return ge.call(e);
+    return me.call(e);
   },
   skipNulls: !1,
   strictNullHandling: !1
-}, be = function(e) {
+}, ge = function(e) {
   return typeof e == "string" || typeof e == "number" || typeof e == "boolean" || typeof e == "symbol" || typeof e == "bigint";
-}, we = function f(e, r, t, l, n, i, a, o, u, c, p, h, y, s) {
+}, be = function f(e, r, t, l, n, i, a, o, u, c, p, h, y, s) {
   var d = e;
   if (typeof a == "function" ? d = a(r, d) : d instanceof Date ? d = c(d) : t === "comma" && j(d) && (d = T.maybeMap(d, function($) {
     return $ instanceof Date ? c($) : $;
@@ -170,13 +170,13 @@ var te = String.prototype.replace, ne = /%20/g, C = {
       return i && !y ? i(r, m.encoder, s, "key", p) : r;
     d = "";
   }
-  if (be(d) || T.isBuffer(d)) {
+  if (ge(d) || T.isBuffer(d)) {
     if (i) {
       var H = y ? r : i(r, m.encoder, s, "key", p);
       if (t === "comma" && y) {
-        for (var I = ve.call(String(d), ","), z = "", F = 0; F < I.length; ++F)
-          z += (F === 0 ? "" : ",") + h(i(I[F], m.encoder, s, "value", p));
-        return [h(H) + "=" + z];
+        for (var z = ye.call(String(d), ","), I = "", F = 0; F < z.length; ++F)
+          I += (F === 0 ? "" : ",") + h(i(z[F], m.encoder, s, "value", p));
+        return [h(H) + "=" + I];
       }
       return [h(H) + "=" + h(i(d, m.encoder, s, "value", p))];
     }
@@ -197,10 +197,10 @@ var te = String.prototype.replace, ne = /%20/g, C = {
   for (var R = 0; R < S.length; ++R) {
     var w = S[R], q = typeof w == "object" && typeof w.value < "u" ? w.value : d[w];
     if (!(n && q === null)) {
-      var re = j(d) ? typeof t == "function" ? t(r, w) : r : r + (u ? "." + w : "[" + w + "]");
-      X(N, f(
+      var ee = j(d) ? typeof t == "function" ? t(r, w) : r : r + (u ? "." + w : "[" + w + "]");
+      K(N, f(
         q,
-        re,
+        ee,
         t,
         l,
         n,
@@ -217,7 +217,7 @@ var te = String.prototype.replace, ne = /%20/g, C = {
     }
   }
   return N;
-}, Oe = function(e) {
+}, we = function(e) {
   if (!e)
     return m;
   if (e.encoder !== null && typeof e.encoder < "u" && typeof e.encoder != "function")
@@ -227,7 +227,7 @@ var te = String.prototype.replace, ne = /%20/g, C = {
     throw new TypeError("The charset option must be either utf-8, iso-8859-1, or undefined");
   var t = P.default;
   if (typeof e.format < "u") {
-    if (!ye.call(P.formatters, e.format))
+    if (!he.call(P.formatters, e.format))
       throw new TypeError("Unknown format option provided.");
     t = e.format;
   }
@@ -249,8 +249,8 @@ var te = String.prototype.replace, ne = /%20/g, C = {
     sort: typeof e.sort == "function" ? e.sort : null,
     strictNullHandling: typeof e.strictNullHandling == "boolean" ? e.strictNullHandling : m.strictNullHandling
   };
-}, je = function(f, e) {
-  var r = f, t = Oe(e), l, n;
+}, Oe = function(f, e) {
+  var r = f, t = we(e), l, n;
   typeof t.filter == "function" ? (n = t.filter, r = n("", r)) : j(t.filter) && (n = t.filter, l = n);
   var i = [];
   if (typeof r != "object" || r === null)
@@ -261,7 +261,7 @@ var te = String.prototype.replace, ne = /%20/g, C = {
   l || (l = Object.keys(r)), t.sort && l.sort(t.sort);
   for (var u = 0; u < l.length; ++u) {
     var c = l[u];
-    t.skipNulls && r[c] === null || X(i, we(
+    t.skipNulls && r[c] === null || K(i, be(
       r[c],
       c,
       o,
@@ -280,7 +280,7 @@ var te = String.prototype.replace, ne = /%20/g, C = {
   }
   var p = i.join(t.delimiter), h = t.addQueryPrefix === !0 ? "?" : "";
   return t.charsetSentinel && (t.charset === "iso-8859-1" ? h += "utf8=%26%2310003%3B&" : h += "utf8=%E2%9C%93&"), p.length > 0 ? h + p : "";
-}, x = K, k = Object.prototype.hasOwnProperty, xe = Array.isArray, v = {
+}, x = G, k = Object.prototype.hasOwnProperty, je = Array.isArray, v = {
   allowDots: !1,
   allowPrototypes: !1,
   arrayLimit: 20,
@@ -296,30 +296,30 @@ var te = String.prototype.replace, ne = /%20/g, C = {
   parseArrays: !0,
   plainObjects: !1,
   strictNullHandling: !1
-}, Se = function(f) {
+}, xe = function(f) {
   return f.replace(/&#(\d+);/g, function(e, r) {
     return String.fromCharCode(parseInt(r, 10));
   });
-}, Y = function(f, e) {
+}, X = function(f, e) {
   return f && typeof f == "string" && e.comma && f.indexOf(",") > -1 ? f.split(",") : f;
-}, Pe = "utf8=%26%2310003%3B", Ee = "utf8=%E2%9C%93", Fe = function(e, r) {
+}, Se = "utf8=%26%2310003%3B", Pe = "utf8=%E2%9C%93", Ee = function(e, r) {
   var t = {}, l = r.ignoreQueryPrefix ? e.replace(/^\?/, "") : e, n = r.parameterLimit === 1 / 0 ? void 0 : r.parameterLimit, i = l.split(r.delimiter, n), a = -1, o, u = r.charset;
   if (r.charsetSentinel)
     for (o = 0; o < i.length; ++o)
-      i[o].indexOf("utf8=") === 0 && (i[o] === Ee ? u = "utf-8" : i[o] === Pe && (u = "iso-8859-1"), a = o, o = i.length);
+      i[o].indexOf("utf8=") === 0 && (i[o] === Pe ? u = "utf-8" : i[o] === Se && (u = "iso-8859-1"), a = o, o = i.length);
   for (o = 0; o < i.length; ++o)
     if (o !== a) {
       var c = i[o], p = c.indexOf("]="), h = p === -1 ? c.indexOf("=") : p + 1, y, s;
       h === -1 ? (y = r.decoder(c, v.decoder, u, "key"), s = r.strictNullHandling ? null : "") : (y = r.decoder(c.slice(0, h), v.decoder, u, "key"), s = x.maybeMap(
-        Y(c.slice(h + 1), r),
+        X(c.slice(h + 1), r),
         function(d) {
           return r.decoder(d, v.decoder, u, "value");
         }
-      )), s && r.interpretNumericEntities && u === "iso-8859-1" && (s = Se(s)), c.indexOf("[]=") > -1 && (s = xe(s) ? [s] : s), k.call(t, y) ? t[y] = x.combine(t[y], s) : t[y] = s;
+      )), s && r.interpretNumericEntities && u === "iso-8859-1" && (s = xe(s)), c.indexOf("[]=") > -1 && (s = je(s) ? [s] : s), k.call(t, y) ? t[y] = x.combine(t[y], s) : t[y] = s;
     }
   return t;
-}, Ne = function(f, e, r, t) {
-  for (var l = t ? e : Y(e, r), n = f.length - 1; n >= 0; --n) {
+}, Fe = function(f, e, r, t) {
+  for (var l = t ? e : X(e, r), n = f.length - 1; n >= 0; --n) {
     var i, a = f[n];
     if (a === "[]" && r.parseArrays)
       i = [].concat(l);
@@ -331,7 +331,7 @@ var te = String.prototype.replace, ne = /%20/g, C = {
     l = i;
   }
   return l;
-}, Re = function(e, r, t, l) {
+}, Ne = function(e, r, t, l) {
   if (e) {
     var n = t.allowDots ? e.replace(/\.([^.[]+)/g, "[$1]") : e, i = /(\[[^[\]]*])/, a = /(\[[^[\]]*])/g, o = t.depth > 0 && i.exec(n), u = o ? n.slice(0, o.index) : n, c = [];
     if (u) {
@@ -344,9 +344,9 @@ var te = String.prototype.replace, ne = /%20/g, C = {
         return;
       c.push(o[1]);
     }
-    return o && c.push("[" + n.slice(o.index) + "]"), Ne(c, r, t, l);
+    return o && c.push("[" + n.slice(o.index) + "]"), Fe(c, r, t, l);
   }
-}, $e = function(e) {
+}, Re = function(e) {
   if (!e)
     return v;
   if (e.decoder !== null && e.decoder !== void 0 && typeof e.decoder != "function")
@@ -372,21 +372,21 @@ var te = String.prototype.replace, ne = /%20/g, C = {
     plainObjects: typeof e.plainObjects == "boolean" ? e.plainObjects : v.plainObjects,
     strictNullHandling: typeof e.strictNullHandling == "boolean" ? e.strictNullHandling : v.strictNullHandling
   };
-}, Ce = function(f, e) {
-  var r = $e(e);
+}, $e = function(f, e) {
+  var r = Re(e);
   if (f === "" || f === null || typeof f > "u")
     return r.plainObjects ? /* @__PURE__ */ Object.create(null) : {};
-  for (var t = typeof f == "string" ? Fe(f, r) : f, l = r.plainObjects ? /* @__PURE__ */ Object.create(null) : {}, n = Object.keys(t), i = 0; i < n.length; ++i) {
-    var a = n[i], o = Re(a, t[a], r, typeof f == "string");
+  for (var t = typeof f == "string" ? Ee(f, r) : f, l = r.plainObjects ? /* @__PURE__ */ Object.create(null) : {}, n = Object.keys(t), i = 0; i < n.length; ++i) {
+    var a = n[i], o = Ne(a, t[a], r, typeof f == "string");
     l = x.merge(l, o, r);
   }
   return x.compact(l);
-}, Ae = je, De = Ce, Te = B, J = {
-  formats: Te,
-  parse: De,
-  stringify: Ae
+}, Ce = Oe, Ae = $e, De = B, Y = {
+  formats: De,
+  parse: Ae,
+  stringify: Ce
 };
-function Z(f, e) {
+function V(f, e) {
   for (var r = 0; r < e.length; r++) {
     var t = e[r];
     t.enumerable = t.enumerable || !1, t.configurable = !0, "value" in t && (t.writable = !0), Object.defineProperty(f, typeof (l = function(n, i) {
@@ -404,8 +404,8 @@ function Z(f, e) {
   }
   var l;
 }
-function ee(f, e, r) {
-  return e && Z(f.prototype, e), r && Z(f, r), Object.defineProperty(f, "prototype", { writable: !1 }), f;
+function J(f, e, r) {
+  return e && V(f.prototype, e), r && V(f, r), Object.defineProperty(f, "prototype", { writable: !1 }), f;
 }
 function g() {
   return g = Object.assign ? Object.assign.bind() : function(f) {
@@ -481,7 +481,7 @@ var D = /* @__PURE__ */ function() {
     if (o) {
       for (var u in o.groups)
         o.groups[u] = typeof o.groups[u] == "string" ? decodeURIComponent(o.groups[u]) : o.groups[u];
-      return { params: o.groups, query: J.parse(a) };
+      return { params: o.groups, query: Y.parse(a) };
     }
     return !1;
   }, e.compile = function(r) {
@@ -494,7 +494,7 @@ var D = /* @__PURE__ */ function() {
         throw new Error("Ziggy error: '" + n + "' parameter does not match required format '" + t.wheres[n] + "' for route '" + t.name + "'.");
       return encodeURI((a = r[n]) != null ? a : "").replace(/%7C/g, "|").replace(/%25/g, "%").replace(/\$/g, "%24");
     }).replace(this.origin + "//", this.origin + "/").replace(/\/+$/, "") : this.template;
-  }, ee(f, [{ key: "template", get: function() {
+  }, J(f, [{ key: "template", get: function() {
     var r = (this.origin + "/" + this.definition.uri).replace(/\/+$/, "");
     return r === "" ? "/" : r;
   } }, { key: "origin", get: function() {
@@ -505,7 +505,7 @@ var D = /* @__PURE__ */ function() {
       return { name: l.replace(/{|\??}/g, ""), required: !/\?}$/.test(l) };
     })) != null ? r : [];
   } }]), f;
-}(), ke = /* @__PURE__ */ function(f) {
+}(), Te = /* @__PURE__ */ function(f) {
   var e, r;
   function t(n, i, a, o) {
     var u;
@@ -529,7 +529,7 @@ var D = /* @__PURE__ */ function() {
       var u;
       return g({}, a, ((u = {})[o] = n.u[o], u));
     }, {});
-    return this.i.compile(this.u) + J.stringify(g({}, i, this.u._query), { addQueryPrefix: !0, arrayFormat: "indices", encodeValuesOnly: !0, skipNulls: !0, encoder: function(a, o) {
+    return this.i.compile(this.u) + Y.stringify(g({}, i, this.u._query), { addQueryPrefix: !0, arrayFormat: "indices", encodeValuesOnly: !0, skipNulls: !0, encoder: function(a, o) {
       return typeof a == "boolean" ? Number(a) : o(a);
     } });
   }, l.l = function(n) {
@@ -607,24 +607,24 @@ var D = /* @__PURE__ */ function() {
     return this.toString();
   }, l.check = function(n) {
     return this.has(n);
-  }, ee(t, [{ key: "params", get: function() {
+  }, J(t, [{ key: "params", get: function() {
     var n = this.l();
     return g({}, n.params, n.query);
   } }]), t;
 }(/* @__PURE__ */ L(String));
-function Qe(f, e, r, t) {
-  var l = new ke(f, e, r, t);
+function ke(f, e, r, t) {
+  var l = new Te(f, e, r, t);
   return f ? l.toString() : l;
 }
-const V = "https://laravel-shadcn.test";
-Qe("public.notification.subscribe");
+const Qe = "https://laravel-shadcn.test";
+ke("public.notification.subscribe");
 _e();
 function _e() {
-  if (console.log("Init SW"), console.log(V), console.log("serviceWorker" in navigator), !1 in navigator) {
+  if (!1 in navigator) {
     console.warn("Service worker not supported");
     return;
   }
-  navigator.serviceWorker.register(`${V}/sw.js`).then((f) => {
+  navigator.serviceWorker.register(`${Qe}/sw.js`).then((f) => {
     f.update();
   }).catch((f) => {
     console.warn(f);

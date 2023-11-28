@@ -165,6 +165,9 @@ class WalletController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
+        // Append temporary column
+        $data->current_balance = $data->getBalance();
+
         return $this->formatedJsonResponse(200, 'Data Fetched', [
             'data' => $data
         ]);

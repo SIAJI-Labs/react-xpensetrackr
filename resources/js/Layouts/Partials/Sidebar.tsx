@@ -170,8 +170,8 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                 </SheetTrigger>
                 <SheetContent side={ `left` } className={ ` w-screen md:w-72 p-0 dark:!text-white` }>
                     <ScrollArea className={ ` h-screen p-0` }>
-                        <div className={ ` p-6` }>
-                            <SheetHeader className={ ` relative border-b pb-6 pointer-events-none select-none` }>
+                        <div className={ ` p-6 sticky top-0` }>
+                            <SheetHeader className={ ` relative after:absolute after:-top-6 after:-left-6 after:w-[calc(100%+3rem)] after:h-32 after:bg-gradient-to-b after:from-white after:from-background after:via-white after:via-background after:to-transparent after:z-[-1] z-10 border-b pb-6 pointer-events-none select-none` }>
                                 <SheetTitle>
                                     <ApplicationLogo fontSizeMain={ ` text-2xl` } className={ ` !justify-start` }/>
                                 </SheetTitle>

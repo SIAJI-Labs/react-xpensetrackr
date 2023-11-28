@@ -15,7 +15,14 @@ class RecordController extends Controller
      */
     public function index(Request $request)
     {
-        return Inertia::render('System/Record/Index');
+        $type = 'complete';
+        if($request->has('type') && in_array($request->type, ['complete', 'pending'])){
+            $type = $request->type;
+        }
+
+        return Inertia::render('System/Record/Index', [
+            'type' => $type
+        ]);
     }
 
     /**

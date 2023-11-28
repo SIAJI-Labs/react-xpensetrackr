@@ -44,7 +44,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
     // Keep Dialog Open?
     const [keepOpenDialog, setKeepOpenCategoryDialog] = useState<boolean>(false);
 
-    // Combobox - From Category
+    // Combobox - Parent Category
     let comboboxParentTimeout: any;
     const [openCategoryParent, setOpenCategoryParent] = useState<boolean>(false);
     const [comboboxParentLabel, setComboboxParentLabel] = useState<string>("Select an option");
@@ -149,7 +149,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
         }
     }, [formParent]);
 
-    // Planned Payment Dialog - Forms
+    // Category Dialog - Forms
     const resetCategoryDialog = () => {
         setFormUuid('');
         setFormParent('');
@@ -353,15 +353,15 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
     return (
         <section id={ `category-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
-                <DialogContent className=" h-full md:h-auto lg:min-w-[800px] max-md:!max-h-[85vh] p-0" data-type="record-dialog">
+                <DialogContent className=" h-full md:h-auto lg:min-w-[400px] max-md:!max-h-[85vh] p-0" data-type="record-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Category</DialogTitle>
                     </DialogHeader>
 
                     <form onSubmit={handleCategoryDialogSubmit} id={ `category-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
-                        {/* From Category */}
+                        {/* Parent Category */}
                         <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `record_dialog-parent` }>
-                            <label className={ ` form--label` }>From</label>
+                            <label className={ ` form--label` }>Parent</label>
                             <div>
                                 <Popover open={openCategoryParent} onOpenChange={setOpenCategoryParent}>
                                     <PopoverTrigger asChild>

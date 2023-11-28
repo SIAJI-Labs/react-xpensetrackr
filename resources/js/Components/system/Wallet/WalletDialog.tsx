@@ -45,7 +45,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
     // Keep Dialog Open?
     const [keepOpenDialog, setKeepOpenWalletDialog] = useState<boolean>(false);
 
-    // Combobox - From Wallet
+    // Combobox - Parent Wallet
     let comboboxParentTimeout: any;
     const [openWalletParent, setOpenWalletParent] = useState<boolean>(false);
     const [comboboxParentLabel, setComboboxParentLabel] = useState<string>("Select an option");
@@ -357,15 +357,15 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
     return (
         <section id={ `wallet-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
-                <DialogContent className=" h-full md:h-auto lg:min-w-[800px] max-md:!max-h-[85vh] p-0" data-type="record-dialog">
+                <DialogContent className=" h-full md:h-auto lg:min-w-[400px] max-md:!max-h-[85vh] p-0" data-type="record-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Wallet</DialogTitle>
                     </DialogHeader>
 
                     <form onSubmit={handleWalletDialogSubmit} id={ `wallet-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
-                        {/* From Wallet */}
+                        {/* Parent Wallet */}
                         <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `record_dialog-parent` }>
-                            <label className={ ` form--label` }>From</label>
+                            <label className={ ` form--label` }>Parent</label>
                             <div>
                                 <Popover open={openWalletParent} onOpenChange={setOpenWalletParent}>
                                     <PopoverTrigger asChild>

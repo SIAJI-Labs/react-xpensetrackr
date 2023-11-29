@@ -92,10 +92,10 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
         }, {
             name: 'Cash Flow',
             icon: 'fa-solid fa-money-bill-transfer',
-            route: null,
+            route: route('sys.report.cash-flow.index'),
             sub: [],
-            active: [],
-            is_disabled: true,
+            active: ['sys.report.cash-flow.index'],
+            is_disabled: false,
             is_header: false
         }, 
 

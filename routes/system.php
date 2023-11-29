@@ -39,6 +39,15 @@ Route::group([
     Route::get('record/{uuid}', [\App\Http\Controllers\System\RecordController::class, 'show'])->name('record.show');
     Route::get('record', [\App\Http\Controllers\System\RecordController::class, 'index'])->name('record.index');
 
+    // Report
+    Route::group([
+        'prefix' => 'report',
+        'as' => 'report.'
+    ], function(){
+        // Cashflow
+        Route::get('cash-flow', [\App\Http\Controllers\System\Report\CashFlowController::class, 'index'])->name('cash-flow.index');
+    });
+
     // Category Re-Order
     Route::get('category/re-order', [\App\Http\Controllers\System\CategoryReOrderController::class, 'index'])->name('category.re-order.index');
     // Category

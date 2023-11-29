@@ -26,7 +26,7 @@ export function formatRupiah(angka: any, short:boolean = false, prefix:string = 
         if(angka < 0){
             angka *= -1;
         }
-        // rupiah = shortNumber(angka);
+        rupiah = shortenNumber(angka);
     } else {
         angka = Math.round(angka * 100) / 100;
 
@@ -45,6 +45,23 @@ export function formatRupiah(angka: any, short:boolean = false, prefix:string = 
     }
     
     return `${prefix == undefined ? (`${negative ? '(-' : ''}${rupiah}${negative ? ')' : ''}`) : (`${prefix} ${negative ? '(-' : ''}${rupiah}${negative ? ')' : ''}`)}`;
+}
+
+/**
+ * 
+ */
+export function shortenNumber(number: any) {
+    const suffixes = ["", "k", "M", "B", "T", "Q"];
+
+    let suffixIndex = 0;
+    while (number >= 1000 && suffixIndex < suffixes.length - 1) {
+        number /= 1000;
+        suffixIndex++;
+    }
+
+    const roundedNumber = Math.round(number * 10) / 10; // Round to one decimal place
+
+    return roundedNumber.toString() + suffixes[suffixIndex];
 }
 
 /**

@@ -71,6 +71,14 @@ class PlannedPayment extends Model
      * 
      * @return model
      */
+    public function plannedPaymentTags()
+    {
+        return $this->belongsToMany(\App\Models\Tags::class, 'planned_payment_tags', 'planned_payment_id', 'tags_id')
+            ->withPivot('tags_id')
+            ->using(\App\Models\PlannedPaymentTags::class)
+            ->orderBy('name', 'asc')
+            ->withTimestamps();
+    }
     public function plannedPaymentRecord()
     {
         return $this->hasMany(\App\Models\PlannedPaymentRecord::class, 'planned_payment_id')

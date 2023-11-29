@@ -20,7 +20,7 @@ class PlannedPaymentController extends Controller
         $user = $request->user();
 
         $data = \App\Models\PlannedPayment::query()
-            ->with('category.parent', 'fromWallet.parent', 'toWallet.parent')
+            ->with('category.parent', 'fromWallet.parent', 'toWallet.parent', 'plannedPaymentTags')
             ->where('user_id', $user->id);
 
         // Apply Filter
@@ -109,7 +109,8 @@ class PlannedPaymentController extends Controller
             'frequency' => ['nullable', 'required_if:occurence,recurring', 'numeric', 'min:1'],
             'frequency_type' => ['nullable', 'required_if:occurence,recurring', 'string', 'in:daily,weekly,monthly,yearly'],
             'date' => ['required', 'string'],
-            'notes' => ['nullable', 'string']
+            'notes' => ['nullable', 'string'],
+            'tags.*' => ['nullable', 'string', 'exists:'.(new \App\Models\Tags())->getTable().',uuid']
         ]);
 
         // Validate date start must be greater or equal with today
@@ -184,6 +185,17 @@ class PlannedPaymentController extends Controller
             $data->until_number = $request->occurence === 'recurring' ? null : 1;
             $data->note = $request->notes;
             $data->save();
+
+            // Handle tags
+            $tags = [];
+            if($request->has('tags') && is_array($request->tags)){
+                $tags = \App\Models\Tags::where('user_id', $user->id)
+                    ->whereIn(DB::raw('BINARY `uuid`'), $request->tags)
+                    ->pluck('id')
+                    ->toArray();
+            }
+            // Planned Payment Tags
+            $data->plannedPaymentTags()->sync($tags);
         });
 
         return $this->formatedJsonResponse(200, 'Data Stored', []);
@@ -204,7 +216,7 @@ class PlannedPaymentController extends Controller
 
         $data = \App\Models\PlannedPayment::query()
             ->withTrashed()
-            ->with('category.parent', 'fromWallet.parent', 'toWallet.parent')
+            ->with('category.parent', 'fromWallet.parent', 'toWallet.parent', 'plannedPaymentTags')
             ->where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
@@ -248,7 +260,8 @@ class PlannedPaymentController extends Controller
             'frequency' => ['required', 'numeric', 'min:1'],
             'frequency_type' => ['required', 'string', 'in:daily,weekly,monthly,yearly'],
             'date' => ['required', 'string'],
-            'notes' => ['nullable', 'string']
+            'notes' => ['nullable', 'string'],
+            'tags.*' => ['nullable', 'string', 'exists:'.(new \App\Models\Tags())->getTable().',uuid']
         ]);
 
         $user = $request->user();
@@ -325,6 +338,17 @@ class PlannedPaymentController extends Controller
             $data->until_number = $request->occurence === 'recurring' ? null : 1;
             $data->note = $request->notes;
             $data->save();
+
+            // Handle tags
+            $tags = [];
+            if($request->has('tags') && is_array($request->tags)){
+                $tags = \App\Models\Tags::where('user_id', $user->id)
+                    ->whereIn(DB::raw('BINARY `uuid`'), $request->tags)
+                    ->pluck('id')
+                    ->toArray();
+            }
+            // Planned Payment Tags
+            $data->plannedPaymentTags()->sync($tags);
         });
 
         return $this->formatedJsonResponse(200, 'Data Updated', []);

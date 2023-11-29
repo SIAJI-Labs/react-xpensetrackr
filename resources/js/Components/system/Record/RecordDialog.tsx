@@ -380,7 +380,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         }
     }, [formToWallet]);
 
-    // Combobox - To Wallet
+    // Combobox - Tags
     let comboboxTagsTimeout: any;
     const [comboboxTagsOpenState, setComboboxTagsOpenState] = useState<boolean>(false);
     const [comboboxTagsLabel, setComboboxTagsLabel] = useState<string[] | any[]>([]);
@@ -750,7 +750,6 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
                     // Handle tags
                     if(data.record_tags && data.record_tags.length > 0){
-                        console.log(data.record_tags);
                         let tagsUuid: any[] = [];
                         let tagsName: any[] = [];
                         (data.record_tags).forEach((value, index) => {
@@ -857,6 +856,18 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                     }
                     if(data.to_wallet){
                         setComboboxToWalletLabel(`${data.to_wallet.parent ? `${data.to_wallet.parent.name} - ` : ''}${data.to_wallet.name}`);
+                    }
+
+                    // Handle tags
+                    if(data.planned_payment_tags && data.planned_payment_tags.length > 0){
+                        let tagsUuid: any[] = [];
+                        let tagsName: any[] = [];
+                        (data.planned_payment_tags).forEach((value, index) => {
+                            tagsUuid.push(value.uuid);
+                            tagsName.push(value.name);
+                        });
+                        setFormTags(tagsUuid);
+                        setComboboxTagsLabel(tagsName);
                     }
 
                     // Open record-dialog
@@ -1293,15 +1304,15 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                 <div className={ ` form--group ${errorFormDialog?.tags ? ` is--invalid` : ''}` } id={ `record_dialog-tags` }>
                                     <label className={ ` form--label` }>Tags</label>
                                     <div>
-                                        <div className={ ` flex flex-row gap-4 flex-wrap` }>
+                                        <div className={ ` flex flex-row gap-2 flex-wrap` }>
                                             <Popover open={comboboxTagsOpenState} onOpenChange={setComboboxTagsOpenState}>
                                                 <PopoverTrigger asChild>
                                                     <Button
                                                         variant="outline"
                                                         role="combobox"
-                                                        className={ ` flex flex-row gap-1` }
+                                                        className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
                                                     >
-                                                        <i className={ `fa-solid fa-plus text-xs` }></i>
+                                                        <i className={ `fa-solid fa-plus` }></i>
                                                         <span>Tags</span>
                                                     </Button>
                                                 </PopoverTrigger>
@@ -1359,7 +1370,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                         let name = comboboxTagsLabel[index];
                                                         if(name){
                                                             selectedTags.push(
-                                                                <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center` } key={ `selected_tags-${value}` } onClick={() => {
+                                                                <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_tags-${value}` } onClick={() => {
                                                                     let uuidIndex = formTags.indexOf(value);
                                                                     if (uuidIndex !== -1) {
                                                                         const updatedFormTags = [...formTags];

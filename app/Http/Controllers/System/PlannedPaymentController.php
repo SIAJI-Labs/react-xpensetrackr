@@ -32,7 +32,7 @@ class PlannedPaymentController extends Controller
     {
         $user = $request->user();
         $data = \App\Models\PlannedPayment::withTrashed()
-            ->with('fromWallet.parent', 'toWallet.parent', 'category.parent')
+            ->with('fromWallet.parent', 'toWallet.parent', 'category.parent', 'plannedPaymentTags')
             ->where(DB::raw('BINARY `uuid`'), $id)
             ->where('user_id', $user->id)
             ->firstOrFail();

@@ -1,5 +1,5 @@
 import { FormEventHandler, useEffect, useMemo, useState } from "react";
-import { CategoryItem, PlannedItem, WalletItem } from "@/types";
+import { CategoryItem, PlannedItem, TagsItem, WalletItem } from "@/types";
 import { useIsFirstRender } from "@/lib/utils";
 import axios, { AxiosError } from "axios";
 import { format } from "date-fns";
@@ -58,6 +58,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
     const [formFrequencyType, setFormFrequencyType] = useState<string>('');
     const [formDate, setFormDate] = useState<Date>();
     const [formNotes, setFormNotes] = useState<string>('');
+    const [formTags, setFormTags] = useState<string[] | any[]>([]);
     // Keep Dialog Open?
     const [keepOpenDialog, setKeepOpenDialog] = useState<boolean>(false);
 
@@ -377,6 +378,91 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
         }
     }, [formToWallet]);
 
+    // Combobox - Tags
+    let comboboxTagsTimeout: any;
+    const [comboboxTagsOpenState, setComboboxTagsOpenState] = useState<boolean>(false);
+    const [comboboxTagsLabel, setComboboxTagsLabel] = useState<string[] | any[]>([]);
+    const [comboboxTagsList, setComboboxTagsList] = useState<string[] | any>([]);
+    const [comboboxTagsInput, setComboboxTagsInput] = useState<string>("");
+    const [comboboxTagsLoadState, setComboboxTagsLoadState] = useState<boolean>(false);
+    const [comboboxTagsAbort, setComboboxTagsAbort] = useState<AbortController | null>(null);
+    const fetchTagsList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+        setComboboxTagsLoadState(true);
+
+        try {
+            // Build parameter
+            const query = [];
+            const obj = {
+                keyword: keyword
+            }
+            for (const key in obj) {
+                query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
+            }
+
+            try {
+                const response = await axios.get(`${route('api.tags.v1.list')}?${query.join('&')}`, {
+                    cancelToken: new axios.CancelToken(function executor(c) {
+                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                        abortController.abort = c;
+                    })
+                });
+            
+                // Use response.data instead of req.json() to get the JSON data
+                let responseJson = response.data;
+                return responseJson.result.data;
+            } catch (error) {
+                if (axios.isCancel(error)) {
+                    // Handle the cancellation here if needed
+                    console.log('Request was canceled', error);
+                } else {
+                    // Handle other errors
+                    console.error('Error:', error);
+                }
+            }
+        } catch (error) {
+            // Handle errors, if needed
+            console.error('Request error:', error);
+            throw error;
+        }
+
+        return [];
+    }
+    useEffect(() => {
+        clearTimeout(comboboxTagsTimeout);
+        setComboboxTagsList([]);
+
+        if(comboboxTagsOpenState){
+            if (comboboxTagsAbort) {
+                // If there is an ongoing request, abort it before making a new one.
+                comboboxTagsAbort.abort();
+            }
+
+            // Create a new AbortController for the new request.
+            const newAbortController = new AbortController();
+            setComboboxTagsAbort(newAbortController);
+
+            comboboxTagsTimeout = setTimeout(() => {
+                fetchTagsList(comboboxTagsInput, newAbortController)
+                    .then((data: string[] = []) => {
+                        setComboboxTagsLoadState(false);
+                        if(data){
+                            setComboboxTagsList(data);
+                        }
+                    })
+                    .catch((error) => {
+                        // Handle errors, if needed
+                    });
+            }, 500);
+
+            return () => {
+                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
+                if (comboboxTagsAbort) {
+                    comboboxTagsAbort.abort();
+                }
+            };
+        }
+    }, [comboboxTagsInput, comboboxTagsOpenState]);
+
     // Dialog Action
     useEffect(() => {
         if(openState){
@@ -406,6 +492,9 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
         setFormFrequencyType('');
         setFormDate(undefined);
         setFormNotes('');
+        setFormTags([]);
+
+        setComboboxTagsLabel([]);
 
         setErrorFormDialog({});
     }
@@ -451,6 +540,11 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
         formData.append('frequency_type', String(formFrequencyType ?? ''));
         formData.append('notes', String(formNotes ?? ''));
         formData.append('timezone', moment.tz.guess());
+        if(formTags.length > 0){
+            formTags.forEach((value, index) => {
+                formData.append('tags[]', value);
+            });
+        }
 
         // Adjust route target
         let actionRoute = route('api.planned-payment.v1.store');
@@ -613,6 +707,18 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                     }
                     if(data.to_wallet){
                         setComboboxToWalletLabel(`${data.to_wallet.parent ? `${data.to_wallet.parent.name} - ` : ''}${data.to_wallet.name}`);
+                    }
+
+                    // Handle tags
+                    if(data.planned_payment_tags && data.planned_payment_tags.length > 0){
+                        let tagsUuid: any[] = [];
+                        let tagsName: any[] = [];
+                        (data.planned_payment_tags).forEach((value, index) => {
+                            tagsUuid.push(value.uuid);
+                            tagsName.push(value.name);
+                        });
+                        setFormTags(tagsUuid);
+                        setComboboxTagsLabel(tagsName);
                     }
                     
                     // Open record-dialog
@@ -1038,6 +1144,111 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                     }}/>
                                 
                                     <ErrorMessage message={ errorFormDialog?.notes }/>
+                                </div>
+
+                                {/* Tags */}
+                                <div className={ ` form--group ${errorFormDialog?.tags ? ` is--invalid` : ''}` } id={ `plannedPayment_dialog-tags` }>
+                                    <label className={ ` form--label` }>Tags</label>
+                                    <div>
+                                        <div className={ ` flex flex-row gap-2 flex-wrap` }>
+                                            <Popover open={comboboxTagsOpenState} onOpenChange={setComboboxTagsOpenState}>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        role="combobox"
+                                                        className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
+                                                    >
+                                                        <i className={ `fa-solid fa-plus` }></i>
+                                                        <span>Tags</span>
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                                    <Command shouldFilter={ false }>
+                                                        <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
+                                                        <ScrollArea className="p-0">
+                                                            <div className={ `max-h-[10rem]` }>
+                                                                <CommandEmpty>{comboboxTagsLoadState ? `Loading...` : `No tags found.`}</CommandEmpty>
+                                                                <CommandGroup>
+                                                                    {comboboxTagsList.map((options: TagsItem) => (
+                                                                        <CommandItem
+                                                                            value={options?.uuid}
+                                                                            key={options?.uuid}
+                                                                            onSelect={(currentValue) => {
+                                                                                if(formTags.includes(currentValue)){
+                                                                                    // Already exists, remove from array
+                                                                                    let uuidIndex = formTags.indexOf(currentValue);
+                                                                                    if (uuidIndex !== -1) {
+                                                                                        const updatedFormTags = [...formTags];
+                                                                                        updatedFormTags.splice(uuidIndex, 1);
+                                                                                        setFormTags(updatedFormTags);
+                                                                                    }
+
+                                                                                    let nameIndex = comboboxTagsLabel.indexOf(options?.name);
+                                                                                    if (nameIndex !== -1) {
+                                                                                        const updatedLabelTags = [...comboboxTagsLabel];
+                                                                                        updatedLabelTags.splice(nameIndex, 1);
+                                                                                        setComboboxTagsLabel(updatedLabelTags);
+                                                                                    }
+                                                                                } else {
+                                                                                    // Not yet exists, add to array
+                                                                                    setFormTags([...formTags, currentValue])
+                                                                                    setComboboxTagsLabel([...comboboxTagsLabel, options?.name]);
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <Check
+                                                                                className={ `mr-2 h-4 w-4 ${formTags.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
+                                                                            />
+                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.name}` }</span>
+                                                                        </CommandItem>
+                                                                    ))}
+                                                                </CommandGroup>
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </Command>
+                                                </PopoverContent>
+                                            </Popover>
+
+                                            {(() => {
+                                                let selectedTags: any = [];
+                                                if(formTags.length > 0){
+                                                    formTags.forEach((value, index) => {
+                                                        let name = comboboxTagsLabel[index];
+                                                        if(name){
+                                                            selectedTags.push(
+                                                                <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_tags-${value}` } onClick={() => {
+                                                                    let uuidIndex = formTags.indexOf(value);
+                                                                    if (uuidIndex !== -1) {
+                                                                        const updatedFormTags = [...formTags];
+                                                                        updatedFormTags.splice(uuidIndex, 1);
+                                                                        setFormTags(updatedFormTags);
+                                                                    }
+
+                                                                    let nameIndex = comboboxTagsLabel.indexOf(name);
+                                                                    if (nameIndex !== -1) {
+                                                                        const updatedLabelTags = [...comboboxTagsLabel];
+                                                                        updatedLabelTags.splice(nameIndex, 1);
+                                                                        setComboboxTagsLabel(updatedLabelTags);
+                                                                    }
+                                                                }}>
+                                                                    <span>{ name }</span>
+                                                                    <i className={ `fa-solid fa-xmark` }></i>
+                                                                </Button>
+                                                            );
+                                                        }
+                                                    });
+
+                                                    if(selectedTags.length > 0){
+                                                        return selectedTags;
+                                                    }
+                                                }
+
+                                                return <></>;
+                                            })()}
+                                        </div>
+
+                                        <ErrorMessage message={ errorFormDialog?.tags }/>
+                                    </div>
                                 </div>
 
                                 {/* Keep open Planned Payment dialog? */}

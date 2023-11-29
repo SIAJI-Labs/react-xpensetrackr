@@ -368,6 +368,32 @@ export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>)
                                 <span className={ `font-semibold` } data-review="final_amount">{ formatRupiah(data.amount + data.extra_amount) }</span>
                             </div>
                         </div>
+
+                        {(() => {
+                            if(data.planned_payment_tags && data.planned_payment_tags.length > 0){
+                                let tags: any[] = [];
+                                (data.planned_payment_tags).forEach((value, index) => {
+                                    tags.push(
+                                        <Link href={ route('sys.tags.show', value.uuid) } key={ `tags_${value.uuid}` }>
+                                            <Badge>{ value.name }</Badge>
+                                        </Link>
+                                    );
+                                });
+
+                                return (
+                                    <div className={ ` flex flex-row gap-2 flex-wrap` }>
+                                        <span className={ ` flex flex-row gap-1 items-center text-sm` }>
+                                            <i className={ ` fa-solid fa-hashtag` }></i>
+                                            <span>Tags:</span>
+                                        </span>
+
+                                        { tags }
+                                    </div>
+                                );
+                            }
+
+                            return <></>;
+                        })()}
                     </CardContent>
                 </Card>
                 

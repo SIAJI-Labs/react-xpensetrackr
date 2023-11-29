@@ -86,6 +86,7 @@ export interface PlannedItem {
     repeat_until: string,
     until_number: number,
     note: string,
+    planned_payment_tags?: TagsItem[],
     deleted_at?: string,
 }
 export interface PlannedRecord {

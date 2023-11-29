@@ -75,6 +75,17 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
+                                        {/* Refresh Action */}
+                                        <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
+                                            router.reload();
+                                            
+                                            setTimeout(() => {
+                                                setOpenDropdown(false);
+                                            }, 100);
+                                        }}>
+                                            <span className={ `` }>Refresh</span>
+                                        </DropdownMenuItem>
+                                        
                                         {/* Edit Action */}
                                         {(() => {
                                             // Check if record dialog form is exists

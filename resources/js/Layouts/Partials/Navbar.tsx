@@ -92,6 +92,11 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                     { name: 'Wallet Group', icon: '', link: null },
                                     { name: 'Wallet Share', icon: '', link: null },
                                 ]
+                            }, { // Report
+                                name: 'Report',
+                                items: [
+                                    { name: 'Cash Flow', icon: '', link: route('sys.report.cash-flow.index') },
+                                ]
                             }, { // Misc Group
                                 name: 'Miscellaneous',
                                 items: [

@@ -6,7 +6,7 @@ export default function TemplateNoData({hasBorder = true}: {hasBorder?: boolean}
 
     return (
         <section key={r}>
-            <div className={ ` ${hasBorder ? 'border' : ''} p-4 rounded` }>
+            <div className={ ` ${hasBorder ? 'border' : ''} p-4 rounded flex flex-row items-center justify-center` }>
                 <span>No data available</span>
             </div>
         </section>

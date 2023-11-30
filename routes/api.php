@@ -259,4 +259,24 @@ Route::group([
             Route::put('{uuid}', [\App\Http\Controllers\Api\v1\ProfileController::class, 'update'])->name('update');
         });
     });
+
+    // Report
+    Route::group([
+        'prefix' => 'report',
+        'as' => 'report.'
+    ], function(){
+        // Cash Flow
+        Route::group([
+            'prefix' => 'cash-flow',
+            'as' => 'cash-flow.'
+        ], function(){
+            // v1
+            Route::group([
+                'prefix' => 'v1',
+                'as' => 'v1.'
+            ], function(){
+                Route::get('list', [\App\Http\Controllers\Api\v1\Report\CashFlowController::class, 'index'])->name('list');
+            });
+        });
+    });
 });

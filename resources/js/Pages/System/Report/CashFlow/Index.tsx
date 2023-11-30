@@ -17,6 +17,7 @@ import axios from "axios";
 import { useIsFirstRender } from "@/lib/utils";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import { Separator } from "@/Components/ui/separator";
+import { Skeleton } from "@/Components/ui/skeleton";
 
 // Props
 type CashFlowIndexProps = {
@@ -24,6 +25,32 @@ type CashFlowIndexProps = {
 
 export default function Index({ auth }: PageProps<CashFlowIndexProps>) {
     const isFirstRender = useIsFirstRender();
+	
+	const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [skeletonCount, setSkeletonCount] = useState<number>(5);
+	let skeletonTemplate = (
+		<div className={ `  border rounded p-4 flex flex-col gap-2` }>
+			<div className={ ` flex flex-row justify-between items-center` }>
+				<Skeleton className={ ` h-4 w-10` }/>
+
+				<div className={ `  flex flex-row whitespace-nowrap items-center gap-2` }>
+					<Skeleton className={ ` h-4 w-24` }/>
+					<Skeleton className={ ` h-4 w-4` }/>
+				</div>
+			</div>
+			<Skeleton className={ `h-1 w-full rounded` }/>
+			<div className={ ` flex flex-row justify-between items-center` }>
+				<div className={ ` flex flex-col gap-1 leading-none` }>
+					<Skeleton className={ ` h-4 w-10` }/>
+					<Skeleton className={ ` h-4 w-24` }/>
+				</div>
+				<div className={ ` flex flex-col gap-1 leading-none items-end` }>
+					<Skeleton className={ ` h-4 w-10` }/>
+					<Skeleton className={ ` h-4 w-24` }/>
+				</div>
+			</div>
+		</div>
+	);
 
 	// Graph conf
     const [graphItemAbortController, setGraphItemAbortController] = useState<AbortController | null>(null);
@@ -37,6 +64,8 @@ export default function Index({ auth }: PageProps<CashFlowIndexProps>) {
 	const [graphIncome, setGraphIncome] = useState<number[]>([]);
 	const [graphExpense, setGraphExpense] = useState<number[]>([]);
 	const fetchCashflowReport = async () => {
+		setIsLoading(true);
+
 		// Cancel previous request
 		if(graphItemAbortController instanceof AbortController){
 			graphItemAbortController.abort();
@@ -69,6 +98,7 @@ export default function Index({ auth }: PageProps<CashFlowIndexProps>) {
 			let result = jsonResponse.result;
 			// Fetch graph data
 			if(result && 'graph' in result){
+				setIsLoading(false);
 				setGraphItem(result.graph);
 			}
 		} catch (error) {
@@ -145,6 +175,19 @@ export default function Index({ auth }: PageProps<CashFlowIndexProps>) {
 		if(isFirstRender){
 			fetchCashflowReport();
 		}
+
+		// Listen to Record Dialog event
+		const handleDialogRecord = () => {
+			setTimeout(() => {
+				fetchCashflowReport();
+			}, 100);
+		}
+
+		document.addEventListener('dialog.record.hidden', handleDialogRecord);
+		// Remove the event listener when the component unmounts
+		return () => {
+			document.removeEventListener('dialog.record.hidden', handleDialogRecord);
+		};
 	});
 
     return <>
@@ -164,11 +207,14 @@ export default function Index({ auth }: PageProps<CashFlowIndexProps>) {
                             <CardDescription>Cash Flow overview</CardDescription>
                         </div>
                         <div className={ `flex items-center gap-2` }>
+                            <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
+							}} disabled><i className={ `fa-solid fa-filter` }></i></Button>
+                            
 							<Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
 								router.reload();
 
 								fetchCashflowReport();
-							}}><i className={ `fa-solid fa-rotate-right` }></i></Button>
+							}}><i className={ `fa-solid fa-rotate-right ${isLoading ? `fa-spin` : ``}` }></i></Button>
 						</div>
                     </div>
                 </CardHeader>
@@ -247,83 +293,103 @@ export default function Index({ auth }: PageProps<CashFlowIndexProps>) {
 
 						{/* Card */}
 						{(() => {
-							if(graphList && graphList.length > 0){
-								let el: any[] = [];
-								let push = true;
+							if(isLoading){
+								let element: any[] = [];
+								for(let i = 0; i < skeletonCount; i++){
+									element.push(
+										<div key={ `skeleton-${i}` }>
+											{skeletonTemplate}
+										</div>
+									);
+								}
 
-								graphList.forEach((value: any, index: any) => {
-									if(graphSort === 'desc'){
-										if(moment(value.period).format('YYYY') === moment().format('YYYY')){
-											if(moment(moment(value.period).format('YYYY-MM')).isAfter(moment().format('YYYY-MM'))){
-												push = false;
-											} else {
-												push = true;
+								return <div className={ ` flex flex-col gap-2` }>
+									<div className={ ` px-4 py-2 rounded border mr-auto` }>
+										<Skeleton className={ ` h-4 w-10` }/>
+									</div>
+									<div className={ ` flex flex-col gap-4` }>
+										{element}
+									</div>
+								</div>;
+							} else {
+								if(graphList && graphList.length > 0){
+									let el: any[] = [];
+									let push = true;
+	
+									graphList.forEach((value: any, index: any) => {
+										if(graphSort === 'desc'){
+											if(moment(value.period).format('YYYY') === moment().format('YYYY')){
+												if(moment(moment(value.period).format('YYYY-MM')).isAfter(moment().format('YYYY-MM'))){
+													push = false;
+												} else {
+													push = true;
+												}
 											}
 										}
-									}
-
-									if(push){
-										el.push(
-											<Link href={ route('sys.report.cash-flow.show', value.period) } key={ `report-${value.label}` }>
-												<div className={ ` border rounded p-4 flex flex-col gap-2` }>
-													<div className={ ` flex flex-row justify-between items-center` }>
-														<div className={ `` }>
-															<span className={ ` font-semibold` }>{value.label}</span>
+	
+										if(push){
+											el.push(
+												<Link href={ route('sys.report.cash-flow.show', value.period) } key={ `report-${value.label}` }>
+													<div className={ ` border rounded p-4 flex flex-col gap-2` }>
+														<div className={ ` flex flex-row justify-between items-center` }>
+															<div className={ `` }>
+																<span className={ ` font-semibold` }>{value.label}</span>
+															</div>
+															<div className={ ` flex flex-row whitespace-nowrap items-center gap-2` }>
+																<span className={ `${value.cash_flow > 0 ? ` text-green-500` : (value.cash_flow < 0 ? ` text-red-500` : ``)} ${value.cash_flow != 0 ? `font-medium` : ``}` }>{formatRupiah(value.cash_flow)}</span>
+																<div className={ ` text-sm` }>
+																	<i className={ `fa-solid fa-chevron-right` }></i>
+																</div>
+															</div>
 														</div>
-														<div className={ ` flex flex-row whitespace-nowrap items-center gap-2` }>
-															<span className={ `${value.cash_flow > 0 ? ` text-green-500` : (value.cash_flow < 0 ? ` text-red-500` : ``)} ${value.cash_flow != 0 ? `font-medium` : ``}` }>{formatRupiah(value.cash_flow)}</span>
-															<div className={ ` text-sm` }>
-																<i className={ `fa-solid fa-chevron-right` }></i>
+														<Separator/>
+														<div className={ ` flex flex-row justify-between items-center` }>
+															<div className={ ` flex flex-col gap-1 leading-none` }>
+																<span>Income</span>
+																<span className={ ` text-green-500` }>{ formatRupiah(value.income) }</span>
+															</div>
+															<div className={ ` flex flex-col gap-1 leading-none items-end` }>
+																<span>Expense</span>
+																<span className={ ` text-red-500` }>{ formatRupiah(value.expense * -1) }</span>
 															</div>
 														</div>
 													</div>
-													<Separator/>
-													<div className={ ` flex flex-row justify-between items-center` }>
-														<div className={ ` flex flex-col gap-1 leading-none` }>
-															<span>Income</span>
-															<span className={ ` text-green-500` }>{ formatRupiah(value.income) }</span>
-														</div>
-														<div className={ ` flex flex-col gap-1 leading-none items-end` }>
-															<span>Expense</span>
-															<span className={ ` text-red-500` }>{ formatRupiah(value.expense * -1) }</span>
-														</div>
-													</div>
-												</div>
-											</Link>
-										);
-									}
-
-									if(graphSort === 'asc'){
-										if(moment(value.period).format('YYYY-MM') === moment().format('YYYY-MM') && value.period == moment().format('YYYY-MM')){
-											// If month name is same, then stop loop
-											push = false;
+												</Link>
+											);
 										}
-									}
-								});
-
-								if(el.length > 0){
-									return <>
-										<div className={ ` flex flex-col gap-2` }>
-											<Button variant={ `outline` } className={ ` flex flex-row gap-1 mr-auto` } onClick={() => {
-												let list = graphList;
-												setGraphList(list.reverse());
-												setGraphSort(graphSort === 'asc' ? 'desc' : 'asc');
-											}}>
-												<div className={ ` w-4` }>
-													<i className={ `fa-solid ${graphSort === 'asc' ? `fa-sort-up` : `fa-sort-down`}` }></i>
+	
+										if(graphSort === 'asc'){
+											if(moment(value.period).format('YYYY-MM') === moment().format('YYYY-MM') && value.period == moment().format('YYYY-MM')){
+												// If month name is same, then stop loop
+												push = false;
+											}
+										}
+									});
+	
+									if(el.length > 0){
+										return <>
+											<div className={ ` flex flex-col gap-2` }>
+												<Button variant={ `outline` } className={ ` flex flex-row gap-1 mr-auto` } onClick={() => {
+													let list = graphList;
+													setGraphList(list.reverse());
+													setGraphSort(graphSort === 'asc' ? 'desc' : 'asc');
+												}}>
+													<div className={ ` w-4` }>
+														<i className={ `fa-solid ${graphSort === 'asc' ? `fa-sort-up` : `fa-sort-down`}` }></i>
+													</div>
+													<span className={ `` }>{ ucwords(graphSort) }</span>
+												</Button>
+	
+												<div className={ ` flex flex-col gap-4` }>
+													{el}
 												</div>
-												<span className={ `` }>{ ucwords(graphSort) }</span>
-											</Button>
-
-											<div className={ ` flex flex-col gap-4` }>
-												{el}
 											</div>
-										</div>
-									</>;
+										</>;
+									}
 								}
+	
+								return <TemplateNoData/>
 							}
-
-							return <TemplateNoData/>
 						})()}
 					</div>
                 </CardContent>

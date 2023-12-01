@@ -41,10 +41,15 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
                         description: null,
                         items: [
                             {
+                                name: 'Category',
+                                description: 'Manage your Category',
+                                icon: 'fa-solid fa-bookmark',
+                                link: route('sys.category.index')
+                            }, {
                                 name: 'Tags',
                                 description: 'Manage your Tags',
                                 icon: 'fa-solid fa-tags',
-                                link: null
+                                link: route('sys.tags.index')
                             }
                         ]
                     }, {
@@ -73,7 +78,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
                             (item.items).forEach((sub: any, key: any) => {
                                 let desc = null;
                                 if(sub.description){
-                                    desc = <span className={ ` text-medium leading-none` }>{ sub.description }</span>
+                                    desc = <span className={ ` text-sm opacity-75 leading-none` }>{ sub.description }</span>
                                 }
 
                                 let icon = null;

@@ -119,7 +119,7 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 {/* Manifest */}
                 <link rel="manifest" href="/build/manifest.webmanifest"/>
                 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff"/>
-                <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#55799d"/>
+                <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#29c485"/>
             </Head>
 
             {/* <div className="min-h-screen bg-gray-50 dark:bg-background relative"> */}

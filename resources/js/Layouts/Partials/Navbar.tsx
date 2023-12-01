@@ -2,6 +2,9 @@ import { useState, PropsWithChildren, ReactNode, useEffect } from 'react';
 import { Link, router } from '@inertiajs/react';
 import { User } from '@/types';
 
+// Plugins
+import { handleUserAvatar } from '@/function';
+
 // Partials
 import { ThemeToggle } from '@/Components/template/theme-toggle';
 import ApplicationLogoMask from '@/Components/ApplicationLogoMask';
@@ -19,7 +22,6 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
-import { handleUserAvatar } from '@/function';
 import Notification from './Notification';
 
 export default function Navbar({ user, className = '' }: PropsWithChildren<{ user: User, className?: string }>) {
@@ -151,7 +153,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
             <nav className=" bg-background/75 backdrop-blur border-b fixed w-full z-10">
                 {/* Navbar */}
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
-                    <div className="flex justify-between h-16 relative">
+                    <div className="flex justify-between h-16 relative gap-4">
                         <div className="flex gap-2 items-center">
                             {/* Sidebar - Dialog */}
                             <Sidebar user={user}/>
@@ -213,7 +215,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                                 </DropdownMenuItem>
                                             </Link>
                                             <Link href={ route('sys.tags.index') }>
-                                                <DropdownMenuItem className={ ` flex flex-row gap-2 opacity-50` }>
+                                                <DropdownMenuItem className={ ` flex flex-row gap-2 cursor-pointer` }>
                                                     <i className={ `fa-solid fa-tags w-1/12` }></i>
                                                     <span className=' w-11/12'>Tags</span>
                                                 </DropdownMenuItem>

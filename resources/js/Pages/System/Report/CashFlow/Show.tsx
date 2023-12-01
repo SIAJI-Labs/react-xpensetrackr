@@ -12,6 +12,7 @@ import { Head, router } from "@inertiajs/react";
 import axios from "axios";
 import moment from "moment";
 import { useEffect, useState } from "react";
+import Chart from 'react-apexcharts';
 
 // Props
 type CashFlowShowProps = {
@@ -49,11 +50,15 @@ export default function Index({ auth, period }: PageProps<CashFlowShowProps>) {
 	);
 
     const [graphItemAbortController, setGraphItemAbortController] = useState<AbortController | null>(null);
-	const [graphItem, setGraphItem] = useState<any[]>([]);
-	const [graphList, setGraphList] = useState<any[]>([]);
     const [graphSort, setGraphSort] = useState<string>(
 		() => localStorage.getItem('xtrackr-cashflow_show_sort') as string|| 'asc'
 	);
+	const [graphItem, setGraphItem] = useState<any[]>([]);
+	const [graphList, setGraphList] = useState<any[]>([]);
+    const [graphLabel, setGraphLabel] = useState<string[]>([]);
+	const [graphSeries, setGraphSeries] = useState<any[]>([]);
+	const [graphIncome, setGraphIncome] = useState<number[]>([]);
+	const [graphExpense, setGraphExpense] = useState<number[]>([]);
     const fetchCashflowReport = async () => {
         setIsLoading(true);
 
@@ -94,8 +99,6 @@ export default function Index({ auth, period }: PageProps<CashFlowShowProps>) {
 				setIsLoading(false);
 				setGraphItem(result.graph);
 			}
-
-			console.log(jsonResponse);
 		} catch (error) {
             if (axios.isCancel(error)) {
                 // Handle the cancellation here if needed
@@ -107,14 +110,59 @@ export default function Index({ auth, period }: PageProps<CashFlowShowProps>) {
         }
 	}
     useEffect(() => {
-        if('data' in graphItem && (graphItem.data as any[]).length > 0){
-            let list = graphItem.data as any[];
-            if(graphSort === 'desc'){
-                list = list.reverse();
-            }
+        if(!isFirstRender){
+			let data: any[] = [];
 
-            setGraphList(list);
-        }
+			if(graphItem && 'data' in graphItem){
+				data = graphItem.data as any[];
+				let income = [];
+				let expense = [];
+				let cashFlow = [];
+
+				// Handle label
+				let dates = data.map((value) => {
+					return moment(value.label).format('DD');
+				});
+				setGraphLabel(dates);
+
+				// Handle series
+				income = data.map((value) => {
+					return value.income;
+				});
+				setGraphIncome(income);
+				expense = data.map((value) => {
+					return value.expense;
+				});
+				setGraphExpense(expense);
+				cashFlow = data.map((value) => {
+					return value.cash_flow;
+				});
+				setGraphSeries([
+					{
+						name: 'Income',
+						type: 'column',
+						data: income
+					}, {
+						name: 'Expense',
+						type: 'column',
+						data: expense
+					}, {
+						name: 'Cash Flow',
+						type: 'line',
+						data: cashFlow
+					}
+				]);
+
+				if('data' in graphItem && (graphItem.data as any[]).length > 0){
+					let list = graphItem.data as any[];
+					if(graphSort === 'desc'){
+						list = list.reverse();
+					}
+
+					setGraphList(list);
+				}
+			}
+		}
     }, [graphItem]);
 	useEffect(() => {
 		localStorage.setItem('xtrackr-cashflow_show_sort', graphSort);
@@ -172,6 +220,78 @@ export default function Index({ auth, period }: PageProps<CashFlowShowProps>) {
                     </div>
                 </CardHeader>
                 <CardContent>
+                    {/* Chart */}
+                    <div className={ `` }>
+                        <Chart options={
+                            {
+                                chart: {
+                                    height: 100,
+                                    type: 'bar',
+                                    stacked: true,
+                                    toolbar: {
+                                        show: false
+                                    },
+                                    zoom: {
+                                        enabled: false
+                                    }
+                                },
+                                stroke: {
+                                    show: true,
+                                    width: [0, 0, 3],
+                                    curve: 'smooth',
+                                    lineCap: 'round'
+                                },
+                                dataLabels: {
+                                    enabled: false
+                                },
+                                labels: graphLabel,
+                                yaxis: {
+                                    labels: {
+                                        formatter: function(val){
+                                            return (formatRupiah(val, true)).toString();
+                                        },
+                                        rotate: -45
+                                    },
+                                    tickAmount: 4,
+                                    forceNiceScale: true,
+                                    axisTicks: {
+                                        show: true
+                                    },
+                                    min:  Math.min(...graphExpense),
+                                    max: Math.max(...graphIncome),
+                                },
+                                xaxis: {
+                                    type: 'category',
+                                    tickPlacement: 'between',
+                                    range: 5,
+                                    tickAmount: 6
+                                },
+                                tooltip: {
+                                    y: {
+                                        formatter: function(val){
+                                            return (formatRupiah(val)).toString();
+                                        },
+                                    },
+                                    // shared: false,
+                                    // intersect: true,
+                                    marker: {
+                                        show: true
+                                    }
+                                },
+                                plotOptions: {
+                                    bar: {
+                                        borderRadius: 3,
+                                        borderRadiusApplication: 'end',
+                                        borderRadiusWhenStacked: 'all'
+                                    }
+                                },
+                                markers: {
+                                    size: 1
+                                }
+                            }
+                        } series={graphSeries} type="line" width="100%" height={250} />
+                    </div>
+                    
                     {/* Card */}
                     {(() => {
                         if(isLoading){

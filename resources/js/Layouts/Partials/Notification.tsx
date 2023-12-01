@@ -254,15 +254,15 @@ export default function Notification({ user, className = '' }: PropsWithChildren
             <SheetContent side={ `right` } className={ `p-0 w-screen md:w-96 dark:!text-white` }>
                 <ScrollArea className={ ` h-screen p-6 py-0` }>
                     <div className={ ` flex flex-col gap-6 my-6` }>
-                        <SheetHeader className={ ` flex flex-col items-start gap-2` }>
-                            <SheetTitle className={ ` leading-none` }>Notification</SheetTitle>
-                            <SheetDescription className={ `!mt-0 leading-none` }>
-                                See all of your notification in one panel
-                            </SheetDescription>
-                        </SheetHeader>
+                        <div className={ ` p-6 sticky top-0` }>
+                            <SheetHeader className={ ` relative after:absolute after:-top-6 after:-left-6 after:w-[calc(100%+3rem)] after:h-32 after:bg-gradient-to-b after:from-background after:via-background after:to-transparent after:z-[-1] z-10 pb-6 pointer-events-none select-none` }>
+                                <SheetTitle className={ ` leading-none` }>Notification</SheetTitle>
+                                <SheetDescription className={ `!mt-0 leading-none` }>
+                                    See all of your notification in one panel
+                                </SheetDescription>
+                            </SheetHeader>
+                        </div>
                         
-                        <Separator/>
-
                         <div className={ `` }>
                             <Tabs defaultValue="planned-payment">
                                 <TabsList className="grid w-full grid-cols-2">

@@ -32,30 +32,6 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
             is_disabled: false,
             is_header: true
         }, {
-            name: 'Record',
-            icon: 'fa-solid fa-receipt',
-            route: route('sys.record.index'),
-            sub: [],
-            active: ['sys.record.index', 'sys.record.show'],
-            is_disabled: false,
-            is_header: false
-        }, {
-            name: 'Planned Payment',
-            icon: 'fa-solid fa-clock',
-            route: route('sys.planned-payment.index'),
-            sub: [],
-            active: ['sys.planned-payment.index', 'sys.planned-payment.show'],
-            is_disabled: false,
-            is_header: false
-        }, {
-            name: 'Debt',
-            icon: 'fa-solid fa-hand-holding-dollar',
-            route: null,
-            sub: [],
-            active: [],
-            is_disabled: true,
-            is_header: false
-        }, {
             name: 'Budget',
             icon: 'fa-solid fa-money-bills',
             route: null,
@@ -64,8 +40,8 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
             is_disabled: true,
             is_header: false
         }, {
-            name: 'Shopping List',
-            icon: 'fa-solid fa-cart-shopping',
+            name: 'Debt',
+            icon: 'fa-solid fa-hand-holding-dollar',
             route: null,
             sub: [],
             active: [],
@@ -79,7 +55,31 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
             active: [],
             is_disabled: true,
             is_header: false
-        },
+        }, {
+            name: 'Planned Payment',
+            icon: 'fa-solid fa-clock',
+            route: route('sys.planned-payment.index'),
+            sub: [],
+            active: ['sys.planned-payment.index', 'sys.planned-payment.show'],
+            is_disabled: false,
+            is_header: false
+        }, {
+            name: 'Record',
+            icon: 'fa-solid fa-receipt',
+            route: route('sys.record.index'),
+            sub: [],
+            active: ['sys.record.index', 'sys.record.show'],
+            is_disabled: false,
+            is_header: false
+        }, {
+            name: 'Shopping List',
+            icon: 'fa-solid fa-cart-shopping',
+            route: null,
+            sub: [],
+            active: [],
+            is_disabled: true,
+            is_header: false
+        }, 
 
         {
             name: 'Report',
@@ -108,6 +108,30 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
             is_disabled: false,
             is_header: true
         }, {
+            name: 'Category',
+            icon: 'fa-solid fa-bookmark',
+            route: route('sys.category.index'),
+            sub: [],
+            active: ['sys.category.index', 'sys.category.show', 'sys.category.re-order.index'],
+            is_disabled: false,
+            is_header: false
+        }, {
+            name: 'Record Template',
+            icon: 'fa-solid fa-book',
+            route: null,
+            sub: [],
+            active: [],
+            is_disabled: true,
+            is_header: false
+        }, {
+            name: 'Tags',
+            icon: 'fa-solid fa-tag',
+            route: route('sys.tags.index'),
+            sub: [],
+            active: ['sys.tags.index', 'sys.tags.show'],
+            is_disabled: false,
+            is_header: false
+        }, {
             name: 'Wallet',
             icon: 'fa-solid fa-wallet',
             route: null,
@@ -134,30 +158,6 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
             ],
             is_disabled: false,
             is_header: false
-        }, {
-            name: 'Category',
-            icon: 'fa-solid fa-bookmark',
-            route: route('sys.category.index'),
-            sub: [],
-            active: ['sys.category.index', 'sys.category.show', 'sys.category.re-order.index'],
-            is_disabled: false,
-            is_header: false
-        }, {
-            name: 'Tags',
-            icon: 'fa-solid fa-tag',
-            route: route('sys.tags.index'),
-            sub: [],
-            active: ['sys.tags.index', 'sys.tags.show'],
-            is_disabled: false,
-            is_header: false
-        }, {
-            name: 'Record Template',
-            icon: 'fa-solid fa-book',
-            route: null,
-            sub: [],
-            active: [],
-            is_disabled: true,
-            is_header: false
         }, 
     ];
     const currentRoute = route().current();
@@ -171,7 +171,7 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                 <SheetContent side={ `left` } className={ ` w-screen md:w-72 p-0 dark:!text-white` }>
                     <ScrollArea className={ ` h-screen p-0` }>
                         <div className={ ` p-6 sticky top-0` }>
-                            <SheetHeader className={ ` relative after:absolute after:-top-6 after:-left-6 after:w-[calc(100%+3rem)] after:h-32 after:bg-gradient-to-b after:from-white after:from-background after:via-white after:via-background after:to-transparent after:z-[-1] z-10 border-b pb-6 pointer-events-none select-none` }>
+                            <SheetHeader className={ ` relative after:absolute after:-top-6 after:-left-6 after:w-[calc(100%+3rem)] after:h-32 after:bg-gradient-to-b after:from-background after:via-background after:to-transparent after:z-[-1] z-10 pb-6 pointer-events-none select-none` }>
                                 <SheetTitle>
                                     <ApplicationLogo fontSizeMain={ ` text-2xl` } className={ ` !justify-start` }/>
                                 </SheetTitle>

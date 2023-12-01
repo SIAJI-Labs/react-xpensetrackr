@@ -1,23 +1,25 @@
 import { Head, Link, router } from "@inertiajs/react";
+import { useIsFirstRender } from "@/lib/utils";
+import { useEffect, useState } from "react";
 import { PageProps } from "@/types"
+import axios from "axios";
+
+// Apexchart
+import Chart from 'react-apexcharts';
+
+// Plugins
+import { formatRupiah, ucwords } from "@/function";
+import moment from "moment";
 
 // Partials
+import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
-
-// Apexchart
-import Chart from 'react-apexcharts';
-import { formatRupiah, ucwords } from "@/function";
-import moment from "moment";
-import { Button } from "@/Components/ui/button";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { useIsFirstRender } from "@/lib/utils";
-import TemplateNoData from "@/Components/template/TemplateNoData";
 import { Separator } from "@/Components/ui/separator";
 import { Skeleton } from "@/Components/ui/skeleton";
+import { Button } from "@/Components/ui/button";
 
 // Props
 type CashFlowIndexProps = {

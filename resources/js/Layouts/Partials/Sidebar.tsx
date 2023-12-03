@@ -143,9 +143,9 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                     active: ['sys.wallet.index', 'sys.wallet.show', 'sys.wallet.re-order.index'],
                 }, {
                     name: 'Group',
-                    route: null,
-                    is_disabled: true,
-                    active: [],
+                    route: route('sys.wallet-group.index'),
+                    is_disabled: false,
+                    active: ['sys.wallet-group.index', 'sys.wallet-group.show'],
                 }, {
                     name: 'Share',
                     route: null,

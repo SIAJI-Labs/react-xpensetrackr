@@ -30,18 +30,20 @@ import { useToast } from '@/Components/ui/use-toast';
 import { ToastAction } from '@/Components/ui/toast';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
+import WalletGroupDialog from '@/Components/system/WalletGroup/WalletGroupDialog';
+import WalletGroupDeleteDialog from '@/Components/system/WalletGroup/WalletGroupDeleteDialog';
 
 export default function SystemLayout({ user, header, children, fabAction = null }: PropsWithChildren<{ user: User, header?: ReactNode, fabAction?: any[] | null }>) {
     const { toast } = useToast();
     
-    // Record Dialog
-    const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
-    const handleOpenRecordDialog = (isOpen: boolean) => {
-        setOpenRecordDialog(isOpen);
+    // Category Dialog
+    const [openCategoryDialog, setOpenCategoryDialog] = useState<boolean>(false);
+    const handleOpenCategoryDialog = (isOpen: boolean) => {
+        setOpenCategoryDialog(isOpen);
     };
-    const [openRecordDeleteDialog, setOpenRecordDeleteDialog] = useState<boolean>(false);
-    const handleOpenRecordDeleteDialog = (isOpen: boolean) => {
-        setOpenRecordDeleteDialog(isOpen);
+    const [openCategoryDeleteDialog, setOpenCategoryDeleteDialog] = useState<boolean>(false);
+    const handleOpenCategoryDeleteDialog = (isOpen: boolean) => {
+        setOpenCategoryDeleteDialog(isOpen);
     };
 
     // Planned Payment Dialog
@@ -54,14 +56,24 @@ export default function SystemLayout({ user, header, children, fabAction = null 
         setOpenPlannedPaymentDeleteDialog(isOpen);
     };
 
-    // Category Dialog
-    const [openCategoryDialog, setOpenCategoryDialog] = useState<boolean>(false);
-    const handleOpenCategoryDialog = (isOpen: boolean) => {
-        setOpenCategoryDialog(isOpen);
+    // Record Dialog
+    const [openRecordDialog, setOpenRecordDialog] = useState<boolean>(false);
+    const handleOpenRecordDialog = (isOpen: boolean) => {
+        setOpenRecordDialog(isOpen);
     };
-    const [openCategoryDeleteDialog, setOpenCategoryDeleteDialog] = useState<boolean>(false);
-    const handleOpenCategoryDeleteDialog = (isOpen: boolean) => {
-        setOpenCategoryDeleteDialog(isOpen);
+    const [openRecordDeleteDialog, setOpenRecordDeleteDialog] = useState<boolean>(false);
+    const handleOpenRecordDeleteDialog = (isOpen: boolean) => {
+        setOpenRecordDeleteDialog(isOpen);
+    };
+
+    // Tags Dialog
+    const [openTagsDialog, setOpenTagsDialog] = useState<boolean>(false);
+    const handleOpenTagsDialog = (isOpen: boolean) => {
+        setOpenTagsDialog(isOpen);
+    };
+    const [openTagsDeleteDialog, setOpenTagsDeleteDialog] = useState<boolean>(false);
+    const handleOpenTagsDeleteDialog = (isOpen: boolean) => {
+        setOpenTagsDeleteDialog(isOpen);
     };
 
     // Wallet Dialog
@@ -78,14 +90,14 @@ export default function SystemLayout({ user, header, children, fabAction = null 
         setOpenWalletBalanceAdjustmentDialog(isOpen);
     };
 
-    // Tags Dialog
-    const [openTagsDialog, setOpenTagsDialog] = useState<boolean>(false);
-    const handleOpenTagsDialog = (isOpen: boolean) => {
-        setOpenTagsDialog(isOpen);
+    // Wallet Group Dialog
+    const [openWalletGroupDialog, setOpenWalletGroupDialog] = useState<boolean>(false);
+    const handleOpenWalletGroupDialog = (isOpen: boolean) => {
+        setOpenWalletGroupDialog(isOpen);
     };
-    const [openTagsDeleteDialog, setOpenTagsDeleteDialog] = useState<boolean>(false);
-    const handleOpenTagsDeleteDialog = (isOpen: boolean) => {
-        setOpenTagsDeleteDialog(isOpen);
+    const [openWalletGroupDeleteDialog, setOpenWalletGroupDeleteDialog] = useState<boolean>(false);
+    const handleOpenWalletGroupDeleteDialog = (isOpen: boolean) => {
+        setOpenWalletGroupDeleteDialog(isOpen);
     };
 
     // Axios Global error handling
@@ -147,20 +159,6 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                     if(fabAction !== null){
                         let action: any = [];
 
-                        // Push planned-payment action
-                        if(fabAction.includes('plannedPayment')){
-                            action.push(
-                                <DropdownMenuItem onClick={() => {
-                                    document.dispatchEvent(new CustomEvent('planned-payment.edit-action', {
-                                            bubbles: true,
-                                        }
-                                    ));
-                                }} className={ `cursor-pointer flex items-center gap-2` } key={ `fab-wallet` }>
-                                    <i className={ `fa-regular fa-clock h-4 w-4 text-center` }></i>
-                                    <span className={ `` }>Planned Payment</span>
-                                </DropdownMenuItem>
-                            );
-                        }
                         // Push category action
                         if(fabAction.includes('category')){
                             action.push(
@@ -175,21 +173,23 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                                 </DropdownMenuItem>
                             );
                         }
-                        // Push wallet action
-                        if(fabAction.includes('wallet')){
+
+                        // Push planned-payment action
+                        if(fabAction.includes('plannedPayment')){
                             action.push(
                                 <DropdownMenuItem onClick={() => {
-                                    document.dispatchEvent(new CustomEvent('wallet.edit-action', {
+                                    document.dispatchEvent(new CustomEvent('planned-payment.edit-action', {
                                             bubbles: true,
                                         }
                                     ));
                                 }} className={ `cursor-pointer flex items-center gap-2` } key={ `fab-wallet` }>
-                                    <i className={ `fa-solid fa-wallet h-4 w-4 text-center` }></i>
-                                    <span className={ `` }>Wallet</span>
+                                    <i className={ `fa-regular fa-clock h-4 w-4 text-center` }></i>
+                                    <span className={ `` }>Planned Payment</span>
                                 </DropdownMenuItem>
                             );
                         }
-                        // Push wallet action
+
+                        // Push tags action
                         if(fabAction.includes('tags')){
                             action.push(
                                 <DropdownMenuItem onClick={() => {
@@ -204,6 +204,36 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                             );
                         }
 
+                        // Push wallet action
+                        if(fabAction.includes('wallet')){
+                            action.push(
+                                <DropdownMenuItem onClick={() => {
+                                    document.dispatchEvent(new CustomEvent('wallet.edit-action', {
+                                            bubbles: true,
+                                        }
+                                    ));
+                                }} className={ `cursor-pointer flex items-center gap-2` } key={ `fab-wallet` }>
+                                    <i className={ `fa-solid fa-wallet h-4 w-4 text-center` }></i>
+                                    <span className={ `` }>Wallet</span>
+                                </DropdownMenuItem>
+                            );
+                        }
+
+                        // Push wallet action
+                        if(fabAction.includes('wallet-group')){
+                            action.push(
+                                <DropdownMenuItem onClick={() => {
+                                    document.dispatchEvent(new CustomEvent('wallet-group.edit-action', {
+                                            bubbles: true,
+                                        }
+                                    ));
+                                }} className={ `cursor-pointer flex items-center gap-2` } key={ `fab-wallet` }>
+                                    <i className={ `fa-solid fa-wallet h-4 w-4 text-center` }></i>
+                                    <span className={ `` }>Wallet Group</span>
+                                </DropdownMenuItem>
+                            );
+                        }
+                        
                         // Push record action
                         action.push(
                             <DropdownMenuItem onClick={() => {
@@ -229,27 +259,30 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                     }}>Add record</Button>
                 })()}
                 
-                {/* Record Modal - Dialog */}
-                <RecordDialog openState={ openRecordDialog } setOpenState={ handleOpenRecordDialog }/>
-                {/* Record Modal - Delete Dialog */}
-                <RecordDeleteDialog openState={ openRecordDeleteDialog } setOpenState={ handleOpenRecordDeleteDialog }></RecordDeleteDialog>
+                {/* Category Modal - Dialog */}
+                <CategoryDialog openState={ openCategoryDialog } setOpenState={ handleOpenCategoryDialog }/>
+                <CategoryDeleteDialog openState={ openCategoryDeleteDialog } setOpenState={ handleOpenCategoryDeleteDialog }/>
             
                 {/* Planned Payment Modal - Dialog */}
                 <PlannedPaymentDialog openState={ openPlannedPaymentDialog } setOpenState={ handleOpenPlannedPaymentDialog }/>
                 <PlannedPaymentDeleteDialog openState={ openPlannedPaymentDeleteDialog } setOpenState={ handleOpenPlannedPaymentDeleteDialog }/>
 
-                {/* Category Modal - Dialog */}
-                <CategoryDialog openState={ openCategoryDialog } setOpenState={ handleOpenCategoryDialog }/>
-                <CategoryDeleteDialog openState={ openCategoryDeleteDialog } setOpenState={ handleOpenCategoryDeleteDialog }/>
+                {/* Record Modal - Dialog */}
+                <RecordDialog openState={ openRecordDialog } setOpenState={ handleOpenRecordDialog }/>
+                <RecordDeleteDialog openState={ openRecordDeleteDialog } setOpenState={ handleOpenRecordDeleteDialog }></RecordDeleteDialog>
+
+                {/* Tags Modal - Dialog */}
+                <TagsDialog openState={ openTagsDialog } setOpenState={ handleOpenTagsDialog }/>
+                <TagsDeleteDialog openState={ openTagsDeleteDialog } setOpenState={ handleOpenTagsDeleteDialog }/>
 
                 {/* Wallet Modal - Dialog */}
                 <WalletDialog openState={ openWalletDialog } setOpenState={ handleOpenWalletDialog }/>
                 <WalletDeleteDialog openState={ openWalletDeleteDialog } setOpenState={ handleOpenWalletDeleteDialog }/>
                 <WalletBalanceAdjustmentDialog openState={ openWalletBalanceAdjustmentDialog } setOpenState={ handleOpenWalletBalanceAdjustmentDialog }/>
 
-                {/* Tags Modal - Dialog */}
-                <TagsDialog openState={ openTagsDialog } setOpenState={ handleOpenTagsDialog }/>
-                <TagsDeleteDialog openState={ openTagsDeleteDialog } setOpenState={ handleOpenTagsDeleteDialog }/>
+                {/* Wallet Modal - Dialog */}
+                <WalletGroupDialog openState={ openWalletGroupDialog } setOpenState={ handleOpenWalletGroupDialog }/>
+                <WalletGroupDeleteDialog openState={ openWalletGroupDeleteDialog } setOpenState={ handleOpenWalletGroupDeleteDialog }/>
             </div>
 
             <Toaster />

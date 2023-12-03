@@ -91,7 +91,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                     { name: 'Shopping List', icon: '', link: null },
                                     { name: 'Tags', icon: '', link: route('sys.tags.index') },
                                     { name: 'Wallet', icon: '', link: route('sys.wallet.index') },
-                                    { name: 'Wallet Group', icon: '', link: null },
+                                    { name: 'Wallet Group', icon: '', link: route('sys.wallet-group.index') },
                                     { name: 'Wallet Share', icon: '', link: null },
                                 ]
                             }, { // Report

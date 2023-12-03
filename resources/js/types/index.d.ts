@@ -7,6 +7,7 @@ export interface User {
     avatar?: string,
     username?: string
 }
+
 export interface CategoryItem {
     id: number,
     uuid: string,
@@ -15,51 +16,6 @@ export interface CategoryItem {
     parent: CategoryItem,
     name: string,
     deleted_at?: string | null
-}
-export interface WalletItem {
-    id: number,
-    uuid: string,
-    user_id: number;
-    parent_id: number,
-    parent: WalletItem,
-    child?: WalletItem,
-    type: string,
-    name: string,
-    starting_balance?: number,
-    current_balance?: number,
-    balance?: number,
-    deleted_at?: string | null
-}
-export interface TagsItem {
-    id: number,
-    uuid: string,
-    user_id: number,
-    name: string,
-    deleted_at?: string | null
-}
-
-export interface RecordItem {
-    id: number,
-    uuid: string,
-    user_id: number,
-    category_id: number,
-    category: CategoryItem,
-    name: string,
-    type: string,
-    from_wallet_id: string,
-    from_wallet: WalletItem,
-    to_wallet_id: string,
-    to_wallet: WalletItem,
-    amount: number,
-    extra_type: string,
-    extra_percentage: number,
-    extra_amount: number,
-    date: string,
-    time: string,
-    datetime: string,
-    note: string,
-    planned_payment_record: PlannedRecord,
-    record_tags?: TagsItem[]
 }
 export interface PlannedItem {
     id: number,
@@ -98,6 +54,58 @@ export interface PlannedRecord {
     record?: RecordItem,
     status: string,
     period: string
+}
+export interface RecordItem {
+    id: number,
+    uuid: string,
+    user_id: number,
+    category_id: number,
+    category: CategoryItem,
+    name: string,
+    type: string,
+    from_wallet_id: string,
+    from_wallet: WalletItem,
+    to_wallet_id: string,
+    to_wallet: WalletItem,
+    amount: number,
+    extra_type: string,
+    extra_percentage: number,
+    extra_amount: number,
+    date: string,
+    time: string,
+    datetime: string,
+    note: string,
+    planned_payment_record: PlannedRecord,
+    record_tags?: TagsItem[]
+}
+export interface TagsItem {
+    id: number,
+    uuid: string,
+    user_id: number,
+    name: string,
+    deleted_at?: string | null
+}
+export interface WalletItem {
+    id: number,
+    uuid: string,
+    user_id: number;
+    parent_id: number,
+    parent: WalletItem,
+    child?: WalletItem,
+    type: string,
+    name: string,
+    starting_balance?: number,
+    current_balance?: number,
+    balance?: number,
+    deleted_at?: string | null
+}
+export interface WalletGroupItem {
+    id: number,
+    uuid: string,
+    user_id: number,
+    name: string,
+    balance?: number,
+    wallet_group_item?: WalletItem[]
 }
 
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {

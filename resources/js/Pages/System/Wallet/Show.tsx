@@ -59,7 +59,7 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
                 user={auth.user}
                 header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Wallet Detail: { `${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</h2>}
             >
-                <Head title={ `Planned Summary: ${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` } />
+                <Head title={ `Wallet: ${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` } />
 
                 <div className="flex flex-col gap-6">
                     <TemplateBackButton className={ `px-0` }/>

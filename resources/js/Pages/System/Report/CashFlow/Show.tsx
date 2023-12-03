@@ -1,18 +1,26 @@
-import BackButton from "@/Components/template/TemplateBackButton";
+import { Head, Link, router } from "@inertiajs/react";
+import { useIsFirstRender } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { PageProps } from "@/types"
+import axios from "axios";
+
+// Apexchart
+import Chart from 'react-apexcharts';
+
+// Plugins
+import { formatRupiah, ucwords } from "@/function";
+import moment from "moment";
+
+// Partials
+import TemplateBackButton from "@/Components/template/TemplateBackButton";
 import TemplateNoData from "@/Components/template/TemplateNoData";
-import { Button } from "@/Components/ui/button";
+import SystemLayout from "@/Layouts/SystemLayout";
+
+// Shadcn
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Separator } from "@/Components/ui/separator";
 import { Skeleton } from "@/Components/ui/skeleton";
-import SystemLayout from "@/Layouts/SystemLayout";
-import { formatRupiah, ucwords } from "@/function";
-import { useIsFirstRender } from "@/lib/utils";
-import { PageProps } from "@/types";
-import { Head, router } from "@inertiajs/react";
-import axios from "axios";
-import moment from "moment";
-import { useEffect, useState } from "react";
-import Chart from 'react-apexcharts';
+import { Button } from "@/Components/ui/button";
 
 // Props
 type CashFlowShowProps = {
@@ -196,7 +204,7 @@ export default function Index({ auth, period }: PageProps<CashFlowShowProps>) {
             <Head title={ `Report: Cash Flow (${periodFormated})` } />
 
             <div className="flex flex-col gap-6">
-                <BackButton className={ `px-0` }/>
+                <TemplateBackButton className={ `px-0` }/>
             </div>
 
             <Card className={ ` w-full` }>

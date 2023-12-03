@@ -84,6 +84,14 @@ class Wallet extends Model
     {
         return $this->hasMany(\App\Models\PlannedPayment::class, 'to_wallet_id');
     }
+    public function walletGroup()
+    {
+        return $this->belongsToMany(\App\Models\Group::class, 'wallet_groups', 'group_id', 'wallet_id')
+            ->withPivot('wallet_id')
+            ->using(\App\Models\WalletGroupItem::class)
+            ->orderBy('name', 'asc')
+            ->withTimestamps();
+    }
 
     /**
      * Foreign Key Relation

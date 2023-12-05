@@ -136,7 +136,6 @@ export default function Index({ auth }: PageProps<ViewProps>) {
     useEffect(() => {
         // Listen to Dialog event
         const handleDialogEvent = () => {
-            console.log('Dialog event');
             setTimeout(() => {
                 fetchWalletGroupData();
             }, 100);

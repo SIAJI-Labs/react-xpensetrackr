@@ -32,7 +32,7 @@ export default function TemplateList({ wallet, deleteAction = true, editAction =
                 shown = wallet.map(item => `${item.parent ? `${item.parent.name} - ` : ''}${item.name}`).join(' and ');
             } else {
                 // If there are more than 2 items, show the names of the first 2 items
-                const firstTwoNames = wallet.slice(0, maxItemShown).map(item => `${item.parent ? `${item.parent.name} - ` : ''}${item.name}`).join(' and ');
+                const firstTwoNames = wallet.slice(0, maxItemShown).map(item => `${item.parent ? `${item.parent.name} - ` : ''}${item.name}`).join(', ');
                 // Calculate the count of remaining items
                 const remainingItemCount = wallet.length - maxItemShown;
 

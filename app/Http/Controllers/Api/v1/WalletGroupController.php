@@ -20,7 +20,7 @@ class WalletGroupController extends Controller
         $user = $request->user();
 
         $data = \App\Models\WalletGroup::query()
-            ->with('walletGroupItem')
+            ->with('walletGroupItem.parent')
             ->where('user_id', $user->id);
 
         // Apply Filter

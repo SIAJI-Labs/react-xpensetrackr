@@ -33,13 +33,10 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
         document.getElementById('navbar-search')?.addEventListener('click', () => {
             setOpenSearchCommand(true);
         });
-
+    }, []);
+    useEffect(() => {
         const down = (e: KeyboardEvent) => {
-            if (e.key === "/" && (e.metaKey || e.ctrlKey)) {
-                // Show command on control + k
-                e.preventDefault()
-                setOpenSearchCommand((openSearchCommand) => !openSearchCommand)
-            } else if(e.key === 'Enter'){
+            if(openSearchCommand && e.key === 'Enter'){
                 e.preventDefault();
                 // Fetch active menu
                 let activeItem = document.querySelector('[cmdk-item][data-selected="true"]');
@@ -49,11 +46,15 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                         router.visit(url);
                     }
                 }
+            } else if (e.key === "/" && (e.metaKey || e.ctrlKey)) {
+                // Show command on control + k
+                e.preventDefault()
+                setOpenSearchCommand((openSearchCommand) => !openSearchCommand)
             }
         }
         document.addEventListener("keydown", down)
-        return () => document.removeEventListener("keydown", down)
-    }, []);
+        return () => document.removeEventListener("keydown", down);
+    }, [openSearchCommand]);
     useEffect(() => {
         let avatar = handleUserAvatar(user);
         setAvatar(avatar);

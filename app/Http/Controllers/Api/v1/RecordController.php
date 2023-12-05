@@ -30,6 +30,32 @@ class RecordController extends Controller
         if($request->has('keyword') && !empty($request->keyword)){
             $data->where('note', 'like', '%'.$request->keyword.'%');
         }
+        $data->where(function($q) use ($request, $user){
+            foreach(['filter_from_wallet', 'filter_to_wallet'] as $filterWallet){
+                if($request->has($filterWallet)){
+                    $wallet_id = [];
+                    $filter = $request->get($filterWallet);
+                    if(is_array($filter)){
+                        $wallet_id = $filter;
+                    } else {
+                        $wallet_id[] = $filter;
+                    }
+
+                    $wallet = \App\Models\Wallet::where('user_id', $user->id)
+                        ->whereIn(DB::raw('BINARY `uuid`'), $wallet_id)
+                        ->pluck('id')
+                        ->toArray();
+
+                    $column = 'from_wallet_id';
+                    if($filterWallet === 'filter_to_wallet'){
+                        $column = 'to_wallet_id';
+                    }
+                    $q->orWhereIn($column, $wallet);
+                }
+            }
+
+            return $q;
+        });
 
         // Apply ordering
         $sort_type = 'desc';

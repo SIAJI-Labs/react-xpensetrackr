@@ -30,6 +30,13 @@ class WalletGroupController extends Controller
             ->firstOrFail();
 
         $data->balance = $data->getBalance();
+        if($data->walletGroupItem()->exists()){
+            $data->walletGroupItem->map(function($data){
+                $data->balance = $data->getBalance();
+                
+                return $data;
+            });
+        }
 
         return Inertia::render('System/WalletGroup/Show', [
             'data' => $data

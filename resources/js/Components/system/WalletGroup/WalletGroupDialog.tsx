@@ -334,12 +334,12 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
     return (
         <section id={ `walletGroup-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
-                <DialogContent className=" h-full md:h-auto lg:min-w-[400px] max-md:!max-h-[85vh] p-0" data-type="wallet_group-dialog">
+                <DialogContent className=" flex flex-col h-full md:h-auto lg:min-w-[400px] max-md:!max-h-[100vh] p-0" data-type="wallet_group-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Wallet Group</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleWalletDialogSubmit} id={ `walletGroup-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
+                    <form onSubmit={handleWalletDialogSubmit} id={ `walletGroup-dialogForms` } className={ ` flex-1 overflow-auto border-t border-b max-h-screen p-6` }>
                         {/* Name */}
                         <div className={ `form--group` }>
                             <label className={ `form--label` }>Name</label>
@@ -394,14 +394,14 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
                                                                         } else {
                                                                             // Not yet exists, add to array
                                                                             setFormWallet([...formWallet, currentValue])
-                                                                            setComboboxWalletLabel([...comboboxWalletLabel, options?.name]);
+                                                                            setComboboxWalletLabel([...comboboxWalletLabel, `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}`]);
                                                                         }
                                                                     }}
                                                                 >
                                                                     <Check
                                                                         className={ `mr-2 h-4 w-4 ${formWallet.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
                                                                     />
-                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.name}` }</span>
+                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
                                                                 </CommandItem>
                                                             ))}
                                                         </CommandGroup>
@@ -470,6 +470,7 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
                             </div>
                         </div>
                     </form>
+                    
                     <DialogFooter className={ ` p-6 pt-2` }>
                         <Button variant={ `ghost` } onClick={() => {
                             resetWalletDialog();

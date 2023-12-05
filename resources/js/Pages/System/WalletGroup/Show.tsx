@@ -36,6 +36,8 @@ export default function Show({ auth, data }: PageProps<WalletShow>) {
         return <TemplateList wallet={obj}/>;
     }
     useEffect(() => {
+        console.log(data);
+
         setGroupItem(data.wallet_group_item);
     }, [data]);
 

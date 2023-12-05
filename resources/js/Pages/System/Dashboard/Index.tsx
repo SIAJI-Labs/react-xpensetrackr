@@ -3,19 +3,17 @@ import { PageProps, RecordItem } from '@/types';
 import { useIsFirstRender } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 // Partials
 import TemplateListRecord from '@/Components/template/Record/TemplateList';
+import SkeletonList from '@/Components/template/Record/SkeletonList';
 import TemplateNoData from '@/Components/template/TemplateNoData';
 
 // Shadcn Component
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Skeleton } from '@/Components/ui/skeleton';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
-import SkeletonList from '@/Components/template/Record/SkeletonList';
 
 type ContentProps = {
     inspire: string,

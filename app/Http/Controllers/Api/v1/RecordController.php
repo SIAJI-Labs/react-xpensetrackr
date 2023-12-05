@@ -93,7 +93,7 @@ class RecordController extends Controller
 
             // Fetch Data
             $data = [
-                'data' => $data->get(),
+                'data' => \App\Http\Resources\Record\ListResource::collection($data->get()),
                 'has_more' => $hasMore,
                 'total' => $raw->count()
             ];

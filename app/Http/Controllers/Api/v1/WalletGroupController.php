@@ -64,11 +64,12 @@ class WalletGroupController extends Controller
 
             // Fetch Data
             $data = [
-                'data' => $data->get()->map(function($data){
-                    $data->balance = $data->getBalance();
+                // 'data' => $data->get()->map(function($data){
+                //     $data->balance = $data->getBalance();
                     
-                    return $data;
-                }),
+                //     return $data;
+                // }),
+                'data' => \App\Http\Resources\WalletGroup\ListResource::collection($data->get()),
                 'has_more' => $hasMore,
                 'total' => isset($raw) ? $raw->count() : null
             ];
@@ -125,11 +126,8 @@ class WalletGroupController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        // Append temporary column
-        $data->current_balance = $data->getBalance();
-
         return $this->formatedJsonResponse(200, 'Data Fetched', [
-            'data' => $data
+            'data' => new \App\Http\Resources\WalletGroup\ShowResource($data)
         ]);
     }
 

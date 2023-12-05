@@ -1,6 +1,7 @@
+import { Head, Link, router } from "@inertiajs/react";
 import { PageProps, CategoryItem } from "@/types"
 import { useIsFirstRender } from "@/lib/utils";
-import { Head, Link, router } from "@inertiajs/react";
+import { useEffect, useState } from "react";
 
 // Partials
 import TemplateBackButton from "@/Components/template/TemplateBackButton";
@@ -12,20 +13,17 @@ import SystemLayout from "@/Layouts/SystemLayout";
 import { formatRupiah, momentFormated, ucwords } from "@/function";
 
 // Shadcn
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import { useEffect, useState } from "react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 
 // Props
-type CategoryShow = {
+type ContentProps = {
     data: CategoryItem
     related: CategoryItem
 }
 
-export default function Show({ auth, data, related }: PageProps<CategoryShow>) {
-    const isFirstRender = useIsFirstRender();
+export default function Show({ auth, data, related }: PageProps<ContentProps>) {
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
 
     // List Template
@@ -41,12 +39,12 @@ export default function Show({ auth, data, related }: PageProps<CategoryShow>) {
             } else {
                 router.reload();
             }
-
-            // setOpenDropdown(false);
         }
+        document.addEventListener('category.deleted-action', handleDialogEvent);
         document.addEventListener('dialog.category.hidden', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
+            document.addEventListener('category.deleted-action', handleDialogEvent);
             document.removeEventListener('dialog.category.hidden', handleDialogEvent);
         };
     });
@@ -65,7 +63,7 @@ export default function Show({ auth, data, related }: PageProps<CategoryShow>) {
 
                 <Card className={ ` w-full` }>
                     <CardHeader>
-                        <div className={ ` relative flex flex-row justify-between items-start` }>
+                        <div className={ ` relative flex flex-row gap-4 justify-between items-start` }>
                             <div>
                                 <CardTitle>
                                         <div>Category Detail: { `${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</div>
@@ -198,7 +196,7 @@ export default function Show({ auth, data, related }: PageProps<CategoryShow>) {
                                     return <></>;
                                 })()}
 
-                                <div className={ ` flex flex-col items-end` }>
+                                <div className={ ` flex flex-col ${ data.parent_id ? `items-end` : `items-start`}` }>
                                     <span>Last Transaction</span>
                                     <span>-</span>
                                 </div>
@@ -227,8 +225,6 @@ export default function Show({ auth, data, related }: PageProps<CategoryShow>) {
                                             let defaultContent = <TemplateNoData></TemplateNoData>;
 
                                             Object.values(related).forEach((val, index) => {
-                                                console.log(val);
-
                                                 relatedElement.push(
                                                     <div key={ `related_item-${index}` }>
                                                         {listTemplate(val)}

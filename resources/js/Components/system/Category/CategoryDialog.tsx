@@ -150,17 +150,18 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
     }, [formParent]);
 
     // Category Dialog - Forms
-    const resetCategoryDialog = () => {
+    const resetFormDialog = () => {
         setFormUuid('');
         setFormParent('');
         setFormName('');
 
+        // Reset Form Error Bag
         setErrorFormDialog({});
     }
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
     const [formDialogAbortController, setAbortControllerRecordDialog] = useState<AbortController | null>(null);
-    const handleCategoryDialogSubmit: FormEventHandler = (e) => {
+    const handleFormSubmit: FormEventHandler = (e) => {
         // Cancel previous request
         if(formDialogAbortController instanceof AbortController){
             formDialogAbortController.abort();
@@ -187,7 +188,6 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
         let formData = new FormData();
         formData.append('parent_id', formParent);
         formData.append('name', formName);
-
         if(formUuid){
             formData.append('category_uuid', formUuid);
         }
@@ -210,11 +210,12 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                 const responseJson = response.data;
             
                 if (responseJson?.code === 200) {
-                    if (!keepOpenDialog) {
-                        setOpenState(false);
-                    } else {
+                    if (keepOpenDialog) {
                         // Reset form
-                        resetCategoryDialog();
+                        resetFormDialog();
+                    } else {
+                        // Hide dialog
+                        setOpenState(false);
                     }
             
                     toast({
@@ -270,7 +271,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
         if(openState){
             document.dispatchEvent(new CustomEvent('dialog.category.shown', { bubbles: true }));
         } else {
-            resetCategoryDialog();
+            resetFormDialog();
             setKeepOpenCategoryDialog(false);
 
             // Announce Dialog Global Event
@@ -353,14 +354,14 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
     return (
         <section id={ `category-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
-                <DialogContent className=" h-full md:h-auto lg:min-w-[400px] max-md:!max-h-[85vh] p-0" data-type="record-dialog">
+                <DialogContent className=" flex flex-col h-full md:h-auto lg:min-w-[400px] p-0" data-type="record-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Category</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleCategoryDialogSubmit} id={ `category-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
+                    <form onSubmit={handleFormSubmit} id={ `category-dialogForms` } className={ ` flex-1 overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
                         {/* Parent Category */}
-                        <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `record_dialog-parent` }>
+                        <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `form-category_parent` }>
                             <label className={ ` form--label` }>Parent</label>
                             <div>
                                 <Popover open={openCategoryParent} onOpenChange={setOpenCategoryParent}>
@@ -412,7 +413,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                         {/* Name */}
                         <div className={ `form--group` }>
                             <label className={ `form--label` }>Name</label>
-                            <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Category Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
+                            <Input value={ formName } id={ `form-category_name` } onChange={(e) => setFormName(e.target.value)} placeholder={ `Category Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
                                 
                             <ErrorMessage message={ errorFormDialog?.name }/>
                         </div>
@@ -420,13 +421,13 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                         {/* Keep open Planned Payment dialog? */}
                         <div className={ `form-group` }>
                             <div className={ `flex items-center space-x-2` }>
-                                <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
+                                <Checkbox id="form-category_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
                                     if(typeof value === 'boolean'){
                                         setKeepOpenCategoryDialog(value);
                                     }
                                 }} />
                                 <label
-                                    htmlFor="record_dialog-keep_open"
+                                    htmlFor="form-category_keep_open"
                                     className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
                                 >
                                     Keep Open?
@@ -434,9 +435,10 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                             </div>
                         </div>
                     </form>
+
                     <DialogFooter className={ ` p-6 pt-2` }>
                         <Button variant={ `ghost` } onClick={() => {
-                            resetCategoryDialog();
+                            resetFormDialog();
                         }}>
                             <span>Reset</span>
                         </Button>
@@ -444,7 +446,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                             if(document.getElementById('category-dialogForms')){
                                 (document.getElementById('category-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
                             }
-                        }} id='plannedPayment_dialog-submit'>Submit</Button>
+                        }} id='category-dialogSubmit'>Submit</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

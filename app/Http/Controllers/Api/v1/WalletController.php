@@ -20,7 +20,7 @@ class WalletController extends Controller
         $user = $request->user();
 
         $data = \App\Models\Wallet::query()
-            ->with('parent')
+            ->with('parent', 'child')
             ->where('user_id', $user->id);
 
         // Apply Filter
@@ -100,11 +100,7 @@ class WalletController extends Controller
 
             // Fetch Data
             $data = [
-                'data' => $data->get()->map(function($data){
-                    $data->balance = $data->getBalance();
-                    
-                    return $data;
-                }),
+                'data' => \App\Http\Resources\Wallet\ListResource::collection($data->get()),
                 'has_more' => $hasMore,
                 'total' => isset($raw) ? $raw->count() : null
             ];
@@ -165,11 +161,8 @@ class WalletController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        // Append temporary column
-        $data->current_balance = $data->getBalance();
-
         return $this->formatedJsonResponse(200, 'Data Fetched', [
-            'data' => $data
+            'data' => new \App\Http\Resources\Wallet\ShowResource($data)
         ]);
     }
 

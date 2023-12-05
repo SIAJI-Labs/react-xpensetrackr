@@ -100,7 +100,7 @@ class CategoryController extends Controller
 
             // Fetch Data
             $data = [
-                'data' => $data->get(),
+                'data' => \App\Http\Resources\Category\ListResource::collection($data->get()),
                 'has_more' => $hasMore,
                 'total' => isset($raw) ? $raw->count() : null
             ];
@@ -161,7 +161,7 @@ class CategoryController extends Controller
             ->firstOrFail();
 
         return $this->formatedJsonResponse(200, 'Data Fetched', [
-            'data' => $data
+            'data' => new \App\Http\Resources\Category\ShowResource($data)
         ]);
     }
 

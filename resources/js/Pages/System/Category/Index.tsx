@@ -5,21 +5,21 @@ import { PageProps } from "@/types"
 import axios from "axios";
 
 // Partials
+import ListSkeleton from "@/Components/template/Category/SkeletonList";
 import ListTemplate from "@/Components/template/Category/TemplateList";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import ListSkeleton from "@/Components/template/Category/SkeletonList";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 
 // Props
-type CategoryIndexProps = {
+type ContentProps = {
 }
 
-export default function Index({ auth }: PageProps<CategoryIndexProps>) {
+export default function Index({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     const [contentIsLoading, setContentIsLoading] = useState<boolean>(true);
     useEffect(() => {
@@ -27,7 +27,7 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
         fetchCategoryData();
     }, []);
 
-    // Record Filter
+    // Filter
     const [filterKeyword, setFilterKeyword] = useState<string>('');
     useEffect(() => {
         if(!isFirstRender){
@@ -36,7 +36,7 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
                 fetchCategoryData();
             }, 500);
     
-            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+            // Clean up the timer if the component unmounts or when filterKeyword changes.
             return () => {
                 clearTimeout(timer);
             };
@@ -45,7 +45,6 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
 
     // Category Data
     const [categoryItemAbortController, setCategoryItemAbortController] = useState<AbortController | null>(null);
-    const [categoryIsLoading, setCategoryIsLoading] = useState<boolean>(true);
     const [categoryItem, setCategoryItem] = useState<any[]>();
     // Paginaton
     let paginate_item = 5;
@@ -98,7 +97,6 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
 
             // Remove loading state
             setContentIsLoading(false);
-
             // Clear the AbortController from state
             setCategoryItemAbortController(null);
         } catch (error) {
@@ -123,7 +121,7 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
         return <ListSkeleton/>
     }
     useEffect(() => {
-        // Update skeleton count to match loaded planned item
+        // Update skeleton count to match loaded item
         if(categoryItem){
             setSkeletonCount(categoryItem.length > 0 ? categoryItem.length : 3);
         }
@@ -134,19 +132,19 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
     }
 
     useEffect(() => {
-        // Listen to Record Dialog event
-        const handleDialogRecord = () => {
+        // Listen to Dialog event
+        const handkeDialogEvent = () => {
             setTimeout(() => {
                 fetchCategoryData();
             }, 100);
         }
 
-        document.addEventListener('dialog.category.hidden', handleDialogRecord);
-        document.addEventListener('category.deleted-action', handleDialogRecord);
+        document.addEventListener('dialog.category.hidden', handkeDialogEvent);
+        document.addEventListener('category.deleted-action', handkeDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialog.category.hidden', handleDialogRecord);
-            document.removeEventListener('category.deleted-action', handleDialogRecord);
+            document.removeEventListener('dialog.category.hidden', handkeDialogEvent);
+            document.removeEventListener('category.deleted-action', handkeDialogEvent);
         };
     });
 
@@ -207,26 +205,22 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
                                     </Link>
                                 </div>
                             </div>
+
                             {/* Content */}
                             <div className={ ` flex flex-col gap-4` }>
-                            {(() => {
-                                if(contentIsLoading){
-                                    let element: any[] = [];
-                                    for(let i = 0; i < skeletonCount; i++){
-                                        element.push(
-                                            <div key={ `skeleton-${i}` }>
-                                                {listSkeleton()}
-                                            </div>
-                                        );
-                                    }
-
-                                    return element;
-                                } else {
+                                {(() => {
                                     let categoryElement: any[] = [];
                                     let defaultContent = <TemplateNoData></TemplateNoData>;
 
-                                    // Loop through response
-                                    if(categoryItem && categoryItem.length > 0){
+                                    if(contentIsLoading){
+                                        for(let i = 0; i < skeletonCount; i++){
+                                            categoryElement.push(
+                                                <div key={ `skeleton-${i}` }>
+                                                    {listSkeleton()}
+                                                </div>
+                                            );
+                                        }
+                                    } else if(categoryItem && categoryItem.length > 0){
                                         categoryItem.map((val, index) => {
                                             categoryElement.push(
                                                 <div key={ `category_item-${index}` }>
@@ -237,9 +231,6 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
                                     }
 
                                     return categoryElement.length > 0 ? categoryElement : defaultContent;
-                                }
-
-                                return <></>;
                                 })()}
                             </div>
                         </div>

@@ -9,20 +9,24 @@ import '@/function';
 // Plugins
 import '@/../plugins/fontawesome/all.scss';
 
+// Partials - Dialog
+import CategoryDeleteDialog from '@/Components/system/Category/CategoryDeleteDialog';
+import CategoryDialog from '@/Components/system/Category/CategoryDialog';
+import PlannedPaymentDeleteDialog from '@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog';
+import PlannedPaymentDialog from '@/Components/system/PlannedPayment/PlannedPaymentDialog';
+import RecordDeleteDialog from '@/Components/system/Record/RecordDeleteDialog';
+import RecordDialog from '@/Components/system/Record/RecordDialog';
+import TagsDeleteDialog from '@/Components/system/Tags/TagsDeleteDialog';
+import TagsDialog from '@/Components/system/Tags/TagsDialog';
+import WalletBalanceAdjustmentDialog from '@/Components/system/Wallet/WalletBalanceAdjustmentDialog';
+import WalletDeleteDialog from '@/Components/system/Wallet/WalletDeleteDialog';
+import WalletDialog from '@/Components/system/Wallet/WalletDialog';
+import WalletGroupDeleteDialog from '@/Components/system/WalletGroup/WalletGroupDeleteDialog';
+import WalletGroupDialog from '@/Components/system/WalletGroup/WalletGroupDialog';
+
 // Partials
 import { ThemeProvider } from '@/Components/template/theme-provider';
 import Navbar from './Partials/Navbar';
-import RecordDialog from '@/Components/system/Record/RecordDialog';
-import RecordDeleteDialog from '@/Components/system/Record/RecordDeleteDialog';
-import PlannedPaymentDialog from '@/Components/system/PlannedPayment/PlannedPaymentDialog';
-import PlannedPaymentDeleteDialog from '@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog';
-import WalletDialog from '@/Components/system/Wallet/WalletDialog';
-import WalletDeleteDialog from '@/Components/system/Wallet/WalletDeleteDialog';
-import WalletBalanceAdjustmentDialog from '@/Components/system/Wallet/WalletBalanceAdjustmentDialog';
-import CategoryDialog from '@/Components/system/Category/CategoryDialog';
-import CategoryDeleteDialog from '@/Components/system/Category/CategoryDeleteDialog';
-import TagsDialog from '@/Components/system/Tags/TagsDialog';
-import TagsDeleteDialog from '@/Components/system/Tags/TagsDeleteDialog';
 
 // Shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
@@ -30,8 +34,6 @@ import { useToast } from '@/Components/ui/use-toast';
 import { ToastAction } from '@/Components/ui/toast';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
-import WalletGroupDialog from '@/Components/system/WalletGroup/WalletGroupDialog';
-import WalletGroupDeleteDialog from '@/Components/system/WalletGroup/WalletGroupDeleteDialog';
 
 export default function SystemLayout({ user, header, children, fabAction = null }: PropsWithChildren<{ user: User, header?: ReactNode, fabAction?: any[] | null }>) {
     const { toast } = useToast();
@@ -134,7 +136,6 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#29c485"/>
             </Head>
 
-            {/* <div className="min-h-screen bg-gray-50 dark:bg-background relative"> */}
             <div className="min-h-screen bg-slate-50 dark:bg-background relative">
                 {/* Navbar */}
                 <Navbar
@@ -148,6 +149,7 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                     </header>
                 )} */}
 
+                {/* Main Content */}
                 <div className={ ` flex justify-center p-6` }>
                     <main className={ ` w-full md:max-w-[420px] md:min-w-[420px] py-[calc(64px)]` }>
                         {children}
@@ -285,7 +287,7 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 <WalletGroupDeleteDialog openState={ openWalletGroupDeleteDialog } setOpenState={ handleOpenWalletGroupDeleteDialog }/>
             </div>
 
-            <Toaster />
+            <Toaster/>
         </ThemeProvider>
     );
 }

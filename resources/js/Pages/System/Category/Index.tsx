@@ -5,8 +5,8 @@ import { PageProps } from "@/types"
 import axios from "axios";
 
 // Partials
-import ListSkeleton from "@/Components/template/Category/SkeletonList";
-import ListTemplate from "@/Components/template/Category/TemplateList";
+import CategorySkeleton from "@/Components/template/Category/SkeletonList";
+import CategoryTemplate from "@/Components/template/Category/TemplateList";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
@@ -66,7 +66,7 @@ export default function Index({ auth }: PageProps<ContentProps>) {
         // Store the AbortController in state
         setCategoryItemAbortController(abortController);
 
-        // Build parameter
+        // Build request parameter
         const query = [];
         const obj = {
             limit: paginate,
@@ -118,7 +118,7 @@ export default function Index({ auth }: PageProps<ContentProps>) {
     // List Skeleton
     const [skeletonCount, setSkeletonCount] = useState<number>(5);
     let listSkeleton = () => {
-        return <ListSkeleton/>
+        return <CategorySkeleton/>
     }
     useEffect(() => {
         // Update skeleton count to match loaded item
@@ -126,25 +126,26 @@ export default function Index({ auth }: PageProps<ContentProps>) {
             setSkeletonCount(categoryItem.length > 0 ? categoryItem.length : 3);
         }
     }, [categoryItem]);
+
     // List Template
     let listTemplate = (obj?:any[]) => {
-        return <ListTemplate category={obj}/>;
+        return <CategoryTemplate category={obj}/>;
     }
 
     useEffect(() => {
         // Listen to Dialog event
-        const handkeDialogEvent = () => {
+        const handleDialogEvent = () => {
             setTimeout(() => {
                 fetchCategoryData();
             }, 100);
         }
 
-        document.addEventListener('dialog.category.hidden', handkeDialogEvent);
-        document.addEventListener('category.deleted-action', handkeDialogEvent);
+        document.addEventListener('dialog.category.hidden', handleDialogEvent);
+        document.addEventListener('category.deleted-action', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialog.category.hidden', handkeDialogEvent);
-            document.removeEventListener('category.deleted-action', handkeDialogEvent);
+            document.removeEventListener('dialog.category.hidden', handleDialogEvent);
+            document.removeEventListener('category.deleted-action', handleDialogEvent);
         };
     });
 
@@ -177,6 +178,7 @@ export default function Index({ auth }: PageProps<ContentProps>) {
                                     // Fetch Pending Count
                                     fetchCategoryData();
                                 }}><i className={ `fa-solid fa-rotate-right` }></i></Button>
+
                                 {/* Add new Button */}
                                 <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
                                     document.dispatchEvent(new CustomEvent('category.edit-action', {

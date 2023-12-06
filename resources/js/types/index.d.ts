@@ -13,7 +13,8 @@ export interface CategoryItem {
     uuid: string,
     user_id: number,
     parent_id: number,
-    parent: CategoryItem,
+    parent?: CategoryItem,
+    child?: CategoryItem[],
     name: string,
     deleted_at?: string | null
 }

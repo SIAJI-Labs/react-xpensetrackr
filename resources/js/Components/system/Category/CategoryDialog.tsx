@@ -332,7 +332,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
 
                     // Update Combobox Label
                     if(data.parent){
-                        setComboboxParentLabel(`${data.parent ? `${data.parent.name} - ` : ''}${data.name}`);
+                        setComboboxParentLabel(data.parent.name);
                     }
                     
                     // Open record-dialog

@@ -106,9 +106,9 @@ export default function Index({ auth, type = 'list' }: PageProps<ContentProps>) 
                                     {(() => {
                                         // Show content based on selected page type
                                         if(pageType === 'summary'){
-                                            return <PlannedPaymentSummary auth={auth} activeType={pageType}/>
+                                            return <PlannedPaymentSummary auth={auth}/>
                                         } else if(pageType === 'list'){
-                                            return <PlannedPaymentList auth={auth} activeType={pageType}/>
+                                            return <PlannedPaymentList auth={auth}/>
                                         }
 
                                         return <></>;

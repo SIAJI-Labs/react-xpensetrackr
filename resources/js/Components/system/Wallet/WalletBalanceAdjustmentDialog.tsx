@@ -240,8 +240,8 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
                     setFormUuid(data.uuid)
                     setFormName(data.name);
                     setFormParent(data.parent ? data.parent.uuid : '');
-                    setFormCurrentBalance(data.current_balance ? data.current_balance : 0);
-                    setFormActualBalance(data.current_balance ? data.current_balance : 0);
+                    setFormCurrentBalance(data.balance ? data.balance : 0);
+                    setFormActualBalance(data.balance ? data.balance : 0);
 
                     // Open wallet-dialog
                     setTimeout(() => {

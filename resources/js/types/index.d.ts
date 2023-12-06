@@ -13,7 +13,8 @@ export interface CategoryItem {
     uuid: string,
     user_id: number,
     parent_id: number,
-    parent: CategoryItem,
+    parent?: CategoryItem,
+    child?: CategoryItem[],
     name: string,
     deleted_at?: string | null
 }
@@ -91,7 +92,7 @@ export interface WalletItem {
     user_id: number;
     parent_id: number,
     parent: WalletItem,
-    child?: WalletItem,
+    child?: WalletItem[],
     type: string,
     name: string,
     starting_balance?: number,

@@ -30,7 +30,7 @@ class TagsController extends Controller
             ->firstOrFail();
 
         return Inertia::render('System/Tags/Show', [
-            'data' => $data,
+            'data' => new \App\Http\Resources\Tags\ShowResource($data),
         ]);
     }
 }

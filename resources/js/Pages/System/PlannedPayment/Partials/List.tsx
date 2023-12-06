@@ -13,11 +13,10 @@ import { Input } from "@/Components/ui/input";
 import ListSkeleton from "@/Components/template/PlannedPayment/SkeletonList";
 
 // Props
-type PlannedPaymentListProps = {
-    activeType?: string
+type ContentProps = {
 }
 
-export default function PlannedPaymentList({ auth, activeType }: PageProps<PlannedPaymentListProps>) {
+export default function PlannedPaymentList({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     useEffect(() => {
         // Run on tab changed

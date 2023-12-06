@@ -1,7 +1,8 @@
-import { Head, router } from "@inertiajs/react";
 import { PageProps, WalletItem } from "@/types";
+import { Head, router } from "@inertiajs/react";
 import { useIsFirstRender } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import axios, { AxiosError } from "axios";
 
 // Plugins
 import '@/../plugins/nestable/css/nestable.scss';
@@ -16,18 +17,17 @@ import SystemLayout from "@/Layouts/SystemLayout";
 // Shadcn
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { useToast } from "@/Components/ui/use-toast";
-import axios, { AxiosError } from "axios";
-import { abort } from "process";
 
 // Props
-type WalletReOrderProps = {
+type ContentProps = {
     listWallet: WalletItem
 }
 
-export default function Index({ auth, listWallet }: PageProps<WalletReOrderProps>) {
+export default function Index({ auth, listWallet }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     const { toast } = useToast();
 
+    // Generate key to force update page render
     const [key, setKey] = useState<string>('');
     const generateKey = (): string => {
         return uuidv4();
@@ -135,16 +135,6 @@ export default function Index({ auth, listWallet }: PageProps<WalletReOrderProps
             updateHierarchy(serialize);
         });
     }
-    useEffect(() => {
-        if(isFirstRender){
-            // Generate key
-            setKey(generateKey());
-        }
-    });
-    useEffect(() => {
-        // Generate Nestable
-        initNestable();
-    }, [key]);
     // Handle update
     let updateHierarchyAbortController: AbortController | null = null;
     const updateHierarchy = (hierarchy: any) => {
@@ -180,10 +170,17 @@ export default function Index({ auth, listWallet }: PageProps<WalletReOrderProps
     }
 
     useEffect(() => {
+        // Generate key
+        setKey(generateKey());
+    }, []);
+    useEffect(() => {
+        // Generate Nestable
+        initNestable();
+    }, [key]);
+
+    useEffect(() => {
         const handlePopstate = () => {
             // This function will be called when the user navigates through the history
-            console.log('User navigated in history');
-            console.log(updateHierarchyAbortController);
             if(updateHierarchyAbortController instanceof AbortController){
                 updateHierarchyAbortController.abort();
             }

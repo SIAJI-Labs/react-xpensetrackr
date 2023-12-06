@@ -120,7 +120,7 @@ export default function TemplateList({ record, deleteAction = true, editAction =
 
                     <div className={ ` w-full flex flex-col overflow-hidden` }>
                         <span className={ ` whitespace-nowrap overflow-hidden text-ellipsis font-medium` }>
-                            { record?.category ? (`${record.category.parent ? `${record.category.parent.name} - ` : ''}${record.category.name}`) : 'Uncategorized' }
+                            { record?.category ? record.category.name : 'Uncategorized' }
                         </span>
                         <span className={ ` whitespace-nowrap text-sm overflow-hidden text-ellipsis` }>{record?.note ?? 'No description'}</span>
                     </div>
@@ -143,11 +143,11 @@ export default function TemplateList({ record, deleteAction = true, editAction =
                     // Wallet
                     if(record?.from_wallet){
                         let walletName = [];
-                        walletName.push(<span key={ `from_wallet-${record?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ `${record?.from_wallet.parent ? `${record.from_wallet.parent.name} - ` : ``}${record?.from_wallet?.name}` }</span>);
+                        walletName.push(<span key={ `from_wallet-${record?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ record?.from_wallet?.name }</span>);
                         if(record?.to_wallet){
                             // Push to Wallet
                             walletName.push(<i key={ `icon_wallet-${record?.uuid}` } className={ `fa-solid ${record?.type === 'expense' ? 'fa-caret-right' : 'fa-caret-left'}` }></i>);
-                            walletName.push(<span key={ `to_wallet-${record?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ `${record?.to_wallet.parent ? `${record.to_wallet.parent.name} - ` : ``}${record?.to_wallet?.name}` }</span>);
+                            walletName.push(<span key={ `to_wallet-${record?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ record?.to_wallet?.name }</span>);
                         }
                         
                         information.push(

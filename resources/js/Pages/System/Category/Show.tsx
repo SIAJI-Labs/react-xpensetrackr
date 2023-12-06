@@ -3,14 +3,15 @@ import { PageProps, CategoryItem } from "@/types"
 import { useIsFirstRender } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
+// Plugins
+import { formatRupiah, momentFormated, ucwords } from "@/function";
+
 // Partials
 import TemplateBackButton from "@/Components/template/TemplateBackButton";
 import ListTemplate from "@/Components/template/Category/TemplateList";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
-// Plugins
-import { formatRupiah, momentFormated, ucwords } from "@/function";
 
 // Shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
@@ -20,14 +21,13 @@ import { Button } from "@/Components/ui/button";
 // Props
 type ContentProps = {
     data: CategoryItem
-    related: CategoryItem
 }
 
-export default function Show({ auth, data, related }: PageProps<ContentProps>) {
+export default function Show({ auth, data }: PageProps<ContentProps>) {
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
 
     // List Template
-    let listTemplate = (obj?:any[]) => {
+    let listTemplate = (obj?: CategoryItem | any[]) => {
         return <ListTemplate category={obj}/>;
     }
 
@@ -35,11 +35,12 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
     useEffect(() => {
         const handleDialogEvent = (event: any) => {
             if(event.detail?.action && event.detail?.action === 'delete'){
-                location.href = route('sys.category.index');
+                router.visit(route('sys.category.index'))
             } else {
                 router.reload();
             }
         }
+
         document.addEventListener('category.deleted-action', handleDialogEvent);
         document.addEventListener('dialog.category.hidden', handleDialogEvent);
         // Remove the event listener when the component unmounts
@@ -53,9 +54,9 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
         <>
             <SystemLayout
                 user={auth.user}
-                header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Category Detail: { `${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</h2>}
+                header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Category Detail: { `${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</h2>}
             >
-                <Head title={ `Planned Summary: ${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` } />
+                <Head title={ `Category: ${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` } />
 
                 <div className="flex flex-col gap-6">
                     <TemplateBackButton className={ `px-0` }/>
@@ -66,9 +67,9 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
                         <div className={ ` relative flex flex-row gap-4 justify-between items-start` }>
                             <div>
                                 <CardTitle>
-                                        <div>Category Detail: { `${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</div>
+                                        <div>Category Detail: { `${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</div>
                                 </CardTitle>
-                                <CardDescription>See summary of <u>{ `${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</u> category</CardDescription>
+                                <CardDescription>See summary of <u>{ `${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</u> category</CardDescription>
                             </div>
                             
                             <div>
@@ -179,24 +180,22 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
                             })()}
 
                             <div className={ ` flex flex-row justify-between` }>
-                                {(() => {
-                                    if(data.parent_id){
-                                        return <>
-                                            <div className={ ` flex flex-row justify-between` }>
-                                                <div className={ ` flex flex-col` }>
-                                                    <span>Related to</span>
-                                                    <Link href={ route('sys.category.show', data.parent.uuid) }>
-                                                        <span className={ `font-semibold underline` }>{ data.parent.name }</span>
-                                                    </Link>
-                                                </div>
-                                            </div>
-                                        </>;
-                                    }
+                                <div className={ ` flex flex-row justify-between` }>
+                                    <div className={ ` flex flex-col` }>
+                                        <span>Related to</span>
+                                        {(() => {
+                                            if(data.parent){
+                                                return <Link href={ route('sys.category.show', data.parent.uuid) }>
+                                                    <span className={ `font-semibold underline` }>{ data.parent.name }</span>
+                                                </Link>
+                                            }
 
-                                    return <></>;
-                                })()}
+                                            return <>-</>;
+                                        })()}
+                                    </div>
+                                </div>
 
-                                <div className={ ` flex flex-col ${ data.parent_id ? `items-end` : `items-start`}` }>
+                                <div className={ ` flex flex-col items-end` }>
                                     <span>Last Transaction</span>
                                     <span>-</span>
                                 </div>
@@ -206,15 +205,22 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
                 </Card>
 
                 {(() => {
-                    if(related && Object.keys(related).length > 0){
+                    if(data.child && Object.keys(data.child).length > 0){
                         return <>
                             <Card className={ ` w-full mt-6` }>
                                 <CardHeader>
                                     <div className={ ` relative flex flex-row justify-between items-start` }>
                                         <div>
                                             <CardTitle>
-                                                <div className={ ` text-base` }>Related wallet</div>
+                                                <div className={ ` text-base` }>Related category</div>
                                             </CardTitle>
+                                            {(() => {
+                                                if(data.child){
+                                                    return <CardDescription>There's { data.child.length } item(s) related to <u>{ data.name }</u></CardDescription>
+                                                }
+
+                                                return <></>;
+                                            })()}
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -224,7 +230,7 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
                                             let relatedElement: any = [];
                                             let defaultContent = <TemplateNoData></TemplateNoData>;
 
-                                            Object.values(related).forEach((val, index) => {
+                                            Object.values(data.child).forEach((val, index) => {
                                                 relatedElement.push(
                                                     <div key={ `related_item-${index}` }>
                                                         {listTemplate(val)}

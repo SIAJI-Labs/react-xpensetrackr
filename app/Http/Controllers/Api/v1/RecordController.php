@@ -259,7 +259,7 @@ class RecordController extends Controller
         }
 
         return $this->formatedJsonResponse(200, 'Data Fetched', [
-            'data' => $data
+            'data' => (new \App\Http\Resources\Record\ShowResource($data)),
         ]);
     }
 

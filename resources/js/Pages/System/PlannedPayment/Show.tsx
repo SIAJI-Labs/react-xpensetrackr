@@ -19,24 +19,23 @@ import SystemLayout from "@/Layouts/SystemLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Separator } from "@/Components/ui/separator";
-import { Skeleton } from "@/Components/ui/skeleton";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import PlannedPaymentDeleteDialog from "@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog";
 
 // Props
-type PlannedPaymentShowProps = {
+type ContentProps = {
     data: PlannedItem
 }
 
-export default function Show({ auth, data }: PageProps<PlannedPaymentShowProps>) {
+export default function Show({ auth, data }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
     useEffect(() => {
         // Listen to Record Dialog event
         const handleDialogPlannedPayment = (event: any) => {
             if(event.detail?.action && event.detail?.action === 'delete'){
-                location.href = route('sys.planned-payment.index');
+                router.visit(route('sys.planned-payment.index'));
             } else {
                 router.reload();
                 fetchPlannedItem();

@@ -29,7 +29,7 @@ export default function TemplateList({ wallet, deleteAction = true, editAction =
             <div className={ ` flex flex-col gap-2 border rounded p-4 cursor-pointer` }>
                 {/* Date, amount and action */}
                 <div className={ ` flex flex-row gap-6 justify-between` }>
-                    <span className={ ` font-medium w-full md:w-auto whitespace-nowrap overflow-hidden text-ellipsis` }>{ wallet && 'name' in wallet ? `${wallet.parent ? `${wallet.parent.name} - ` : ''}${wallet?.name}` : '-' }</span>
+                    <span className={ ` font-medium w-full md:w-auto whitespace-nowrap overflow-hidden text-ellipsis` }>{ wallet && 'name' in wallet ? wallet?.name : '-' }</span>
 
                     <div className={ ` flex flex-row flex-1 md:flex-none justify-between gap-2 items-center` }>
                         <span className={ ` font-normal whitespace-nowrap ` }>{ formatRupiah( wallet && 'balance' in wallet ? wallet.balance : 0) }</span>
@@ -57,6 +57,7 @@ export default function TemplateList({ wallet, deleteAction = true, editAction =
                                         }
                                         return <></>;
                                     })()}
+
                                     {/* Edit Action */}
                                     {(() => {
                                         // Check if record dialog form is exists
@@ -91,6 +92,7 @@ export default function TemplateList({ wallet, deleteAction = true, editAction =
 
                                         return <></>;
                                     })()}
+
                                     {/* Balance Adjustment Action */}
                                     {(() => {
                                         // Check if record dialog form is exists
@@ -125,6 +127,7 @@ export default function TemplateList({ wallet, deleteAction = true, editAction =
 
                                         return <></>;
                                     })()}
+
                                     {/* Delete Action */}
                                     {(() => {
                                         // Check if record dialog form is exists

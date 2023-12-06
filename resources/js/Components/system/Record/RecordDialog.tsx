@@ -160,7 +160,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                 ) as CategoryItem | undefined;
     
                 if (selected) {
-                    setComboboxCategoryLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                    setComboboxCategoryLabel(selected.name);
                 }
             } else {
                 setComboboxCategoryLabel(`Select an option`);
@@ -264,7 +264,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                 ) as WalletItem | undefined;
     
                 if (selected) {
-                    setComboboxFromWalletLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                    setComboboxFromWalletLabel(selected.name);
                 }
             } else {
                 setComboboxFromWalletLabel(`Select an option`);
@@ -368,7 +368,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                 ) as WalletItem | undefined;
     
                 if (selected) {
-                    setComboboxToWalletLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                    setComboboxToWalletLabel(selected.name);
                 }
             } else {
                 setComboboxToWalletLabel(`Select an option`);
@@ -739,13 +739,13 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
                     // Update Combobox Label
                     if(data.category){
-                        setComboboxCategoryLabel(`${data.category.parent ? `${data.category.parent.name} - ` : ''}${data.category.name}`);
+                        setComboboxCategoryLabel(data.category.name);
                     }
                     if(data.from_wallet){
-                        setComboboxFromWalletLabel(`${data.from_wallet.parent ? `${data.from_wallet.parent.name} - ` : ''}${data.from_wallet.name}`);
+                        setComboboxFromWalletLabel(data.from_wallet.name);
                     }
                     if(data.to_wallet){
-                        setComboboxToWalletLabel(`${data.to_wallet.parent ? `${data.to_wallet.parent.name} - ` : ''}${data.to_wallet.name}`);
+                        setComboboxToWalletLabel(data.to_wallet.name);
                     }
 
                     // Handle tags
@@ -849,13 +849,13 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
                     // Update Combobox Label
                     if(data.category){
-                        setComboboxCategoryLabel(`${data.category.parent ? `${data.category.parent.name} - ` : ''}${data.category.name}`);
+                        setComboboxCategoryLabel(data.category.name);
                     }
                     if(data.from_wallet){
-                        setComboboxFromWalletLabel(`${data.from_wallet.parent ? `${data.from_wallet.parent.name} - ` : ''}${data.from_wallet.name}`);
+                        setComboboxFromWalletLabel(data.from_wallet.name);
                     }
                     if(data.to_wallet){
-                        setComboboxToWalletLabel(`${data.to_wallet.parent ? `${data.to_wallet.parent.name} - ` : ''}${data.to_wallet.name}`);
+                        setComboboxToWalletLabel(data.to_wallet.name);
                     }
 
                     // Handle tags
@@ -977,7 +977,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                                             <Check
                                                                                 className={ `mr-2 h-4 w-4 ${formCategory === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                             />
-                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
                                                                         </CommandItem>
                                                                     ))}
                                                             </CommandGroup>
@@ -1027,7 +1027,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                                         <Check
                                                                             className={ `mr-2 h-4 w-4 ${formFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                         />
-                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
                                                                     </CommandItem>
                                                                 ))}
                                                             </CommandGroup>
@@ -1078,7 +1078,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                                                 <Check
                                                                                     className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                                 />
-                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
                                                                             </CommandItem>
                                                                         ))}
                                                                     </CommandGroup>

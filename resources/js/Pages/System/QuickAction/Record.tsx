@@ -1,35 +1,37 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageProps, WalletItem } from "@/types";
-import axios, { AxiosError } from "axios";
 import { Head, Link } from "@inertiajs/react";
+import axios, { AxiosError } from "axios";
 
-import '@/../plugins/fontawesome/all.scss';
+// Plugins
 import { formatRupiah, ucwords } from "@/function";
+import '@/../plugins/fontawesome/all.scss';
+import { IMaskMixin } from "react-imask";
 import moment from "moment-timezone";
 import '@/../css/siaji.scss';
 
 // Partials
+import { ThemeToggle } from "@/Components/template/theme-toggle";
 import ErrorMessage from "@/Components/forms/ErrorMessage";
+import ApplicationLogo from "@/Components/ApplicationLogo";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useToast } from "@/Components/ui/use-toast";
 import PublicLayout from '@/Layouts/PublicLayout';
 
+// Shadcn
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
+import { ScrollArea } from "@/Components/ui/scroll-area";
 import { Textarea } from "@/Components/ui/textarea";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Input } from "@/Components/ui/input";
-import { IMaskMixin } from "react-imask";
-import ApplicationLogo from "@/Components/ApplicationLogo";
-import { ScrollArea } from "@/Components/ui/scroll-area";
-import { ThemeToggle } from "@/Components/template/theme-toggle";
 
-type Props = {
+type ContentProps = {
 }
 
-export default function Record({ auth }: PageProps<Props>) {
+export default function Record({ auth }: PageProps<ContentProps>) {
     const { toast } = useToast();
 
     // extend style component
@@ -198,6 +200,7 @@ export default function Record({ auth }: PageProps<Props>) {
             }
         }
     }, [formIndex]);
+
     // Quick Action: Reset Form
     const formReset = () => {
         setFormType('expense');
@@ -376,7 +379,7 @@ export default function Record({ auth }: PageProps<Props>) {
             ) as WalletItem | undefined;
 
             if (selected) {
-                setFromWalletComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                setFromWalletComboboxLabel(selected.name);
             }
         } else {
             setFromWalletComboboxLabel(`Select an option`);
@@ -475,7 +478,7 @@ export default function Record({ auth }: PageProps<Props>) {
             ) as WalletItem | undefined;
 
             if (selected) {
-                setToWalletComboboxLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
+                setToWalletComboboxLabel(selected.name);
             }
         } else {
             setToWalletComboboxLabel(`Select an option`);
@@ -508,7 +511,7 @@ export default function Record({ auth }: PageProps<Props>) {
         <PublicLayout>
             <Head title="Quick Action: Create new Record"/>
 
-            <div className={ ` flex flex-col justify-center items-center h-screen w-screen` }>
+            <div className={ ` flex flex-col justify-center max-md:justify-end max-md:pb-6 items-center h-screen w-screen` }>
                 <main className={ ` w-full md:max-w-[420px] md:min-w-[420px] px-4 md:px-6` }>
                     <div className={ ` mb-4` }>
                         <Link href={ route('sys.index') }>
@@ -595,7 +598,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                                             <Check
                                                                                                 className={ `mr-2 h-4 w-4 ${formFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                                             />
-                                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
                                                                                         </CommandItem>
                                                                                     ))}
                                                                                 </CommandGroup>
@@ -646,7 +649,7 @@ export default function Record({ auth }: PageProps<Props>) {
                                                                                                     <Check
                                                                                                         className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                                                     />
-                                                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
                                                                                                 </CommandItem>
                                                                                             ))}
                                                                                         </CommandGroup>

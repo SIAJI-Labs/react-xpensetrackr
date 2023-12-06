@@ -1,52 +1,44 @@
-import { PageProps, TagsItem } from "@/types"
-import { useIsFirstRender } from "@/lib/utils";
 import { Head, Link, router } from "@inertiajs/react";
+import { PageProps, TagsItem } from "@/types"
 
 // Partials
 import TemplateBackButton from "@/Components/template/TemplateBackButton";
-import ListTemplate from "@/Components/template/Tags/TemplateList";
-import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Plugins
-import { formatRupiah, momentFormated, ucwords } from "@/function";
+import { momentFormated } from "@/function";
 
 // Shadcn
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
 import { useEffect, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 
 // Props
-type TagsShow = {
+type ContentProps = {
     data: TagsItem
     related: TagsItem
 }
 
-export default function Show({ auth, data, related }: PageProps<TagsShow>) {
-    const isFirstRender = useIsFirstRender();
+export default function Show({ auth, data, related }: PageProps<ContentProps>) {
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
-
-    // List Template
-    let listTemplate = (obj?:any[]) => {
-        return <ListTemplate tags={obj}/>;
-    }
 
     // Listen to Record Dialog event
     useEffect(() => {
         const handleDialogEvent = (event: any) => {
             if(event.detail?.action && event.detail?.action === 'delete'){
-                location.href = route('sys.tags.index');
+                router.visit(route('sys.tags.index'));
             } else {
                 router.reload();
             }
 
             // setOpenDropdown(false);
         }
+        document.addEventListener('tags.deleted-action', handleDialogEvent);
         document.addEventListener('dialog.tags.hidden', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
+            document.removeEventListener('tags.deleted-action', handleDialogEvent);
             document.removeEventListener('dialog.tags.hidden', handleDialogEvent);
         };
     });
@@ -57,7 +49,7 @@ export default function Show({ auth, data, related }: PageProps<TagsShow>) {
                 user={auth.user}
                 header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Tags Detail: { `${data?.name}` }</h2>}
             >
-                <Head title={ `Planned Summary: ${data?.name}` } />
+                <Head title={ `Tags: ${data?.name}` } />
 
                 <div className="flex flex-col gap-6">
                     <TemplateBackButton className={ `px-0` }/>

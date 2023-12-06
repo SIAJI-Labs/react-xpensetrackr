@@ -18,11 +18,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ucwords } from '@/function';
 
 // Props
-type RecordIndexProps = {
+type ContentProps = {
     type?: string
 }
 
-export default function Index({ auth, type = 'complete' }: PageProps<RecordIndexProps>) {
+export default function Index({ auth, type = 'complete' }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     // Record List - Template
     const recordListTemplate = (obj:RecordItem) => {

@@ -16,7 +16,7 @@ class ShowResource extends JsonResource
     {
         return [
             'uuid' => $this->uuid,
-            'name' => ($this->parent()->exists() ? $this->parent->name.' - ' : '').$this->name,
+            'name' => $this->name,
             'balance' => $this->getBalance(),
             'type' => $this->type,
             'created_at' => $this->created_at,

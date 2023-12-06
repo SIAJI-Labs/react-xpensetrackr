@@ -1,12 +1,13 @@
 import { FormEventHandler, useEffect, useState } from 'react';
 import { PageProps, RecordItem, User } from '@/types';
-import { useIsFirstRender } from '@/lib/utils';
 import { Head, Link, router } from '@inertiajs/react';
+import { useIsFirstRender } from '@/lib/utils';
 import axios, { AxiosError } from 'axios';
 
 // plugins
 import { camel2title, getDicebearAvatar, handleUserAvatar } from '@/function';
 import * as diceCollection from '@dicebear/collection';
+import { InputElement } from 'imask';
 
 // Partials
 import ErrorMessage from '@/Components/forms/ErrorMessage';
@@ -19,12 +20,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import { InputElement } from 'imask';
 
-type ProfileProps = {
+type ContentProps = {
 }
 
-export default function Profile({ auth }: PageProps<ProfileProps>) {
+export default function Profile({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
 
     // Handle Avatar
@@ -39,21 +39,21 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
 
     // Profile - Forms
     const [previewAvatar, setPreviewAvatar] = useState<string>();
-    const [valueAvatarType, setValueAvatarType] = useState<string>(avatarType);
-    const [valueAvatarTemplate, setValueAvatarTemplate] = useState<string>(avatarTemplate);
-    const [valueAvatarFile, setValueAvatarFile] = useState<any>([]);
-    const [valueAvatarFileName, setValueAvatarFileName] = useState<string>('');
-    const [valueName, setValueName] = useState<string>(auth.user.name);
-    const [valueEmail, setValueEmail] = useState<string>(auth.user.email);
-    const [valueUsername, setValueUsername] = useState<string | undefined>('username' in auth.user ? auth.user?.username : '');
+    const [formAvatarType, setFormAvatarType] = useState<string>(avatarType);
+    const [formAvatarTemplate, setFormAvatarTemplate] = useState<string>(avatarTemplate);
+    const [formAvatarFile, setFormAvatarFile] = useState<any>([]);
+    const [formAvatarFileName, setFormAvatarFileName] = useState<string>('');
+    const [formName, setFormName] = useState<string>(auth.user.name);
+    const [formEmail, setFormEmail] = useState<string>(auth.user.email);
+    const [formUsername, setFormUsername] = useState<string | undefined>('username' in auth.user ? auth.user?.username : '');
 
     // Forms
     const resetForm = (user: User = auth.user) => {
-        setValueName(user.name);
-        setValueEmail(user.email);
-        setValueUsername('username' in user ? user?.username : '');
-        setValueAvatarFile([]);
-        setValueAvatarFileName('');
+        setFormName(user.name);
+        setFormEmail(user.email);
+        setFormUsername('username' in user ? user?.username : '');
+        setFormAvatarFile([]);
+        setFormAvatarFileName('');
 
         // Handle Avatar
         let avatarType = 'custom';
@@ -62,9 +62,9 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
             avatarType = 'template';
             avatarTemplate = user.avatar;
         }
-        setValueAvatarType(avatarType);
+        setFormAvatarType(avatarType);
         if(avatarType === 'template'){
-            setValueAvatarTemplate(avatarTemplate);
+            setFormAvatarTemplate(avatarTemplate);
         }
 
         // Handle Preview
@@ -95,17 +95,17 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
         // Build Form Data
         let formData = new FormData();
         formData.append('_method', 'PUT');
-        formData.append('name', valueName);
-        formData.append('email', valueEmail);
-        if(valueUsername){
-            formData.append('username', valueUsername);
+        formData.append('name', formName);
+        formData.append('email', formEmail);
+        if(formUsername){
+            formData.append('username', formUsername);
         }
         // Handle Avatar
-        formData.append('avatar_type', valueAvatarType);
-        if(valueAvatarType === 'custom' && valueAvatarFile){
-            formData.append('avatar_file', valueAvatarFile);
+        formData.append('avatar_type', formAvatarType);
+        if(formAvatarType === 'custom' && formAvatarFile){
+            formData.append('avatar_file', formAvatarFile);
         } else {
-            formData.append('avatar_template', valueAvatarTemplate);
+            formData.append('avatar_template', formAvatarTemplate);
         }
 
         let actionRoute = route('api.profile.v1.update', auth.user.uuid);
@@ -168,10 +168,10 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
 
     useEffect(() => {
         if(!isFirstRender){
-            let avatar = handleUserAvatar(undefined, valueAvatarTemplate, valueName);
+            let avatar = handleUserAvatar(undefined, formAvatarTemplate, formName);
             setPreviewAvatar(avatar);
         }
-    }, [valueAvatarTemplate, valueName]);
+    }, [formAvatarTemplate, formName]);
 
     // Document Ready
     useEffect(() => {
@@ -211,8 +211,8 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
                                     <label className={ `form--label` }>Type</label>
 
                                     <Select onValueChange={(value) => {
-                                        setValueAvatarType(value);
-                                    }} value={valueAvatarType}>
+                                        setFormAvatarType(value);
+                                    }} value={formAvatarType}>
                                         <SelectTrigger className={ `dark:text-white ${errorBag?.avatar_type ? ` !border-red-500` : ''}` }>
                                             <SelectValue placeholder="Select an option" className={ `dark:text-white` }/>
                                         </SelectTrigger>
@@ -232,14 +232,14 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
 
                         {/* Avatar Selection */}
                         {(() => {
-                            if(valueAvatarType === 'template'){
+                            if(formAvatarType === 'template'){
                                 return <>
                                     <div className={ `form--group` }>
                                         <label className={ `form--label` }>Avatar</label>
 
                                         <Select onValueChange={(value) => {
-                                            setValueAvatarTemplate(value);
-                                        }} value={valueAvatarTemplate}>
+                                            setFormAvatarTemplate(value);
+                                        }} value={formAvatarTemplate}>
                                             <SelectTrigger className={ `dark:text-white ${errorBag?.avatar_template ? ` !border-red-500` : ''}` }>
                                                 <SelectValue placeholder="Select an option" className={ `dark:text-white` }/>
                                             </SelectTrigger>
@@ -255,7 +255,7 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
                                                             });
 
                                                             lists.forEach((value, index) => {
-                                                                let relatedAvatar = handleUserAvatar(undefined, value, valueName);
+                                                                let relatedAvatar = handleUserAvatar(undefined, value, formName);
 
                                                                 el.push(
                                                                     <SelectItem value={ value } className={ `flex w-full` } key={ value }>
@@ -284,7 +284,7 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
                                         <ErrorMessage message={ errorBag?.avatar_template }/>
                                     </div>
                                 </>;
-                            } else if(valueAvatarType === 'custom'){
+                            } else if(formAvatarType === 'custom'){
                                 return <>
                                     <div className={ `form--group` }>
                                         <label className={ `form--label` }>Upload an Avatar</label>
@@ -297,25 +297,25 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
                                                 <div className={ `` }>
                                                     <input type={ `file` } id={ `input_profile-avatar_file` } onChange={(e) => {
                                                         if(e.target?.files){
-                                                            setValueAvatarFile(e.target?.files[0]);
+                                                            setFormAvatarFile(e.target?.files[0]);
                                                         }
-                                                        setValueAvatarFileName(e.target.value);
+                                                        setFormAvatarFileName(e.target.value);
                                                     }} className={ `hidden` } accept={ `image/jpeg,image/jpg,image/png,image/svg` }/>
-                                                    <div className={ `tw__font-bold mb-1 ${valueAvatarFileName ? ` underline` : ''}` } id="input_profile-avatar_label_helper">{ valueAvatarFileName ? valueAvatarFileName.split(/(\\|\/)/g).pop() : `Choose Image` }</div>
+                                                    <div className={ `tw__font-bold mb-1 ${formAvatarFileName ? ` underline` : ''}` } id="input_profile-avatar_label_helper">{ formAvatarFileName ? formAvatarFileName.split(/(\\|\/)/g).pop() : `Choose Image` }</div>
                                                     <div className={ `tw__font-light text-xs` }>JPG/JPEG, PNG or SVG. Max size of 512kb</div>
                                                 </div>
                                             </label>
 
                                             {(() => {
-                                                if(valueAvatarFileName){
+                                                if(formAvatarFileName){
                                                     return <>
                                                         <Button variant={ `link` } className={ `px-0 text-red-500 py-1 !h-auto leading-none` } onClick={() => {
                                                             let fileInput = document.getElementById('input_profile-avatar_file') as InputElement;
                                                             if(fileInput){
                                                                 console.log(fileInput);
                                                                 fileInput.value = '';
-                                                                setValueAvatarFile([]);
-                                                                setValueAvatarFileName('');
+                                                                setFormAvatarFile([]);
+                                                                setFormAvatarFileName('');
                                                             }
                                                         }}>Remove</Button>
                                                     </>;
@@ -344,7 +344,7 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
                         {/* Name */}
                         <div className={ `form--group` }>
                             <label className={ `form--label` }>Name</label>
-                            <Input value={ valueName } onChange={(e) => setValueName(e.target.value)} placeholder={ `Name` } className={ `${errorBag?.name ? ` !border-red-500` : ''}` }/>
+                            <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Name` } className={ `${errorBag?.name ? ` !border-red-500` : ''}` }/>
                             
                             <ErrorMessage message={ errorBag?.name }/>
                         </div>
@@ -352,7 +352,7 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
                         {/* Email */}
                         <div className={ `form--group` }>
                             <label className={ `form--label` }>Email</label>
-                            <Input value={ valueEmail } onChange={(e) => setValueEmail(e.target.value)} placeholder={ `Email` } className={ `${errorBag?.email ? ` !border-red-500` : ''}` }/>
+                            <Input form={ formEmail } onChange={(e) => setFormEmail(e.target.value)} placeholder={ `Email` } className={ `${errorBag?.email ? ` !border-red-500` : ''}` }/>
                             
                             <ErrorMessage message={ errorBag?.email }/>
                         </div>
@@ -360,7 +360,7 @@ export default function Profile({ auth }: PageProps<ProfileProps>) {
                         {/* Username */}
                         <div className={ `form--group` }>
                             <label className={ `form--label` }>Username</label>
-                            <Input value={ valueUsername } onChange={(e) => setValueUsername(e.target.value)} placeholder={ `Username` } className={ `${errorBag?.username ? ` !border-red-500` : ''}` }/>
+                            <Input value={ formUsername } onChange={(e) => setFormUsername(e.target.value)} placeholder={ `Username` } className={ `${errorBag?.username ? ` !border-red-500` : ''}` }/>
                             
                             <ErrorMessage message={ errorBag?.username }/>
                         </div>

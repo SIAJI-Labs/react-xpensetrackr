@@ -334,7 +334,7 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
     return (
         <section id={ `walletGroup-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
-                <DialogContent className=" flex flex-col h-full md:h-auto lg:min-w-[400px] max-md:!max-h-[100vh] p-0" data-type="wallet_group-dialog">
+                <DialogContent className=" flex flex-col h-auto max-lg:bottom-0 max-lg:top-[unset] max-lg:translate-y-0 lg:min-w-[400px] p-0" data-type="wallet_group-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Wallet Group</DialogTitle>
                     </DialogHeader>
@@ -481,7 +481,7 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
                             if(document.getElementById('walletGroup-dialogForms')){
                                 (document.getElementById('walletGroup-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
                             }
-                        }} id='walletGroup_dialog-submit'>Submit</Button>
+                        }} id='walletGroup-dialogSubmit'>Submit</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

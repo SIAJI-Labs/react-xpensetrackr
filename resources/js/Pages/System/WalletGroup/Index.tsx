@@ -6,8 +6,8 @@ import axios from "axios";
 
 // Partials
 import SystemLayout from "@/Layouts/SystemLayout";
-import SkeletonList from "@/Components/template/WalletGroup/SkeletonList";
-import TemplateList from "@/Components/template/WalletGroup/TemplateList";
+import WalletGroupSkeleton from "@/Components/template/WalletGroup/SkeletonList";
+import WalletGroupTemplate from "@/Components/template/WalletGroup/TemplateList";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 
 // Shadcn
@@ -16,10 +16,10 @@ import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 
 // Props
-type ViewProps = {
+type ContentProps = {
 }
 
-export default function Index({ auth }: PageProps<ViewProps>) {
+export default function Index({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     const [contentIsLoading, setContentIsLoading] = useState<boolean>(true);
     useEffect(() => {
@@ -45,7 +45,6 @@ export default function Index({ auth }: PageProps<ViewProps>) {
 
     // Wallet Data
     const [walletGroupItemAbortController, setWalletGroupItemAbortController] = useState<AbortController | null>(null);
-    const [walletGroupIsLoading, setWalletGroupIsLoading] = useState<boolean>(true);
     const [walletGroupItem, setWalletItem] = useState<any[]>();
     // Paginaton
     let paginate_item = 5;
@@ -120,7 +119,7 @@ export default function Index({ auth }: PageProps<ViewProps>) {
     // List Skeleton
     const [skeletonCount, setSkeletonCount] = useState<number>(5);
     let listSkeleton = () => {
-        return <SkeletonList/>
+        return <WalletGroupSkeleton/>
     }
     useEffect(() => {
         // Update skeleton count to match loaded planned item
@@ -130,7 +129,7 @@ export default function Index({ auth }: PageProps<ViewProps>) {
     }, [walletGroupItem]);
     // List Template
     let listTemplate = (obj?:any[]) => {
-        return <TemplateList wallet={obj}/>;
+        return <WalletGroupTemplate wallet={obj}/>;
     }
 
     useEffect(() => {

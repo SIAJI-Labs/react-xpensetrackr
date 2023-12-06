@@ -24,7 +24,7 @@ class ListResource extends JsonResource
             'deleted_at' => $this->deleted_at,
 
             // Relationship
-            'parent' => new \App\Http\Resources\Wallet\ListResource($this->whenLoaded('parent')),
+            'parent' => new \App\Http\Resources\Wallet\ShowResource($this->whenLoaded('parent')),
             'child' => \App\Http\Resources\Wallet\ListResource::collection($this->whenLoaded('child'))
         ];
     }

@@ -22,7 +22,7 @@ class ShowResource extends JsonResource
             'extra_amount' => $this->extra_amount,
             'extra_type' => $this->extra_type,
             'final_amount' => $this->amount + $this->extra_amount,
-            'date_start' => $this->date,
+            'date_start' => $this->date_start,
             'date_temp' => $this->date_start_temp,
             'repeat_type' => $this->repeat_type,
             'repeat_frequency' => $this->repeat_frequency,

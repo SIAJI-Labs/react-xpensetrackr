@@ -30,11 +30,12 @@ class ShowResource extends JsonResource
             'updated_at' => $this->updated_at,
             'deleted_at' => $this->deleted_at,
 
+
             // Relation
             'category' => new \App\Http\Resources\Category\ListResource($this->whenLoaded('category')),
             'from_wallet' => new \App\Http\Resources\Wallet\ListResource($this->whenLoaded('fromWallet')),
             'to_wallet' => new \App\Http\Resources\Wallet\ListResource($this->whenLoaded('toWallet')),
-            'record_tags' => new \App\Http\Resources\Tags\ShowResource($this->whenLoaded('recordTags'))
+            'record_tags' => \App\Http\Resources\Tags\ListResource::collection($this->whenLoaded('recordTags'))
         ];
     }
 }

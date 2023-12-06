@@ -35,7 +35,7 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
     useEffect(() => {
         const handleDialogEvent = (event: any) => {
             if(event.detail?.action && event.detail?.action === 'delete'){
-                location.href = route('sys.category.index');
+                router.visit(route('sys.category.index'))
             } else {
                 router.reload();
             }

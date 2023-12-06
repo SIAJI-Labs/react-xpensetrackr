@@ -1,20 +1,25 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
-import SystemLayout from "@/Layouts/SystemLayout";
-import { ucwords } from "@/function";
-import { PageProps } from "@/types";
-import { Head } from "@inertiajs/react";
 import { useEffect, useState } from "react";
+import { Head } from "@inertiajs/react";
+import { PageProps } from "@/types";
+
+// Plugins
+import { ucwords } from "@/function";
+
+// Partials
 import PlannedPaymentSummary from "./Partials/Summary";
 import PlannedPaymentList from "./Partials/List";
+import SystemLayout from "@/Layouts/SystemLayout";
+
+// Shadcn
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
-import { useIsFirstRender } from "@/lib/utils";
 
 // Props
-type PlannedPaymentIndexProps = {
+type ContentProps = {
     type?: string
 }
 
-export default function Index({ auth, type = 'list' }: PageProps<PlannedPaymentIndexProps>) {
+export default function Index({ auth, type = 'list' }: PageProps<ContentProps>) {
     const [pageType, setPageType] = useState<string>(type);
     useEffect(() => {
         // Listen to Record Dialog event

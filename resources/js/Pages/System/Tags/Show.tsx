@@ -27,7 +27,7 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
     useEffect(() => {
         const handleDialogEvent = (event: any) => {
             if(event.detail?.action && event.detail?.action === 'delete'){
-                location.href = route('sys.tags.index');
+                router.visit(route('sys.tags.index'));
             } else {
                 router.reload();
             }

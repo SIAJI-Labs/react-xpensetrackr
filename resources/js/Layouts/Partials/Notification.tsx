@@ -339,17 +339,31 @@ export default function Notification({ user, className = '' }: PropsWithChildren
                                                                                     {/* Wallet and Amount */}
                                                                                     <div className={ ` flex flex-row justify-between text-sm leading-none` }>
                                                                                         <span>{(() => {
-                                                                                            let walletName = [`${planned.from_wallet.parent ? `${planned.from_wallet.parent.name} - ` : ''}${planned.from_wallet.name}`];
-                                                                                            console.log();
+                                                                                            let walletName = [planned.from_wallet.name];
+                                                                                            if(planned.to_wallet){
+                                                                                                walletName.push(planned.to_wallet.name);
+                                                                                            }
+
                                                                                             if(walletName.length > 0){
                                                                                                 return <div className={ ` flex flex-row gap-1 whitespace-nowrap overflow-hidden text-ellipsis` }>
-                                                                                                    { walletName.join(`<span class="fa-solid fa-caret-right"></span>`) }
+                                                                                                    {(() => {
+                                                                                                        let walletName = <span className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{planned.from_wallet.name}</span>;
+                                                                                                        if(planned.to_wallet){
+                                                                                                            walletName = <>
+                                                                                                                <span className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{planned.from_wallet.name}</span>
+                                                                                                                <span className={ `fa-solid fa-caret-right` }></span>
+                                                                                                                <span className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{planned.to_wallet.name}</span>
+                                                                                                            </>;
+                                                                                                        }
+
+                                                                                                        return <div className={ ` flex flex-row whitespace-nowrap overflow-hidden text-ellipsis gap-1` }>{walletName}</div>;
+                                                                                                    })()}
                                                                                                 </div>
                                                                                             }
 
                                                                                             return <span>-</span>;
                                                                                         })()}</span>
-                                                                                        <span className={ planned.type === 'income' ? ` text-green-500` : ` text-red-500` }>{ formatRupiah(planned.amount + planned.extra_amount) }</span>
+                                                                                        <span className={ `${planned.type === 'income' ? ` text-green-500` : ` text-red-500`} whitespace-nowrap` }>{ formatRupiah(planned.amount + planned.extra_amount) }</span>
                                                                                     </div>
                                                                                 </div>
                                                                                 {/* Action */}

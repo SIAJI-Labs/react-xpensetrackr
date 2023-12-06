@@ -50,8 +50,8 @@ class RecordController extends Controller
         }
 
         return Inertia::render('System/Record/Show', [
-            'record' => $data,
-            'related' => $related
+            'record' => new \App\Http\Resources\Record\ShowResource($data),
+            'related' => !empty($related) ? (new \App\Http\Resources\Record\ShowResource($related)) : null,
         ]);
     }
 }

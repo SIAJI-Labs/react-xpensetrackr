@@ -46,7 +46,7 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
         const handleDialogEvent = (event: any) => {
             console.log(event);
             if(event.detail?.action && event.type === 'wallet-group.deleted-action' && event.detail?.action === 'delete'){
-                location.href = route('sys.wallet-group.index');
+                router.visit(route('sys.wallet-group.index'));
             } else {
                 router.reload({
                     only: ['data']
@@ -54,22 +54,23 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
             }
             // setOpenDropdown(false);
         }
+        
+        document.addEventListener('record.deleted-action', handleDialogEvent);
         document.addEventListener('dialog.wallet.hidden', handleDialogEvent);
-        document.addEventListener('dialog.wallet-group.hidden', handleDialogEvent);
         document.addEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+        document.addEventListener('wallet.deleted-action', handleDialogEvent);
+        document.addEventListener('dialog.wallet-group.hidden', handleDialogEvent);
         document.addEventListener('dialog.wallet-group.balance-adjustment.hidden', handleDialogEvent);
         document.addEventListener('wallet-group.deleted-action', handleDialogEvent);
-        document.addEventListener('wallet.deleted-action', handleDialogEvent);
-        document.addEventListener('record.deleted-action', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
+            document.removeEventListener('record.deleted-action', handleDialogEvent);
             document.removeEventListener('dialog.wallet.hidden', handleDialogEvent);
-            document.removeEventListener('dialog.wallet-group.hidden', handleDialogEvent);
             document.removeEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+            document.removeEventListener('wallet.deleted-action', handleDialogEvent);
+            document.removeEventListener('dialog.wallet-group.hidden', handleDialogEvent);
             document.removeEventListener('dialog.wallet-group.balance-adjustment.hidden', handleDialogEvent);
             document.removeEventListener('wallet-group.deleted-action', handleDialogEvent);
-            document.removeEventListener('wallet.deleted-action', handleDialogEvent);
-            document.removeEventListener('record.deleted-action', handleDialogEvent);
         };
     });
 

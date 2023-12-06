@@ -14,6 +14,10 @@ class ShowResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // \Log::debug("Debug on tags", [
+        //     'request' => $request->all(),
+        //     'collection' => $this->resource
+        // ]);
         return [
             'uuid' => $this->uuid,
             'name' => $this->name,

@@ -59,6 +59,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Validate email verification
+        if(!Auth::guard('web')->user()->hasVerifiedEmail()){
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Please verify your email first before sign-in!'
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

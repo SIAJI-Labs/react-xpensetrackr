@@ -92,7 +92,7 @@ export interface WalletItem {
     user_id: number;
     parent_id: number,
     parent: WalletItem,
-    child?: WalletItem,
+    child?: WalletItem[],
     type: string,
     name: string,
     starting_balance?: number,

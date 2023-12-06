@@ -190,7 +190,6 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
         formData.append('parent_id', formParent);
         formData.append('name', formName);
         formData.append('starting_balance', formStartingBalance.toString());
-
         if(formUuid){
             formData.append('wallet_uuid', formUuid);
         }
@@ -335,7 +334,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
 
                     // Update Combobox Label
                     if(data.parent){
-                        setComboboxParentLabel(`${data.parent ? `${data.parent.name} - ` : ''}${data.name}`);
+                        setComboboxParentLabel(data.parent.name);
                     }
                     
                     // Open record-dialog
@@ -473,7 +472,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                             if(document.getElementById('wallet-dialogForms')){
                                 (document.getElementById('wallet-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
                             }
-                        }} id='wallet_dialog-submit'>Submit</Button>
+                        }} id='wallet-dialogSubmit'>Submit</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

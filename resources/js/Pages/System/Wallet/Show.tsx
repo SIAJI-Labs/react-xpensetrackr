@@ -1,6 +1,10 @@
+import { Head, Link, router } from "@inertiajs/react";
 import { PageProps, WalletItem } from "@/types"
 import { useIsFirstRender } from "@/lib/utils";
-import { Head, Link, router } from "@inertiajs/react";
+import { useEffect, useState } from "react";
+
+// Plugins
+import { formatRupiah, momentFormated, ucwords } from "@/function";
 
 // Partials
 import TemplateBackButton from "@/Components/template/TemplateBackButton";
@@ -8,28 +12,22 @@ import ListTemplate from "@/Components/template/Wallet/TemplateList";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
-// Plugins
-import { formatRupiah, momentFormated, ucwords } from "@/function";
 
 // Shadcn
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { useEffect, useState } from "react";
 
 // Props
-type WalletShow = {
+type ContentProps = {
     data: WalletItem
-    related: WalletItem
 }
 
-export default function Show({ auth, data, related }: PageProps<WalletShow>) {
-    const isFirstRender = useIsFirstRender();
+export default function Show({ auth, data }: PageProps<ContentProps>) {
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
 
     // List Template
-    let listTemplate = (obj?:any[]) => {
+    let listTemplate = (obj?: WalletItem | any[]) => {
         return <ListTemplate wallet={obj}/>;
     }
 
@@ -41,15 +39,14 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
             } else {
                 router.reload();
             }
-
-            // setOpenDropdown(false);
         }
+
+        document.addEventListener('wallet.deleted-action', handleDialogEvent);
         document.addEventListener('dialog.wallet.hidden', handleDialogEvent);
-        document.addEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
+            document.addEventListener('wallet.deleted-action', handleDialogEvent);
             document.removeEventListener('dialog.wallet.hidden', handleDialogEvent);
-            document.removeEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
         };
     });
 
@@ -57,9 +54,9 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
         <>
             <SystemLayout
                 user={auth.user}
-                header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Wallet Detail: { `${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</h2>}
+                header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Wallet Detail: { `${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</h2>}
             >
-                <Head title={ `Wallet: ${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` } />
+                <Head title={ `Wallet: ${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` } />
 
                 <div className="flex flex-col gap-6">
                     <TemplateBackButton className={ `px-0` }/>
@@ -67,14 +64,14 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
 
                 <Card className={ ` w-full` }>
                     <CardHeader>
-                        <div className={ ` relative flex flex-row justify-between items-start` }>
+                        <div className={ ` relative flex flex-row gap-4 justify-between items-start` }>
                             <div>
                                 <CardTitle>
-                                        <div>Wallet Detail: { `${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</div>
+                                        <div>Wallet Detail: { `${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</div>
                                 </CardTitle>
-                                <CardDescription>See summary of <u>{ `${data?.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</u> wallet</CardDescription>
+                                <CardDescription>See summary of <u>{ `${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</u> wallet</CardDescription>
                             </div>
-
+                            
                             <div>
                                 <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
                                     <DropdownMenuTrigger asChild>
@@ -123,41 +120,6 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
                                                     }));
                                                 }}>
                                                     <span className={ ` text-yellow-500` }>Edit</span>
-                                                </DropdownMenuItem>;
-                                            }
-
-                                            return <></>;
-                                        })()}
-
-                                        {/* Balance Adjustment Action */}
-                                        {(() => {
-                                            // Check if record dialog form is exists
-                                            let walletDialogSection = document.getElementById('walletBalanceAdjustment-dialogSection');
-                                            if(walletDialogSection){
-                                                return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
-                                                    let el = $refs.target as HTMLElement;
-                                                    if(el){
-                                                        let originalText = el.innerHTML;
-                                                        el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
-
-                                                        const revertToOriginalText = () => {
-                                                            if(originalText){
-                                                                el.innerHTML = originalText;
-                                                            }
-
-                                                            document.removeEventListener('dialog.wallet.balance-adjustment.shown', revertToOriginalText);
-                                                        }
-                                                        document.addEventListener('dialog.wallet.balance-adjustment.shown', revertToOriginalText);
-                                                    }
-
-                                                    document.dispatchEvent(new CustomEvent('wallet.balance-adjustment.edit-action', {
-                                                        bubbles: true,
-                                                        detail: {
-                                                            uuid: data && 'uuid' in data ? data?.uuid : ''
-                                                        }
-                                                    }));
-                                                }}>
-                                                    <span className={ ` text-yellow-500` }>Balance Adjustment</span>
                                                 </DropdownMenuItem>;
                                             }
 
@@ -218,32 +180,30 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
                             })()}
 
                             <div className={ ` flex flex-row justify-between` }>
-                                <div className={ ` flex flex-col` }>
-                                    <span>Balance</span>
-                                    <span className={ `font-semibold` }>{ formatRupiah(data.balance ?? 0) }</span>
+                                <div className={ ` flex flex-row justify-between` }>
+                                    <div className={ ` flex flex-col` }>
+                                        <span>Balance</span>
+                                        <span className={ ` font-semibold` }>{ formatRupiah(data.balance) }</span>
+                                    </div>
                                 </div>
-
-                                {(() => {
-                                    if(data.parent_id){
-                                        return <>
-                                            <div className={ ` flex flex-col items-end` }>
-                                                <span>Related to</span>
-                                                <Link href={ route('sys.wallet.show', data.parent.uuid) }>
-                                                    <span className={ `font-semibold underline` }>{ data.parent.name }</span>
-                                                </Link>
-                                            </div>
-                                        </>;
-                                    }
-
-                                    return <></>;
-                                })()}
                             </div>
 
                             <div className={ ` flex flex-row justify-between` }>
-                                <div className={ ` flex flex-col` }>
-                                    <span>Purpose</span>
-                                    <Badge>{ ucwords(data.type) }</Badge>
+                                <div className={ ` flex flex-row justify-between` }>
+                                    <div className={ ` flex flex-col` }>
+                                        <span>Related to</span>
+                                        {(() => {
+                                            if(data.parent){
+                                                return <Link href={ route('sys.wallet.show', data.parent.uuid) }>
+                                                    <span className={ `font-semibold underline` }>{ data.parent.name }</span>
+                                                </Link>
+                                            }
+
+                                            return <>-</>;
+                                        })()}
+                                    </div>
                                 </div>
+
                                 <div className={ ` flex flex-col items-end` }>
                                     <span>Last Transaction</span>
                                     <span>-</span>
@@ -254,7 +214,7 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
                 </Card>
 
                 {(() => {
-                    if(related && Object.keys(related).length > 0){
+                    if(data.child && Object.keys(data.child).length > 0){
                         return <>
                             <Card className={ ` w-full mt-6` }>
                                 <CardHeader>
@@ -263,6 +223,13 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
                                             <CardTitle>
                                                 <div className={ ` text-base` }>Related wallet</div>
                                             </CardTitle>
+                                            {(() => {
+                                                if(data.child){
+                                                    return <CardDescription>There's { data.child.length } item(s) related to <u>{ data.name }</u></CardDescription>
+                                                }
+
+                                                return <></>;
+                                            })()}
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -272,9 +239,7 @@ export default function Show({ auth, data, related }: PageProps<WalletShow>) {
                                             let relatedElement: any = [];
                                             let defaultContent = <TemplateNoData></TemplateNoData>;
 
-                                            Object.values(related).forEach((val, index) => {
-                                                console.log(val);
-
+                                            Object.values(data.child).forEach((val, index) => {
                                                 relatedElement.push(
                                                     <div key={ `related_item-${index}` }>
                                                         {listTemplate(val)}

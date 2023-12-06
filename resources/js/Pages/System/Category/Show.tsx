@@ -55,6 +55,7 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
             <SystemLayout
                 user={auth.user}
                 header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Category Detail: { `${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</h2>}
+                fabAction={ [`category`] }
             >
                 <Head title={ `Category: ${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` } />
 

@@ -354,7 +354,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
     return (
         <section id={ `category-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
-                <DialogContent className=" flex flex-col h-full md:h-auto lg:min-w-[400px] p-0" data-type="record-dialog">
+                <DialogContent className=" flex flex-col h-auto max-lg:bottom-0 max-lg:top-[unset] max-lg:translate-y-0 lg:min-w-[400px] p-0" data-type="category-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Category</DialogTitle>
                     </DialogHeader>

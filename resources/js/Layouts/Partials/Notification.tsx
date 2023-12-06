@@ -23,7 +23,7 @@ import { Link } from "@inertiajs/react";
 export default function Notification({ user, className = '' }: PropsWithChildren<{ user: User, className?: string }>) {
     const isFirstRender = useIsFirstRender();
     
-    let paginate_item = 1;
+    let paginate_item = 5;
     // Planned Payment Data - Overdue
     const [plannedOverdueItemAbortController, setPlannedOverdueItemAbortController] = useState<AbortController | null>(null);
     const [plannedOverdueIsLoading, setPlannedOverdueIsLoading] = useState<boolean>(true);

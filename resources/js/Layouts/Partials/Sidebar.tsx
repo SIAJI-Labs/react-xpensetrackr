@@ -171,7 +171,7 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                 <SheetContent side={ `left` } className={ ` w-screen md:w-72 p-0 dark:!text-white` }>
                     <ScrollArea className={ ` h-screen p-0` }>
                         <div className={ ` p-6 sticky top-0` }>
-                            <SheetHeader className={ ` relative after:absolute after:-top-6 after:-left-6 after:w-[calc(100%+3rem)] after:h-32 after:bg-gradient-to-b after:from-background after:via-background after:to-transparent after:z-[-1] z-10 pb-6 pointer-events-none select-none` }>
+                            <SheetHeader className={ ` relative after:absolute after:-top-6 after:-left-6 after:w-[calc(100%+3rem)] after:h-28 after:bg-gradient-to-b after:from-background after:via-background after:to-transparent after:z-[-1] z-10 pb-1 pointer-events-none select-none` }>
                                 <SheetTitle>
                                     <ApplicationLogo fontSizeMain={ ` text-2xl` } className={ ` !justify-start` }/>
                                 </SheetTitle>
@@ -182,7 +182,7 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                             </SheetHeader>
                         </div>
 
-                        <div className={ `mx-4 mb-10` }>
+                        <div className={ `mx-6 mb-10` }>
                             <ul className={ ` flex flex-col gap-1` }>
                                 {(() => {
                                     if(sidebarMenu.length > 0){
@@ -195,7 +195,7 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                                                 flex-row 
                                                 gap-2 
                                                 items-center 
-                                                px-4 
+                                                px-4
                                                 py-2 
                                                 text-gray-900 
                                                 dark:text-white
@@ -222,7 +222,7 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                                                 className += ` font-semibold !my-0 leading-none !pb-0 !pt-4 !pl-0.5 !bg-transparent hover:bg-transparent`;
                                             }
                                             if(val.is_disabled){
-                                                className += ` opacity-50 hover:cursor-not-allowed hover:!bg-transparent`;
+                                                className += ` opacity-50 z-[-1] relative hover:cursor-not-allowed hover:!bg-transparent`;
                                             }
                                             if(val.sub.length > 0){
                                                 className += ` justify-between`;

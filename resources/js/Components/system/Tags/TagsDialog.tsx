@@ -242,7 +242,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
     return (
         <section id={ `tags-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
-                <DialogContent className=" h-full md:h-auto lg:min-w-[400px] max-md:!max-h-[85vh] p-0" data-type="record-dialog">
+                <DialogContent className=" flex flex-col h-auto max-lg:bottom-0 max-lg:top-[unset] max-lg:translate-y-0 lg:min-w-[400px] p-0" data-type="tags-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Tags</DialogTitle>
                     </DialogHeader>
@@ -256,7 +256,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
                             <ErrorMessage message={ errorFormDialog?.name }/>
                         </div>
 
-                        {/* Keep open Planned Payment dialog? */}
+                        {/* Keep open dialog? */}
                         <div className={ `form-group` }>
                             <div className={ `flex items-center space-x-2` }>
                                 <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
@@ -283,7 +283,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
                             if(document.getElementById('tags-dialogForms')){
                                 (document.getElementById('tags-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
                             }
-                        }} id='plannedPayment_dialog-submit'>Submit</Button>
+                        }} id='tags-dialogSubmit'>Submit</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

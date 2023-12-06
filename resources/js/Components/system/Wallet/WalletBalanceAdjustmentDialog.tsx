@@ -262,7 +262,7 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
     return (
         <section id={ `walletBalanceAdjustment-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
-                <DialogContent className=" h-full md:h-auto lg:min-w-[800px] max-md:!max-h-[85vh] p-0" data-type="wallet-dialog">
+                <DialogContent className=" flex flex-col h-auto max-lg:bottom-0 max-lg:top-[unset] max-lg:translate-y-0 lg:min-w-[400px] p-0" data-type="walletBalance-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Wallet: Balance Adjustment</DialogTitle>
                     </DialogHeader>

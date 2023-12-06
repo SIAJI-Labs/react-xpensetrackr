@@ -5,21 +5,21 @@ import { PageProps } from "@/types"
 import axios from "axios";
 
 // Partials
-import ListTemplate from "@/Components/template/Tags/TemplateList";
+import TagsTemplate from "@/Components/template/Tags/TemplateList";
+import TagsSkeleton from "@/Components/template/Tags/SkeletonList";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import ListSkeleton from "@/Components/template/Tags/SkeletonList";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 
 // Props
-type TagsIndexProps = {
+type ContentProps = {
 }
 
-export default function Index({ auth }: PageProps<TagsIndexProps>) {
+export default function Index({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     const [contentIsLoading, setContentIsLoading] = useState<boolean>(true);
     useEffect(() => {
@@ -45,7 +45,6 @@ export default function Index({ auth }: PageProps<TagsIndexProps>) {
 
     // Tags Data
     const [tagsItemAbortController, setTagsItemAbortController] = useState<AbortController | null>(null);
-    const [tagsIsLoading, setTagsIsLoading] = useState<boolean>(true);
     const [tagsItem, setTagsItem] = useState<any[]>();
     // Paginaton
     let paginate_item = 5;
@@ -120,7 +119,7 @@ export default function Index({ auth }: PageProps<TagsIndexProps>) {
     // List Skeleton
     const [skeletonCount, setSkeletonCount] = useState<number>(5);
     let listSkeleton = () => {
-        return <ListSkeleton/>
+        return <TagsSkeleton/>
     }
     useEffect(() => {
         // Update skeleton count to match loaded planned item
@@ -130,23 +129,23 @@ export default function Index({ auth }: PageProps<TagsIndexProps>) {
     }, [tagsItem]);
     // List Template
     let listTemplate = (obj?:any[]) => {
-        return <ListTemplate tags={obj}/>;
+        return <TagsTemplate tags={obj}/>;
     }
 
     useEffect(() => {
         // Listen to Record Dialog event
-        const handleDialogRecord = () => {
+        const handleDialogEvent = () => {
             setTimeout(() => {
                 fetchTagsData();
             }, 100);
         }
 
-        document.addEventListener('dialog.tags.hidden', handleDialogRecord);
-        document.addEventListener('tags.deleted-action', handleDialogRecord);
+        document.addEventListener('dialog.tags.hidden', handleDialogEvent);
+        document.addEventListener('tags.deleted-action', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialog.tags.hidden', handleDialogRecord);
-            document.removeEventListener('tags.deleted-action', handleDialogRecord);
+            document.removeEventListener('dialog.tags.hidden', handleDialogEvent);
+            document.removeEventListener('tags.deleted-action', handleDialogEvent);
         };
     });
 

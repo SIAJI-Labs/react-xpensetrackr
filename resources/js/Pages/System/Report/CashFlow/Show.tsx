@@ -8,6 +8,7 @@ import axios from "axios";
 import Chart from 'react-apexcharts';
 
 // Plugins
+import { LucideArrowDownAZ, LucideArrowUpAZ } from "lucide-react";
 import { formatRupiah, ucwords } from "@/function";
 import moment from "moment";
 
@@ -23,11 +24,11 @@ import { Skeleton } from "@/Components/ui/skeleton";
 import { Button } from "@/Components/ui/button";
 
 // Props
-type CashFlowShowProps = {
+type ContentProps = {
     period: string
 }
 
-export default function Index({ auth, period }: PageProps<CashFlowShowProps>) {
+export default function Index({ auth, period }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     let periodFormated = moment(`${period}-01`).format('MMM, YYYY');
 
@@ -377,8 +378,14 @@ export default function Index({ auth, period }: PageProps<CashFlowShowProps>) {
                                                 setGraphList(list.reverse());
                                                 setGraphSort(graphSort === 'asc' ? 'desc' : 'asc');
                                             }}>
-                                                <div className={ ` w-4` }>
-                                                    <i className={ `fa-solid ${graphSort === 'asc' ? `fa-sort-up` : `fa-sort-down`}` }></i>
+                                                <div className={ ` scale-75` }>
+                                                    {(() => {
+                                                        if(graphSort === 'desc'){
+                                                            return <LucideArrowUpAZ/>
+                                                        }
+
+                                                        return <LucideArrowDownAZ/>
+                                                    })()}
                                                 </div>
                                                 <span className={ `` }>{ ucwords(graphSort) }</span>
                                             </Button>

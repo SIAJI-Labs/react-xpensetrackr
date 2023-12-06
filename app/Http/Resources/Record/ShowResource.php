@@ -31,9 +31,9 @@ class ShowResource extends JsonResource
             'deleted_at' => $this->deleted_at,
 
             // Relation
-            'category' => new \App\Http\Resources\Category\ShowResource($this->whenLoaded('category')),
-            'from_wallet' => new \App\Http\Resources\Wallet\ShowResource($this->whenLoaded('fromWallet')),
-            'to_wallet' => new \App\Http\Resources\Wallet\ShowResource($this->whenLoaded('toWallet')),
+            'category' => new \App\Http\Resources\Category\ListResource($this->whenLoaded('category')),
+            'from_wallet' => new \App\Http\Resources\Wallet\ListResource($this->whenLoaded('fromWallet')),
+            'to_wallet' => new \App\Http\Resources\Wallet\ListResource($this->whenLoaded('toWallet')),
             'record_tags' => new \App\Http\Resources\Tags\ShowResource($this->whenLoaded('recordTags'))
         ];
     }

@@ -82,7 +82,7 @@ class PlannedPaymentController extends Controller
 
             // Fetch Data
             $data = [
-                'data' => $data->get(),
+                'data' => \App\Http\Resources\PlannedPayment\ListResource::collection($data->get()),
                 'has_more' => $hasMore,
                 'total' => $raw->count()
             ];
@@ -234,7 +234,7 @@ class PlannedPaymentController extends Controller
         }
 
         return $this->formatedJsonResponse(200, 'Data Fetched', [
-            'data' => $data,
+            'data' => (new \App\Http\Resources\PlannedPayment\ShowResource($data)),
             'record' => [
                 'data' => $record->get()->load('record', 'record.fromWallet.parent', 'record.toWallet.parent', 'record.category.parent'),
                 'has_more' => $hasMore

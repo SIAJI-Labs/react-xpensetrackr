@@ -199,7 +199,7 @@ export default function Index({ auth }: PageProps<ContentProps>) {
 
                                 <div className={ ` flex flex-row gap-2` }>
                                     <Link href={ route('sys.category.re-order.index') } className={ `aspect-square` }>
-                                        <Button variant={ `outline` } className={ ` w-10 aspect-square` }>
+                                        <Button variant={ `outline` } className={ ` w-10 aspect-square` } data-type="navigation-reorder">
                                             <i className={ `fa-solid fa-sort` }></i>
                                         </Button>
                                     </Link>

@@ -263,7 +263,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
                             return <>
                                 <CardFooter>
                                     <Link href={ route('sys.record.index') }>
-                                        <Button variant={ `outline` } className={ `` }>Load all</Button>
+                                        <Button variant={ `outline` } className={ `` } data-type={ `load_all-record` }>Load all</Button>
                                     </Link>
                                 </CardFooter>
                             </>;

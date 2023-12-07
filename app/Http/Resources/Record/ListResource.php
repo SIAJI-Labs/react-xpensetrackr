@@ -33,7 +33,7 @@ class ListResource extends JsonResource
             // Relation
             'category' => new \App\Http\Resources\Category\ListResource($this->whenLoaded('category')),
             'from_wallet' => new \App\Http\Resources\Wallet\ListResource($this->whenLoaded('fromWallet')),
-            'to_wallet' => new \App\Http\Resources\Wallet\ShowResource($this->whenLoaded('toWallet')),
+            'to_wallet' => new \App\Http\Resources\Wallet\ListResource($this->whenLoaded('toWallet')),
             'record_tags' => \App\Http\Resources\Tags\ListResource::collection($this->whenLoaded('recordTags'))
         ];
     }

@@ -59,7 +59,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
             {/* Command */}
             <CommandDialog open={openSearchCommand} onOpenChange={setOpenSearchCommand} className={ `
                 max-sm:!sticky
-                max-sm:h-auto
+                max-sm:h-[75vh]
                 max-sm:bottom-0
                 max-sm:top-[unset]
                 max-sm:translate-y-0
@@ -74,7 +74,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                 max-sm:data-[state=open]:!zoom-in-100
             `}>
                 <CommandInput placeholder="Type a command or search..." className={ ` border-none focus:ring-0` }/>
-                <CommandList className={ `max-sm:h-auto max-sm:max-h-[50vh]` }>
+                <CommandList className={ `max-sm:h-auto max-sm:max-h-max` }>
                     <CommandEmpty>No results found.</CommandEmpty>
 
                     {(() => {

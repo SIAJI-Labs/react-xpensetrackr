@@ -57,9 +57,24 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
     return (
         <>
             {/* Command */}
-            <CommandDialog open={openSearchCommand} onOpenChange={setOpenSearchCommand} className={ ` max-sm:h-auto max-sm:bottom-0 max-sm:top-[unset] max-sm:translate-y-0 max-sm:data-[state=closed]:!slide-out-to-bottom-[50%] max-sm:data-[state=open]:!slide-in-from-bottom-[50%]` }>
+            <CommandDialog open={openSearchCommand} onOpenChange={setOpenSearchCommand} className={ `
+                max-sm:!sticky
+                max-sm:h-auto
+                max-sm:bottom-0
+                max-sm:top-[unset]
+                max-sm:translate-y-0
+                max-sm:translate-x-0
+                
+                max-sm:data-[state=closed]:!slide-out-to-bottom-[50%]
+                max-sm:data-[state=closed]:!slide-out-to-left-[0%]
+                max-sm:data-[state=closed]:!zoom-out-100
+
+                max-sm:data-[state=open]:!slide-in-from-bottom-[50%]
+                max-sm:data-[state=open]:!slide-in-from-left-[0%]
+                max-sm:data-[state=open]:!zoom-in-100
+            `}>
                 <CommandInput placeholder="Type a command or search..." className={ ` border-none focus:ring-0` }/>
-                <CommandList className={ `max-sm:h-auto max-sm:max-h-[75vh]` }>
+                <CommandList className={ `max-sm:h-auto max-sm:max-h-[50vh]` }>
                     <CommandEmpty>No results found.</CommandEmpty>
 
                     {(() => {

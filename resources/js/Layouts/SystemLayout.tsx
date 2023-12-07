@@ -127,6 +127,9 @@ export default function SystemLayout({ user, header, children, fabAction = null 
             <Head>
                 <meta name="description" content="Simplify your expenses, maximize your control" />
 
+                {/* Meta */}
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
                 {/* Favicon */}
                 <link rel="icon" type="image/x-icon" href="/assets/images/favicon.svg"></link>
 

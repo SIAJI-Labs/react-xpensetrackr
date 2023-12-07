@@ -59,7 +59,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
             {/* Command */}
             <CommandDialog open={openSearchCommand} onOpenChange={setOpenSearchCommand} className={ `
                 max-sm:!sticky
-                max-sm:h-[75vh]
+                max-sm:max-h-[75vh]
                 max-sm:bottom-0
                 max-sm:top-[unset]
                 max-sm:translate-y-0

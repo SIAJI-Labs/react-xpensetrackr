@@ -30,16 +30,8 @@ class CategoryController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        $data->children = [];
-
-        // Manipulate child data
-        if($data->child()->exists()){
-            $data->children = $data->child()->get();
-        }
-
         return Inertia::render('System/Category/Show', [
-            'data' => $data,
-            'related' => $data->children
+            'data' => new \App\Http\Resources\Category\ShowResource($data),
         ]);
     }
 }

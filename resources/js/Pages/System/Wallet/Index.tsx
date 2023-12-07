@@ -5,21 +5,21 @@ import { PageProps } from "@/types"
 import axios from "axios";
 
 // Partials
-import ListTemplate from "@/Components/template/Wallet/TemplateList";
+import WalletSkeleton from "@/Components/template/Wallet/SkeletonList";
+import WalletTemplate from "@/Components/template/Wallet/TemplateList";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import ListSkeleton from "@/Components/template/Wallet/SkeletonList";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 
 // Props
-type WalletIndexProps = {
+type ContentProps = {
 }
 
-export default function Index({ auth }: PageProps<WalletIndexProps>) {
+export default function Index({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     const [contentIsLoading, setContentIsLoading] = useState<boolean>(true);
     useEffect(() => {
@@ -27,7 +27,7 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
         fetchWalletData();
     }, []);
 
-    // Record Filter
+    // Filter
     const [filterKeyword, setFilterKeyword] = useState<string>('');
     useEffect(() => {
         if(!isFirstRender){
@@ -36,7 +36,7 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                 fetchWalletData();
             }, 500);
     
-            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+            // Clean up the timer if the component unmounts or when filterKeyword changes.
             return () => {
                 clearTimeout(timer);
             };
@@ -45,7 +45,6 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
 
     // Wallet Data
     const [walletItemAbortController, setWalletItemAbortController] = useState<AbortController | null>(null);
-    const [walletIsLoading, setWalletIsLoading] = useState<boolean>(true);
     const [walletItem, setWalletItem] = useState<any[]>();
     // Paginaton
     let paginate_item = 5;
@@ -67,7 +66,7 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
         // Store the AbortController in state
         setWalletItemAbortController(abortController);
 
-        // Build parameter
+        // Build request parameter
         const query = [];
         const obj = {
             limit: paginate,
@@ -98,7 +97,6 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
 
             // Remove loading state
             setContentIsLoading(false);
-
             // Clear the AbortController from state
             setWalletItemAbortController(null);
         } catch (error) {
@@ -120,35 +118,34 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
     // List Skeleton
     const [skeletonCount, setSkeletonCount] = useState<number>(5);
     let listSkeleton = () => {
-        return <ListSkeleton/>
+        return <WalletSkeleton/>
     }
     useEffect(() => {
-        // Update skeleton count to match loaded planned item
+        // Update skeleton count to match loaded item
         if(walletItem){
             setSkeletonCount(walletItem.length > 0 ? walletItem.length : 3);
         }
     }, [walletItem]);
+
     // List Template
     let listTemplate = (obj?:any[]) => {
-        return <ListTemplate wallet={obj}/>;
+        return <WalletTemplate wallet={obj}/>;
     }
 
     useEffect(() => {
-        // Listen to Record Dialog event
-        const handleDialogRecord = () => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
             setTimeout(() => {
                 fetchWalletData();
             }, 100);
         }
 
-        document.addEventListener('dialog.wallet.hidden', handleDialogRecord);
-        document.addEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogRecord);
-        document.addEventListener('wallet.deleted-action', handleDialogRecord);
+        document.addEventListener('dialog.wallet.hidden', handleDialogEvent);
+        document.addEventListener('wallet.deleted-action', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialog.wallet.hidden', handleDialogRecord);
-            document.removeEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogRecord);
-            document.removeEventListener('wallet.deleted-action', handleDialogRecord);
+            document.removeEventListener('dialog.wallet.hidden', handleDialogEvent);
+            document.removeEventListener('wallet.deleted-action', handleDialogEvent);
         };
     });
 
@@ -168,6 +165,7 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                                 <CardTitle>
                                     <div>Wallet: List</div>
                                 </CardTitle>
+                                <CardDescription>List of your available Categories</CardDescription>
                             </div>
                             <div className={ `flex items-center gap-2` }>
                                 {/* Refresh Button */}
@@ -180,7 +178,7 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                                     // Fetch Pending Count
                                     fetchWalletData();
                                 }}><i className={ `fa-solid fa-rotate-right` }></i></Button>
-                                
+
                                 {/* Add new Button */}
                                 <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
                                     document.dispatchEvent(new CustomEvent('wallet.edit-action', {
@@ -201,45 +199,40 @@ export default function Index({ auth }: PageProps<WalletIndexProps>) {
                                     setFilterKeyword(event.target.value);
                                 }}/>
 
-                                <Link href={ route('sys.wallet.re-order.index') }>
-                                    <Button variant={ `outline` } className={ ` w-10 aspect-square` }>
-                                        <i className={ `fa-solid fa-sort` }></i>
-                                    </Button>
-                                </Link>
+                                <div className={ ` flex flex-row gap-2` }>
+                                    <Link href={ route('sys.wallet.re-order.index') } className={ `aspect-square` }>
+                                        <Button variant={ `outline` } className={ ` w-10 aspect-square` }>
+                                            <i className={ `fa-solid fa-sort` }></i>
+                                        </Button>
+                                    </Link>
+                                </div>
                             </div>
+
                             {/* Content */}
                             <div className={ ` flex flex-col gap-4` }>
                                 {(() => {
+                                    let walletElement: any[] = [];
+                                    let defaultContent = <TemplateNoData></TemplateNoData>;
+
                                     if(contentIsLoading){
-                                        let element: any[] = [];
                                         for(let i = 0; i < skeletonCount; i++){
-                                            element.push(
+                                            walletElement.push(
                                                 <div key={ `skeleton-${i}` }>
                                                     {listSkeleton()}
                                                 </div>
                                             );
                                         }
-
-                                        return element;
-                                    } else {
-                                        let walletElement: any[] = [];
-                                        let defaultContent = <TemplateNoData></TemplateNoData>;
-
-                                        // Loop through response
-                                        if(walletItem && walletItem.length > 0){
-                                            walletItem.map((val, index) => {
-                                                walletElement.push(
-                                                    <div key={ `wallet_item-${index}` }>
-                                                        {listTemplate(val)}
-                                                    </div>
-                                                );
-                                            });
-                                        }
-
-                                        return walletElement.length > 0 ? walletElement : defaultContent;
+                                    } else if(walletItem && walletItem.length > 0){
+                                        walletItem.map((val, index) => {
+                                            walletElement.push(
+                                                <div key={ `wallet_item-${index}` }>
+                                                    {listTemplate(val)}
+                                                </div>
+                                            );
+                                        });
                                     }
 
-                                    return <></>;
+                                    return walletElement.length > 0 ? walletElement : defaultContent;
                                 })()}
                             </div>
                         </div>

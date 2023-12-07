@@ -29,17 +29,8 @@ class WalletGroupController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        $data->balance = $data->getBalance();
-        if($data->walletGroupItem()->exists()){
-            $data->walletGroupItem->map(function($data){
-                $data->balance = $data->getBalance();
-                
-                return $data;
-            });
-        }
-
         return Inertia::render('System/WalletGroup/Show', [
-            'data' => $data
+            'data' => new \App\Http\Resources\WalletGroup\ListResource($data),
         ]);
     }
 }

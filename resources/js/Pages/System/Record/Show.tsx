@@ -17,19 +17,19 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 
-type RecordShowProps = {
+type ContentProps = {
     record: RecordItem,
     related?: RecordItem
 }
 
-export default function Show({ auth, record, related }: PageProps<RecordShowProps>) {
+export default function Show({ auth, record, related }: PageProps<ContentProps>) {
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
 
     // Listen to Record Dialog event
     useEffect(() => {
         const handleDialogRecord = (event: any) => {
             if(event.detail?.action && event.detail?.action === 'delete'){
-                location.href = route('sys.record.index');
+                router.visit(route('sys.record.index'));
             } else {
                 router.reload();
             }
@@ -37,9 +37,11 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
             // setOpenDropdown(false);
         }
         document.addEventListener('dialog.record.hidden', handleDialogRecord);
+        document.addEventListener('record.deleted-action', handleDialogRecord);
         // Remove the event listener when the component unmounts
         return () => {
             document.removeEventListener('dialog.record.hidden', handleDialogRecord);
+            document.removeEventListener('record.deleted-action', handleDialogRecord);
         };
     });
 
@@ -126,7 +128,7 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                             let recordDialogSection = document.getElementById('record-deleteDialogSection');
                                             if(recordDialogSection){
                                                 return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                                    document.dispatchEvent(new CustomEvent('record.deleted-action', {
+                                                    document.dispatchEvent(new CustomEvent('record.delete-action', {
                                                         bubbles: true,
                                                         detail: {
                                                             uuid: record?.uuid
@@ -182,13 +184,13 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                         {/* Type, Category, and Wallet */}
                         <div className={ ` flex gap-4` }>
                             <div className={ ` w-1/3` }>
-                                <div className={ ` border ${record.to_wallet ? `` : (record.type === 'income' ? ` border-green-500` : `  border-red-500`)} rounded-md h-full flex flex-col gap-2 justify-center items-center` }>
+                                <div className={ ` border ${record.type === 'income' ? ` border-green-500` : `  border-red-500`} rounded-md h-full flex flex-col gap-2 justify-center items-center` }>
                                     {/* Icon */}
                                     <div className={ `` }>
                                         {(() => {
                                             if(record.to_wallet){
                                                 // Transfer
-                                                return <i className={ ` text-2xl fa-solid fa-arrow-right-arrow-left rotate-90` }></i>;
+                                                return <i className={ ` text-2xl fa-solid fa-arrow-right-arrow-left rotate-90 ${record.type === 'income' ? ` text-green-500` : `text-red-500`}` }></i>;
                                             } else {
                                                 // Either income / expense
                                                 return <i className={ `text-2xl fa-solid ${record.type === 'income' ? ` text-green-500 fa-right-to-bracket rotate-90` : ` text-red-500 fa-right-from-bracket -rotate-90`}` }></i>
@@ -214,13 +216,33 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                 {/* Category */}
                                 <div className={ `` }>
                                     <span className={ `font-normal text-sm` }>Category</span>
-                                    <span className={ `block whitespace-nowrap overflow-hidden text-ellipsis` }>{ record.category ? `${record.category.parent ? `${record.category.parent.name} - ` : ''}${record.category.name}` : 'Uncategorized' }</span>
+                                    <span className={ `block whitespace-nowrap overflow-hidden text-ellipsis` }>
+                                        {(() => {
+                                            if(record.category){
+                                                return <Link href={ route('sys.category.show', record.category.uuid) }>
+                                                    <span><u>{record.category.name}</u></span>
+                                                </Link>
+                                            }
+
+                                            return 'Uncategorized';
+                                        })()}
+                                    </span>
                                 </div>
 
                                 {/* From Wallet */}
                                 <div className={ `` }>
                                     <span className={ `font-normal text-sm` }>From</span>
-                                    <span className={ `block whitespace-nowrap overflow-hidden text-ellipsis` }>{ record.from_wallet ? `${record.from_wallet.parent ? `${record.from_wallet.parent.name} - ` : ''}${record.from_wallet.name}` : '-' }</span>
+                                    <span className={ `block whitespace-nowrap overflow-hidden text-ellipsis` }>
+                                        {(() => {
+                                            if(record.from_wallet){
+                                                return <Link href={ route('sys.wallet.show', record.from_wallet.uuid) }>
+                                                    <span><u>{record.from_wallet.name}</u></span>
+                                                </Link>
+                                            }
+
+                                            return '-';
+                                        })()}
+                                    </span>
                                 </div>
 
                                 {/* To Wallet */}
@@ -229,7 +251,19 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                         return <>
                                             <div className={ `` }>
                                                 <span className={ `font-normal text-sm` }>To</span>
-                                                <span className={ `block whitespace-nowrap overflow-hidden text-ellipsis` }>{ record.to_wallet ? `${record.to_wallet.parent ? `${record.to_wallet.parent.name} - ` : ''}${record.to_wallet.name}` : '-' }</span>
+                                                <span className={ `block whitespace-nowrap overflow-hidden text-ellipsis` }>
+                                                    <span className={ `block whitespace-nowrap overflow-hidden text-ellipsis` }>
+                                                        {(() => {
+                                                            if(record.to_wallet){
+                                                                return <Link href={ route('sys.wallet.show', record.to_wallet.uuid) }>
+                                                                    <span><u>{record.to_wallet.name}</u></span>
+                                                                </Link>
+                                                            }
+
+                                                            return '-';
+                                                        })()}
+                                                    </span>
+                                                </span>
                                             </div>
                                         </>;
                                     }
@@ -274,6 +308,7 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                         </div>
 
                         {(() => {
+                            console.log(record);
                             if(record.record_tags && record.record_tags.length > 0){
                                 let tags: any[] = [];
                                 (record.record_tags).forEach((value, index) => {
@@ -308,8 +343,8 @@ export default function Show({ auth, record, related }: PageProps<RecordShowProp
                                 <Card className={ ` mt-6 group` }>
                                     <CardContent className={ ` flex flex-row gap-6 p-6 justify-between items-center` }>
                                         <div className={ ` flex flex-col` }>
-                                            <span>{ucwords(related.type)} {related.type === 'expense' ? 'of' : 'to'}</span>
-                                            <span className={ `block whitespace-nowrap overflow-hidden text-ellipsis text-2xl font-semibold` }>{ related.from_wallet ? `${related.from_wallet.parent ? `${related.from_wallet.parent.name} - ` : ''}${related.from_wallet.name}` : '-' }</span>
+                                            <span>Transfer {record.type === 'expense' ? 'to' : 'from'}</span>
+                                            <span className={ `block whitespace-nowrap overflow-hidden text-ellipsis text-2xl font-semibold` }>{ related.from_wallet ? related.from_wallet.name : '-' }</span>
                                         </div>
                                         <div className={ `` }>
                                             <span className={ ` flex items-center justify-center w-10 h-10 border rounded-full p-4 group-hover:bg-primary transition-all` }>

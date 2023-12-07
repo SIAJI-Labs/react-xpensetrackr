@@ -14,14 +14,8 @@ import Sidebar from '@/Layouts/Partials/Sidebar';
 
 // Shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/Components/ui/command';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/Components/ui/sheet';
+import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/Components/ui/command';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
 import Notification from './Notification';
 
 export default function Navbar({ user, className = '' }: PropsWithChildren<{ user: User, className?: string }>) {
@@ -63,9 +57,9 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
     return (
         <>
             {/* Command */}
-            <CommandDialog open={openSearchCommand} onOpenChange={setOpenSearchCommand}>
+            <CommandDialog open={openSearchCommand} onOpenChange={setOpenSearchCommand} className={ `max-sm:bottom-0 max-sm:top-[unset] max-sm:translate-y-0 max-sm:data-[state=closed]:!slide-out-to-bottom-[50%] max-sm:data-[state=open]:!slide-in-from-bottom-[50%]` }>
                 <CommandInput placeholder="Type a command or search..." className={ ` border-none focus:ring-0` }/>
-                <CommandList>
+                <CommandList className={ `max-sm:max-h-[75vh]` }>
                     <CommandEmpty>No results found.</CommandEmpty>
 
                     {(() => {

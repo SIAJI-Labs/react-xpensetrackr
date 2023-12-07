@@ -1,25 +1,24 @@
+import { useIsFirstRender } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { PageProps } from "@/types";
+import axios from "axios";
 
 // Plugins
 import moment from "moment-timezone";
 
 // Partials
-import TemplateNoData from "@/Components/template/TemplateNoData";
 import SummaryTemplate from "@/Components/template/PlannedPayment/TemplateSummary";
+import SummarySkeleton from "@/Components/template/PlannedPayment/SkeletonSummary";
+import TemplateNoData from "@/Components/template/TemplateNoData";
 
 // Shadcn
 import { Button } from "@/Components/ui/button";
-import SummarySkeleton from "@/Components/template/PlannedPayment/SkeletonSummary";
-import axios from "axios";
-import { useIsFirstRender } from "@/lib/utils";
 
 // Props
-type PlannedPaymentSummaryProps = {
-    activeType?: string
+type ContentProps = {
 }
 
-export default function PlannedPaymentSummary({ auth, activeType }: PageProps<PlannedPaymentSummaryProps>) {
+export default function PlannedPaymentSummary({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     useEffect(() => {
         fetchPlannedSummary();

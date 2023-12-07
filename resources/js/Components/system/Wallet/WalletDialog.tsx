@@ -190,7 +190,6 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
         formData.append('parent_id', formParent);
         formData.append('name', formName);
         formData.append('starting_balance', formStartingBalance.toString());
-
         if(formUuid){
             formData.append('wallet_uuid', formUuid);
         }
@@ -335,7 +334,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
 
                     // Update Combobox Label
                     if(data.parent){
-                        setComboboxParentLabel(`${data.parent ? `${data.parent.name} - ` : ''}${data.name}`);
+                        setComboboxParentLabel(data.parent.name);
                     }
                     
                     // Open record-dialog
@@ -357,12 +356,12 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
     return (
         <section id={ `wallet-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
-                <DialogContent className=" h-full md:h-auto lg:min-w-[400px] max-md:!max-h-[85vh] p-0" data-type="record-dialog">
+                <DialogContent className=" flex flex-col h-auto max-lg:bottom-0 max-lg:top-[unset] max-lg:translate-y-0 lg:min-w-[400px] p-0" data-type="wallet-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Wallet</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleWalletDialogSubmit} id={ `wallet-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
+                    <form onSubmit={handleWalletDialogSubmit} id={ `wallet-dialogForms` } className={ ` flex-1 overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
                         {/* Parent Wallet */}
                         <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `record_dialog-parent` }>
                             <label className={ ` form--label` }>Parent</label>
@@ -473,7 +472,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                             if(document.getElementById('wallet-dialogForms')){
                                 (document.getElementById('wallet-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
                             }
-                        }} id='wallet_dialog-submit'>Submit</Button>
+                        }} id='wallet-dialogSubmit'>Submit</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

@@ -21,14 +21,14 @@ import { Button } from "@/Components/ui/button";
 import { useIsFirstRender } from "@/lib/utils";
 
 // Props
-type PlannedSummaryShowProps = {
+type ContentProps = {
     wallet?: WalletItem;
     period?: Date | null;
     estimate_income?: number;
     estimate_expense?: number;
 }
 
-export default function Show({ auth, wallet, period, estimate_income = 0, estimate_expense = 0 }: PageProps<PlannedSummaryShowProps>) {
+export default function Show({ auth, wallet, period, estimate_income = 0, estimate_expense = 0 }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     useEffect(() => {
         fetchPlannedSummary();

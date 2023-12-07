@@ -29,7 +29,7 @@ export default function TemplateList({ category, deleteAction = true, editAction
             <div className={ ` flex flex-col gap-2 border rounded p-4 cursor-pointer` }>
                 {/* Date, amount and action */}
                 <div className={ ` flex flex-row gap-6 justify-between` }>
-                    <span className={ ` font-medium w-full md:w-auto whitespace-nowrap overflow-hidden text-ellipsis` }>{ category && 'name' in category ? `${category.parent ? `${category.parent.name} - ` : ''}${category?.name}` : '-' }</span>
+                    <span className={ ` font-medium w-full md:w-auto whitespace-nowrap overflow-hidden text-ellipsis` }>{ category && 'name' in category ? category?.name : '-' }</span>
 
                     <div className={ ` flex flex-row flex-1 md:flex-none justify-between gap-2 items-center` }>
                         <div>

@@ -5,21 +5,21 @@ import { PageProps } from "@/types"
 import axios from "axios";
 
 // Partials
-import ListTemplate from "@/Components/template/Category/TemplateList";
+import CategorySkeleton from "@/Components/template/Category/SkeletonList";
+import CategoryTemplate from "@/Components/template/Category/TemplateList";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import ListSkeleton from "@/Components/template/Category/SkeletonList";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 
 // Props
-type CategoryIndexProps = {
+type ContentProps = {
 }
 
-export default function Index({ auth }: PageProps<CategoryIndexProps>) {
+export default function Index({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     const [contentIsLoading, setContentIsLoading] = useState<boolean>(true);
     useEffect(() => {
@@ -27,7 +27,7 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
         fetchCategoryData();
     }, []);
 
-    // Record Filter
+    // Filter
     const [filterKeyword, setFilterKeyword] = useState<string>('');
     useEffect(() => {
         if(!isFirstRender){
@@ -36,7 +36,7 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
                 fetchCategoryData();
             }, 500);
     
-            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+            // Clean up the timer if the component unmounts or when filterKeyword changes.
             return () => {
                 clearTimeout(timer);
             };
@@ -45,7 +45,6 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
 
     // Category Data
     const [categoryItemAbortController, setCategoryItemAbortController] = useState<AbortController | null>(null);
-    const [categoryIsLoading, setCategoryIsLoading] = useState<boolean>(true);
     const [categoryItem, setCategoryItem] = useState<any[]>();
     // Paginaton
     let paginate_item = 5;
@@ -67,7 +66,7 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
         // Store the AbortController in state
         setCategoryItemAbortController(abortController);
 
-        // Build parameter
+        // Build request parameter
         const query = [];
         const obj = {
             limit: paginate,
@@ -98,7 +97,6 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
 
             // Remove loading state
             setContentIsLoading(false);
-
             // Clear the AbortController from state
             setCategoryItemAbortController(null);
         } catch (error) {
@@ -120,33 +118,34 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
     // List Skeleton
     const [skeletonCount, setSkeletonCount] = useState<number>(5);
     let listSkeleton = () => {
-        return <ListSkeleton/>
+        return <CategorySkeleton/>
     }
     useEffect(() => {
-        // Update skeleton count to match loaded planned item
+        // Update skeleton count to match loaded item
         if(categoryItem){
             setSkeletonCount(categoryItem.length > 0 ? categoryItem.length : 3);
         }
     }, [categoryItem]);
+
     // List Template
     let listTemplate = (obj?:any[]) => {
-        return <ListTemplate category={obj}/>;
+        return <CategoryTemplate category={obj}/>;
     }
 
     useEffect(() => {
-        // Listen to Record Dialog event
-        const handleDialogRecord = () => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
             setTimeout(() => {
                 fetchCategoryData();
             }, 100);
         }
 
-        document.addEventListener('dialog.category.hidden', handleDialogRecord);
-        document.addEventListener('category.deleted-action', handleDialogRecord);
+        document.addEventListener('dialog.category.hidden', handleDialogEvent);
+        document.addEventListener('category.deleted-action', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialog.category.hidden', handleDialogRecord);
-            document.removeEventListener('category.deleted-action', handleDialogRecord);
+            document.removeEventListener('dialog.category.hidden', handleDialogEvent);
+            document.removeEventListener('category.deleted-action', handleDialogEvent);
         };
     });
 
@@ -179,6 +178,7 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
                                     // Fetch Pending Count
                                     fetchCategoryData();
                                 }}><i className={ `fa-solid fa-rotate-right` }></i></Button>
+
                                 {/* Add new Button */}
                                 <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={() => {
                                     document.dispatchEvent(new CustomEvent('category.edit-action', {
@@ -201,32 +201,28 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
 
                                 <div className={ ` flex flex-row gap-2` }>
                                     <Link href={ route('sys.category.re-order.index') } className={ `aspect-square` }>
-                                        <Button variant={ `outline` } className={ ` w-10 aspect-square` }>
+                                        <Button variant={ `outline` } className={ ` w-10 aspect-square` } data-type="navigation-reorder">
                                             <i className={ `fa-solid fa-sort` }></i>
                                         </Button>
                                     </Link>
                                 </div>
                             </div>
+
                             {/* Content */}
                             <div className={ ` flex flex-col gap-4` }>
-                            {(() => {
-                                if(contentIsLoading){
-                                    let element: any[] = [];
-                                    for(let i = 0; i < skeletonCount; i++){
-                                        element.push(
-                                            <div key={ `skeleton-${i}` }>
-                                                {listSkeleton()}
-                                            </div>
-                                        );
-                                    }
-
-                                    return element;
-                                } else {
+                                {(() => {
                                     let categoryElement: any[] = [];
                                     let defaultContent = <TemplateNoData></TemplateNoData>;
 
-                                    // Loop through response
-                                    if(categoryItem && categoryItem.length > 0){
+                                    if(contentIsLoading){
+                                        for(let i = 0; i < skeletonCount; i++){
+                                            categoryElement.push(
+                                                <div key={ `skeleton-${i}` }>
+                                                    {listSkeleton()}
+                                                </div>
+                                            );
+                                        }
+                                    } else if(categoryItem && categoryItem.length > 0){
                                         categoryItem.map((val, index) => {
                                             categoryElement.push(
                                                 <div key={ `category_item-${index}` }>
@@ -237,9 +233,6 @@ export default function Index({ auth }: PageProps<CategoryIndexProps>) {
                                     }
 
                                     return categoryElement.length > 0 ? categoryElement : defaultContent;
-                                }
-
-                                return <></>;
                                 })()}
                             </div>
                         </div>

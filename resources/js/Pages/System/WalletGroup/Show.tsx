@@ -1,12 +1,14 @@
 import { PageProps, RecordItem, WalletGroupItem, WalletItem } from "@/types"
-import { useIsFirstRender } from "@/lib/utils";
 import { Head, Link, router } from "@inertiajs/react";
+import { useIsFirstRender } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 // Partials
+import SystemLayout from "@/Layouts/SystemLayout";
 import TemplateBackButton from "@/Components/template/TemplateBackButton";
 import TemplateNoData from "@/Components/template/TemplateNoData";
-import TemplateList from "@/Components/template/Wallet/TemplateList";
-import SystemLayout from "@/Layouts/SystemLayout";
+import WalletTemplate from "@/Components/template/Wallet/TemplateList";
 import RecordTemplate from "@/Components/template/Record/TemplateList";
 import RecordSkeleton from "@/Components/template/Record/SkeletonList";
 
@@ -14,27 +16,20 @@ import RecordSkeleton from "@/Components/template/Record/SkeletonList";
 import { formatRupiah, momentFormated, ucwords } from "@/function";
 
 // Shadcn
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { useEffect, useState } from "react";
-import axios from "axios";
 
 // Props
-type WalletShow = {
+type ContentProps = {
     data: WalletGroupItem
 }
 
-export default function Show({ auth, data }: PageProps<WalletShow>) {
+export default function Show({ auth, data }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
     const [groupItem, setGroupItem] = useState<WalletItem[] | undefined>([]);
 
-    // List Template
-    let listTemplate = (obj?:any[]) => {
-        return <TemplateList wallet={obj}/>;
-    }
     useEffect(() => {
         setGroupItem(data.wallet_group_item);
     }, [data]);
@@ -42,8 +37,9 @@ export default function Show({ auth, data }: PageProps<WalletShow>) {
     // Listen to Record Dialog event
     useEffect(() => {
         const handleDialogEvent = (event: any) => {
-            if(event.detail?.action && event.detail?.action === 'delete'){
-                location.href = route('sys.wallet-group.index');
+            console.log(event);
+            if(event.detail?.action && event.type === 'wallet-group.deleted-action' && event.detail?.action === 'delete'){
+                router.visit(route('sys.wallet-group.index'));
             } else {
                 router.reload({
                     only: ['data']
@@ -51,16 +47,21 @@ export default function Show({ auth, data }: PageProps<WalletShow>) {
             }
             // setOpenDropdown(false);
         }
+        
+        document.addEventListener('record.deleted-action', handleDialogEvent);
         document.addEventListener('dialog.wallet.hidden', handleDialogEvent);
-        document.addEventListener('dialog.wallet-group.hidden', handleDialogEvent);
         document.addEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+        document.addEventListener('wallet.deleted-action', handleDialogEvent);
+        document.addEventListener('dialog.wallet-group.hidden', handleDialogEvent);
         document.addEventListener('dialog.wallet-group.balance-adjustment.hidden', handleDialogEvent);
         document.addEventListener('wallet-group.deleted-action', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
+            document.removeEventListener('record.deleted-action', handleDialogEvent);
             document.removeEventListener('dialog.wallet.hidden', handleDialogEvent);
-            document.removeEventListener('dialog.wallet-group.hidden', handleDialogEvent);
             document.removeEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+            document.removeEventListener('wallet.deleted-action', handleDialogEvent);
+            document.removeEventListener('dialog.wallet-group.hidden', handleDialogEvent);
             document.removeEventListener('dialog.wallet-group.balance-adjustment.hidden', handleDialogEvent);
             document.removeEventListener('wallet-group.deleted-action', handleDialogEvent);
         };
@@ -118,12 +119,10 @@ export default function Show({ auth, data }: PageProps<WalletShow>) {
         }
         if(groupItem && (groupItem)?.length > 0){
             (groupItem).forEach((value, key) => {
-                query.push(encodeURIComponent(`filter_from_wallet[${key}]`) + '=' + encodeURIComponent(value.uuid));
-                query.push(encodeURIComponent(`filter_to_wallet[${key}]`) + '=' + encodeURIComponent(value.uuid));
+                query.push(encodeURIComponent(`filter_wallet[${key}]`) + '=' + encodeURIComponent(value.uuid));
             });
         } else {
-            query.push(encodeURIComponent(`filter_from_wallet[]`) + '=' + '-1');
-            query.push(encodeURIComponent(`filter_to_wallet[]`) + '=' + '-1');
+            query.push(encodeURIComponent(`filter_wallet[]`) + '=' + '-1');
         }
 
         try {
@@ -349,7 +348,7 @@ export default function Show({ auth, data }: PageProps<WalletShow>) {
                                     let items: any[] = [];
                                     (data.wallet_group_item).forEach((value) => {
                                         items.push(
-                                            <TemplateList wallet={value} key={ `group_item-${value.uuid}` }/>
+                                            <WalletTemplate wallet={value} key={ `group_item-${value.uuid}` }/>
                                         );
                                     });
 

@@ -63,7 +63,7 @@ class TagsController extends Controller
 
             // Fetch Data
             $data = [
-                'data' => $data->get(),
+                'data' => \App\Http\Resources\Tags\ListResource::collection($data->get()),
                 'has_more' => $hasMore,
                 'total' => isset($raw) ? $raw->count() : null
             ];
@@ -105,7 +105,7 @@ class TagsController extends Controller
             ->firstOrFail();
 
         return $this->formatedJsonResponse(200, 'Data Fetched', [
-            'data' => $data
+            'data' => new \App\Http\Resources\Tags\ShowResource($data)
         ]);
     }
 

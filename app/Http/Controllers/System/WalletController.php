@@ -30,20 +30,8 @@ class WalletController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        $data->balance = $data->getBalance();
-        $data->children = [];
-
-        // Manipulate child data
-        if($data->child()->exists()){
-            $data->children = $data->child()->get()->map(function($data){
-                $data->balance = $data->getBalance();
-                return $data;
-            });
-        }
-
         return Inertia::render('System/Wallet/Show', [
-            'data' => $data,
-            'related' => $data->children
+            'data' => new \App\Http\Resources\Wallet\ShowResource($data),
         ]);
     }
 }

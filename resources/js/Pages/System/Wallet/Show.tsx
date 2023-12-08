@@ -142,18 +142,22 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
     }
     useEffect(() => {
         // Listen to Record Dialog event
-        const handleDialogRecord = () => {
+        const handleDialogEvent = () => {
             setTimeout(() => {
                 fetchRecordList();
             }, 100);
         }
 
-        document.addEventListener('dialog.record.hidden', handleDialogRecord);
-        document.addEventListener('record.deleted-action', handleDialogRecord);
+        document.addEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+
+        document.addEventListener('dialog.record.hidden', handleDialogEvent);
+        document.addEventListener('record.deleted-action', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialog.record.hidden', handleDialogRecord);
-            document.removeEventListener('record.deleted-action', handleDialogRecord);
+            document.removeEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+
+            document.removeEventListener('dialog.record.hidden', handleDialogEvent);
+            document.removeEventListener('record.deleted-action', handleDialogEvent);
         };
     });
 

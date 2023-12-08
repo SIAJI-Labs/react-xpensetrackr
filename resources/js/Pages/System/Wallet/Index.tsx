@@ -142,10 +142,17 @@ export default function Index({ auth }: PageProps<ContentProps>) {
 
         document.addEventListener('dialog.wallet.hidden', handleDialogEvent);
         document.addEventListener('wallet.deleted-action', handleDialogEvent);
+        document.addEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+
+        document.addEventListener('dialog.record.hidden', handleDialogEvent);
+
         // Remove the event listener when the component unmounts
         return () => {
             document.removeEventListener('dialog.wallet.hidden', handleDialogEvent);
             document.removeEventListener('wallet.deleted-action', handleDialogEvent);
+            document.removeEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+
+            document.removeEventListener('dialog.record.hidden', handleDialogEvent);
         };
     });
 

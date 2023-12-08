@@ -86,7 +86,6 @@ export default function Index({ auth, period }: PageProps<ContentProps>) {
         const obj = {
             year: moment(`${period}-01`).format('YYYY'),
             month: moment(`${period}-01`).format('MM'),
-            // sort: graphSort
         }
         for (const key in obj) {
             query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
@@ -213,7 +212,7 @@ export default function Index({ auth, period }: PageProps<ContentProps>) {
                     <div className={ ` flex flex-row justify-between items-start` }>
                         <div>
                             <CardTitle>
-                                <div>Report: {periodFormated}</div>
+                                <div>Report: Cash Flow</div>
                             </CardTitle>
                             <CardDescription>Cash Flow overview for <u>{periodFormated}</u> period</CardDescription>
                         </div>
@@ -244,6 +243,7 @@ export default function Index({ auth, period }: PageProps<ContentProps>) {
                                         enabled: false
                                     }
                                 },
+                                colors: ['#22c55f', '#ef4444', '#fbba47'],
                                 stroke: {
                                     show: true,
                                     width: [0, 0, 3],
@@ -373,22 +373,26 @@ export default function Index({ auth, period }: PageProps<ContentProps>) {
                                 if(el.length > 0){
                                     return <>
                                         <div className={ ` flex flex-col gap-2` }>
-                                            <Button variant={ `outline` } className={ ` flex flex-row gap-1 mr-auto` } onClick={() => {
-                                                let list = graphList;
-                                                setGraphList(list.reverse());
-                                                setGraphSort(graphSort === 'asc' ? 'desc' : 'asc');
-                                            }}>
-                                                <div className={ ` scale-75` }>
-                                                    {(() => {
-                                                        if(graphSort === 'desc'){
-                                                            return <LucideArrowUpAZ/>
-                                                        }
+                                            <div className={ ` flex flex-row justify-between items-center` }>
+                                                <Button variant={ `outline` } className={ ` flex flex-row gap-1 mr-auto` } onClick={() => {
+                                                    let list = graphList;
+                                                    setGraphList(list.reverse());
+                                                    setGraphSort(graphSort === 'asc' ? 'desc' : 'asc');
+                                                }}>
+                                                    <div className={ ` scale-75` }>
+                                                        {(() => {
+                                                            if(graphSort === 'desc'){
+                                                                return <LucideArrowUpAZ/>
+                                                            }
 
-                                                        return <LucideArrowDownAZ/>
-                                                    })()}
-                                                </div>
-                                                <span className={ `` }>{ ucwords(graphSort) }</span>
-                                            </Button>
+                                                            return <LucideArrowDownAZ/>
+                                                        })()}
+                                                    </div>
+                                                    <span className={ `` }>{ ucwords(graphSort) }</span>
+                                                </Button>
+
+                                                <span className={ `font-semibold` }>{periodFormated}</span>
+                                            </div>
 
                                             <div className={ ` flex flex-col gap-4` }>
                                                 {el}

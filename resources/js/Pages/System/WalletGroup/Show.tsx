@@ -48,22 +48,29 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
             // setOpenDropdown(false);
         }
         
-        document.addEventListener('record.deleted-action', handleDialogEvent);
         document.addEventListener('dialog.wallet.hidden', handleDialogEvent);
         document.addEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
         document.addEventListener('wallet.deleted-action', handleDialogEvent);
+
         document.addEventListener('dialog.wallet-group.hidden', handleDialogEvent);
         document.addEventListener('dialog.wallet-group.balance-adjustment.hidden', handleDialogEvent);
         document.addEventListener('wallet-group.deleted-action', handleDialogEvent);
+
+        document.addEventListener('record.deleted-action', handleDialogEvent);
+        document.addEventListener('dialog.record.hidden', handleDialogEvent);
+
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('record.deleted-action', handleDialogEvent);
             document.removeEventListener('dialog.wallet.hidden', handleDialogEvent);
             document.removeEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
             document.removeEventListener('wallet.deleted-action', handleDialogEvent);
+            
             document.removeEventListener('dialog.wallet-group.hidden', handleDialogEvent);
             document.removeEventListener('dialog.wallet-group.balance-adjustment.hidden', handleDialogEvent);
             document.removeEventListener('wallet-group.deleted-action', handleDialogEvent);
+
+            document.removeEventListener('record.deleted-action', handleDialogEvent);
+            document.removeEventListener('dialog.record.hidden', handleDialogEvent);
         };
     });
 

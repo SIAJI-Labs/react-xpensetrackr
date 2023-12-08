@@ -137,7 +137,7 @@ export default function TemplateList({ plannedPayment, deleteAction = true, edit
                             {(() => {
                                 if(plannedPayment && 'category_id' in plannedPayment){
                                     if(plannedPayment.category){
-                                        return <>{ `${plannedPayment.category.parent ? `${plannedPayment.category.parent.name} - ` : ''}${plannedPayment.category.name}` }</>;
+                                        return <>{ plannedPayment.category.name }</>;
                                     }
                                 }
 
@@ -187,11 +187,11 @@ export default function TemplateList({ plannedPayment, deleteAction = true, edit
                     // Wallet
                     if(plannedPayment && 'from_wallet' in plannedPayment && plannedPayment?.from_wallet){
                         let walletName = [];
-                        walletName.push(<span key={ `from_wallet-${plannedPayment?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ `${plannedPayment?.from_wallet.parent ? `${plannedPayment.from_wallet.parent.name} - ` : ``}${plannedPayment?.from_wallet?.name}` }</span>);
+                        walletName.push(<span key={ `from_wallet-${plannedPayment?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ plannedPayment?.from_wallet?.name }</span>);
                         if(plannedPayment && 'type' in plannedPayment && plannedPayment?.type === 'transfer'){
                             // Push to Wallet (Transfer)
                             walletName.push(<i key={ `icon_wallet-${plannedPayment?.uuid}` } className={ `fa-solid ${plannedPayment?.type === 'transfer' || plannedPayment?.type === 'expense' ? 'fa-caret-right' : 'fa-caret-left'}` }></i>);
-                            walletName.push(<span key={ `to_wallet-${plannedPayment?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ `${plannedPayment?.to_wallet.parent ? `${plannedPayment.to_wallet.parent.name} - ` : ``}${plannedPayment?.to_wallet?.name}` }</span>);
+                            walletName.push(<span key={ `to_wallet-${plannedPayment?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ plannedPayment?.to_wallet?.name }</span>);
                         }
                         
                         information.push(

@@ -36,7 +36,7 @@ export default function Index({ auth }: PageProps<ContentProps>) {
                 fetchWalletGroupData();
             }, 500);
     
-            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+            // Clean up the timer if the component unmounts or when filterKeyword changes.
             return () => {
                 clearTimeout(timer);
             };
@@ -143,11 +143,15 @@ export default function Index({ auth }: PageProps<ContentProps>) {
         document.addEventListener('dialog.wallet-group.hidden', handleDialogEvent);
         document.addEventListener('dialog.wallet-group.balance-adjustment.hidden', handleDialogEvent);
         document.addEventListener('wallet-group.deleted-action', handleDialogEvent);
+
+        document.addEventListener('dialog.record.hidden', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
             document.removeEventListener('dialog.wallet-group.hidden', handleDialogEvent);
             document.removeEventListener('dialog.wallet-group.balance-adjustment.hidden', handleDialogEvent);
             document.removeEventListener('wallet-group.deleted-action', handleDialogEvent);
+
+            document.removeEventListener('dialog.record.hidden', handleDialogEvent);
         };
     });
 

@@ -29,7 +29,9 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
             if(event.detail?.action && event.detail?.action === 'delete'){
                 router.visit(route('sys.tags.index'));
             } else {
-                router.reload();
+                router.reload({
+                    only: ['data']
+                });
             }
 
             // setOpenDropdown(false);
@@ -75,7 +77,9 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
                                     <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
                                         {/* Refresh Action */}
                                         <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                            router.reload();
+                                            router.reload({
+                                                only: ['data']
+                                            });
                                             
                                             setTimeout(() => {
                                                 setOpenDropdown(false);

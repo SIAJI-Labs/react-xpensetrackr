@@ -195,7 +195,9 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
                                         <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
                                             {/* Refresh Action */}
                                             <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                                router.reload();
+                                                router.reload({
+                                                    only: ['data']
+                                                });
                                                 
                                                 setTimeout(() => {
                                                     setOpenDropdown(false);

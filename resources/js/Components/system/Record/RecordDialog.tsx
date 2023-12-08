@@ -418,7 +418,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }
     useEffect(() => {
         clearTimeout(comboboxTagsTimeout);
-        setComboboxTagsList([]);
+        // setComboboxTagsList([]);
 
         if(comboboxTagsOpenState){
             if (comboboxTagsAbort) {
@@ -451,6 +451,9 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
             };
         }
     }, [comboboxTagsInput, comboboxTagsOpenState]);
+    useEffect(() => {
+        setComboboxTagsInput('')
+    }, [comboboxTagsOpenState]);
 
     // Dialog Action
     useEffect(() => {

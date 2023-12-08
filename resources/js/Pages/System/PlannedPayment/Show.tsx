@@ -36,7 +36,9 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
             if(event.detail?.action && event.detail?.action === 'delete'){
                 router.visit(route('sys.planned-payment.index'));
             } else {
-                router.reload();
+                router.reload({
+                    only: ['data']
+                });
                 fetchPlannedItem();
             }
         }
@@ -49,7 +51,7 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
         // Remove the event listener when the component unmounts
         return () => {
             document.removeEventListener('dialog.record.hidden', handleDialogPlannedPayment);
-            
+
             document.removeEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
             document.removeEventListener('planned-payment.deleted-action', handleDialogPlannedPayment);
         };
@@ -174,7 +176,9 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
                                     <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
                                         {/* Refresh Action */}
                                         <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                            router.reload();
+                                            router.reload({
+                                                only: ['data']
+                                            });
                                             fetchPlannedItem();
                                             
                                             setTimeout(() => {

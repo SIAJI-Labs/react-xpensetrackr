@@ -37,6 +37,18 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
         />
     ));
 
+    // Manually register submit (override imask)
+    useEffect(() => {
+        const down = (e: KeyboardEvent) => {
+            let form = document.getElementById('wallet-dialogForms') as HTMLFormElement;
+            if(openState && e.key === 'Enter' && form){
+                form.dispatchEvent(new Event('submit', { bubbles: true }))
+            }
+        }
+        document.addEventListener("keydown", down)
+        return () => document.removeEventListener("keydown", down);
+    }, [openState]);
+
     // Form
     const [formParent, setFormParent] = useState<string>("");
     const [formUuid, setFormUuid] = useState<string>('');
@@ -131,16 +143,11 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
         }
     }, [comboboxParentInput, openWalletParent]);
     useEffect(() => {
+        setComboboxParentInput('');
+    }, [openWalletParent]);
+    useEffect(() => {
         if(openState){
-            if(formParent !== '' && comboboxParentList.length > 0){
-                const selected: WalletItem | undefined = comboboxParentList.find(
-                    (options: WalletItem) => options?.uuid === formParent
-                ) as WalletItem | undefined;
-    
-                if (selected) {
-                    setComboboxParentLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
-                }
-            } else {
+            if(formParent === ''){
                 setComboboxParentLabel(`Select an option`);
             }
         } else {
@@ -150,8 +157,8 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
         }
     }, [formParent]);
 
-    // Wallet Dialog - Forms
-    const resetWalletDialog = () => {
+    // Form Reset
+    const resetFormDialog = () => {
         setFormUuid('');
         setFormParent('');
         setFormName('');
@@ -162,7 +169,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
     const [formDialogAbortController, setAbortControllerRecordDialog] = useState<AbortController | null>(null);
-    const handleWalletDialogSubmit: FormEventHandler = (e) => {
+    const handleFormSubmit: FormEventHandler = (e) => {
         // Cancel previous request
         if(formDialogAbortController instanceof AbortController){
             formDialogAbortController.abort();
@@ -216,7 +223,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                         setOpenState(false);
                     } else {
                         // Reset form
-                        resetWalletDialog();
+                        resetFormDialog();
                     }
             
                     toast({
@@ -272,7 +279,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
         if(openState){
             document.dispatchEvent(new CustomEvent('dialog.wallet.shown', { bubbles: true }));
         } else {
-            resetWalletDialog();
+            resetFormDialog();
             setKeepOpenWalletDialog(false);
 
             // Announce Dialog Global Event
@@ -361,7 +368,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Wallet</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleWalletDialogSubmit} id={ `wallet-dialogForms` } className={ ` flex-1 overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
+                    <form onSubmit={handleFormSubmit} id={ `wallet-dialogForms` } className={ ` flex-1 overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
                         {/* Parent Wallet */}
                         <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `record_dialog-parent` }>
                             <label className={ ` form--label` }>Parent</label>
@@ -391,8 +398,10 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                                                                 value={options?.uuid}
                                                                 key={options?.uuid}
                                                                 onSelect={(currentValue) => {
-                                                                    setFormParent(currentValue === formParent ? "" : currentValue)
-                                                                    setOpenWalletParent(false)
+                                                                    setFormParent(currentValue === formParent ? "" : currentValue);
+                                                                    setComboboxParentLabel(options.name);
+
+                                                                    setOpenWalletParent(false);
                                                                 }}
                                                             >
                                                                 <Check
@@ -464,7 +473,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                     </form>
                     <DialogFooter className={ ` p-6 pt-2` }>
                         <Button variant={ `ghost` } onClick={() => {
-                            resetWalletDialog();
+                            resetFormDialog();
                         }}>
                             <span>Reset</span>
                         </Button>

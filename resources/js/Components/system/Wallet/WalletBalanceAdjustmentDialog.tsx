@@ -8,15 +8,10 @@ import { IMaskMixin } from "react-imask";
 
 // Partials
 import ErrorMessage from "@/Components/forms/ErrorMessage";
-import { Check, ChevronsUpDown } from "lucide-react";
 
 // Shadcn
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import { ScrollArea } from "@/Components/ui/scroll-area";
 import { useToast } from "@/Components/ui/use-toast";
-import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 
@@ -37,6 +32,18 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
         />
     ));
 
+    // Manually register submit (override imask)
+    useEffect(() => {
+        const down = (e: KeyboardEvent) => {
+            let form = document.getElementById('walletBalanceAdjustment-dialogForms') as HTMLFormElement;
+            if(openState && e.key === 'Enter' && form){
+                form.dispatchEvent(new Event('submit', { bubbles: true }))
+            }
+        }
+        document.addEventListener("keydown", down)
+        return () => document.removeEventListener("keydown", down);
+    }, [openState]);
+
     // Form
     const [formParent, setFormParent] = useState<string>("");
     const [formUuid, setFormUuid] = useState<string>('');
@@ -44,8 +51,8 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
     const [formCurrentBalance, setFormCurrentBalance] = useState<number>(0);
     const [formActualBalance, setFormActualBalance] = useState<number>(0);
 
-    // Wallet Dialog - Forms
-    const resetWalletDialog = (force: boolean = false) => {
+    // Form Reset
+    const resetFormDialog = (force: boolean = false) => {
         if(formUuid && !(force)){
             document.dispatchEvent(new CustomEvent('wallet.balance-adjustment.edit-action', {
                 bubbles: true,
@@ -65,7 +72,7 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
     const [formDialogAbortController, setAbortControllerRecordDialog] = useState<AbortController | null>(null);
-    const handleWalletDialogSubmit: FormEventHandler = (e) => {
+    const handleFormSubmit: FormEventHandler = (e) => {
         // Cancel previous request
         if(formDialogAbortController instanceof AbortController){
             formDialogAbortController.abort();
@@ -175,20 +182,19 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
             // Set focus to actual balance
             setTimeout(() => {
                 if(document.getElementById('wallet_dialog-actual_balance') && document.getElementById('wallet_dialog-actual_balance')?.querySelector('input')){
-                    console.log(document.getElementById('wallet_dialog-actual_balance')?.querySelector('input'));
+                    document.getElementById('wallet_dialog-actual_balance')?.querySelector('input')?.select();
                     document.getElementById('wallet_dialog-actual_balance')?.querySelector('input')?.focus();
                 }
             }, 100);
 
             document.dispatchEvent(new CustomEvent('dialog.wallet.balance-adjustment.shown', { bubbles: true }));
         } else {
-            resetWalletDialog(true);
+            resetFormDialog(true);
 
             // Announce Dialog Global Event
             document.dispatchEvent(new CustomEvent('dialog.wallet.balance-adjustment.hidden', { bubbles: true }));
         }
     }, [openState]);
-    
 
     // Document Ready
     const [walletFetchAbortController, setWalletFetchAbortController] = useState<AbortController | null>(null);
@@ -262,12 +268,12 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
     return (
         <section id={ `walletBalanceAdjustment-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
-                <DialogContent className=" flex flex-col h-auto max-lg:bottom-0 max-lg:top-[unset] max-lg:translate-y-0 lg:min-w-[400px] p-0" data-type="walletBalance-dialog">
+                <DialogContent className=" flex flex-col h-auto max-lg:bottom-0 max-lg:top-[unset] max-lg:!rounded-b-none max-lg:!rounded-t-lg max-lg:translate-y-0 lg:min-w-[400px] p-0" data-type="walletBalance-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Wallet: Balance Adjustment</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleWalletDialogSubmit} id={ `walletBalanceAdjustment-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
+                    <form onSubmit={handleFormSubmit} id={ `walletBalanceAdjustment-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
                         {/* Name */}
                         <div className={ `form--group` }>
                             <label className={ `form--label` }>Name</label>
@@ -327,9 +333,10 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
                             <ErrorMessage message={ errorFormDialog?.actual_balance }/>
                         </div>
                     </form>
+
                     <DialogFooter className={ ` p-6 pt-2` }>
                         <Button variant={ `ghost` } onClick={() => {
-                            resetWalletDialog();
+                            resetFormDialog();
                         }}>
                             <span>Reset</span>
                         </Button>
@@ -337,7 +344,7 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
                             if(document.getElementById('walletBalanceAdjustment-dialogForms')){
                                 (document.getElementById('walletBalanceAdjustment-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
                             }
-                        }} id='walletBalance_dialog-submit'>Submit</Button>
+                        }} id='walletBalanceAdjustment-dialogSubmit'>Submit</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

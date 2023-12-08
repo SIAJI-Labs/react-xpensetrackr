@@ -65,7 +65,7 @@ class Wallet extends Model
     public function child()
     {
         return $this->hasMany(\App\Models\Wallet::class, 'parent_id')
-            ->orderBy('order_main', 'asc')
+            ->orderBy('order', 'asc')
             ->with('parent');
     }
     public function record()
@@ -121,6 +121,8 @@ class Wallet extends Model
         static::creating(function ($model) {
             // Always generate UUID on Data Create
             $model->{'uuid'} = (string) Str::uuid();
+            $raw = $model;
+            $last_order = null;
 
             // Check order
             if(!empty($model->{'parent_id'})){

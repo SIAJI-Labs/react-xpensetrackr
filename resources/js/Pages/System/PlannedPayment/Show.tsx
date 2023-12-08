@@ -16,12 +16,11 @@ import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Separator } from "@/Components/ui/separator";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
-import PlannedPaymentDeleteDialog from "@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog";
 
 // Props
 type ContentProps = {
@@ -43,12 +42,14 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
         }
 
         document.addEventListener('dialog.record.hidden', handleDialogPlannedPayment);
+
         document.addEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
         document.addEventListener('planned-payment.deleted-action', handleDialogPlannedPayment);
 
         // Remove the event listener when the component unmounts
         return () => {
             document.removeEventListener('dialog.record.hidden', handleDialogPlannedPayment);
+            
             document.removeEventListener('dialog.planned-payment.hidden', handleDialogPlannedPayment);
             document.removeEventListener('planned-payment.deleted-action', handleDialogPlannedPayment);
         };

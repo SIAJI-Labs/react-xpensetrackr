@@ -68,7 +68,8 @@ class WalletGroup extends Model
         return $this->belongsToMany(\App\Models\Wallet::class, (new \App\Models\WalletGroupItem())->getTable())
             ->using(\App\Models\WalletGroupItem::class)
             ->withPivot('created_at', 'updated_at')
-            ->withTimestamps();
+            ->withTimestamps()
+            ->orderBy('order_main');
     }
 
     /**

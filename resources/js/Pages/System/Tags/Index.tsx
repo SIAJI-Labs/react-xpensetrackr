@@ -27,7 +27,7 @@ export default function Index({ auth }: PageProps<ContentProps>) {
         fetchTagsData();
     }, []);
 
-    // Record Filter
+    // Keyword Filter
     const [filterKeyword, setFilterKeyword] = useState<string>('');
     useEffect(() => {
         if(!isFirstRender){
@@ -36,7 +36,7 @@ export default function Index({ auth }: PageProps<ContentProps>) {
                 fetchTagsData();
             }, 500);
     
-            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+            // Clean up the timer if the component unmounts or when filterKeyword changes.
             return () => {
                 clearTimeout(timer);
             };
@@ -122,7 +122,7 @@ export default function Index({ auth }: PageProps<ContentProps>) {
         return <TagsSkeleton/>
     }
     useEffect(() => {
-        // Update skeleton count to match loaded planned item
+        // Update skeleton count to match loaded item
         if(tagsItem){
             setSkeletonCount(tagsItem.length > 0 ? tagsItem.length : 3);
         }
@@ -133,7 +133,7 @@ export default function Index({ auth }: PageProps<ContentProps>) {
     }
 
     useEffect(() => {
-        // Listen to Record Dialog event
+        // Listen to Dialog event
         const handleDialogEvent = () => {
             setTimeout(() => {
                 fetchTagsData();

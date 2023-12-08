@@ -1,10 +1,10 @@
-import SystemLayout from '@/Layouts/SystemLayout';
-import { PageProps, RecordItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
+import { PageProps, RecordItem } from '@/types';
 import { useEffect, useState } from 'react';
 
 // Partials
 import BackButton from '@/Components/template/TemplateBackButton';
+import SystemLayout from '@/Layouts/SystemLayout';
 
 // Plugins
 import { formatRupiah, momentFormated, ucwords } from '@/function';
@@ -12,8 +12,8 @@ import '@/../plugins/fontawesome/all.scss';
 import moment from 'moment-timezone';
 
 // Shadcn
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 
@@ -27,21 +27,22 @@ export default function Show({ auth, record, related }: PageProps<ContentProps>)
 
     // Listen to Record Dialog event
     useEffect(() => {
-        const handleDialogRecord = (event: any) => {
+        const handleDialogEvent = (event: any) => {
             if(event.detail?.action && event.detail?.action === 'delete'){
                 router.visit(route('sys.record.index'));
             } else {
-                router.reload();
+                router.reload({
+                    only: ['record', 'related']
+                });
             }
-
-            // setOpenDropdown(false);
         }
-        document.addEventListener('dialog.record.hidden', handleDialogRecord);
-        document.addEventListener('record.deleted-action', handleDialogRecord);
+
+        document.addEventListener('dialog.record.hidden', handleDialogEvent);
+        document.addEventListener('record.deleted-action', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialog.record.hidden', handleDialogRecord);
-            document.removeEventListener('record.deleted-action', handleDialogRecord);
+            document.removeEventListener('dialog.record.hidden', handleDialogEvent);
+            document.removeEventListener('record.deleted-action', handleDialogEvent);
         };
     });
 
@@ -79,7 +80,9 @@ export default function Show({ auth, record, related }: PageProps<ContentProps>)
                                     <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
                                         {/* Refresh Action */}
                                         <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                            router.reload();
+                                            router.reload({
+                                                only: ['data', 'related']
+                                            });
                                             
                                             setTimeout(() => {
                                                 setOpenDropdown(false);
@@ -308,7 +311,6 @@ export default function Show({ auth, record, related }: PageProps<ContentProps>)
                         </div>
 
                         {(() => {
-                            console.log(record);
                             if(record.record_tags && record.record_tags.length > 0){
                                 let tags: any[] = [];
                                 (record.record_tags).forEach((value, index) => {
@@ -336,6 +338,7 @@ export default function Show({ auth, record, related }: PageProps<ContentProps>)
                     </CardContent>
                 </Card>
 
+                {/* Transfer - Related record */}
                 {(() => {
                     if(related){
                         return <>

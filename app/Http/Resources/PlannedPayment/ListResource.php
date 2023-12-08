@@ -39,7 +39,7 @@ class ListResource extends JsonResource
             'category' => new \App\Http\Resources\Category\ListResource($this->whenLoaded('category')),
             'from_wallet' => new \App\Http\Resources\Wallet\ListResource($this->whenLoaded('fromWallet')),
             'to_wallet' => new \App\Http\Resources\Wallet\ListResource($this->whenLoaded('toWallet')),
-            'planned_payment_tags' => new \App\Http\Resources\Tags\ShowResource($this->whenLoaded('plannedPaymentTags.tags'))
+            'planned_payment_tags' => \App\Http\Resources\Tags\ListResource::collection($this->whenLoaded('plannedPaymentTags'))
         ];
     }
 }

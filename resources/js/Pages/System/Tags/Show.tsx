@@ -23,13 +23,15 @@ type ContentProps = {
 export default function Show({ auth, data, related }: PageProps<ContentProps>) {
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
 
-    // Listen to Record Dialog event
+    // Listen to Dialog event
     useEffect(() => {
         const handleDialogEvent = (event: any) => {
             if(event.detail?.action && event.detail?.action === 'delete'){
                 router.visit(route('sys.tags.index'));
             } else {
-                router.reload();
+                router.reload({
+                    only: ['data']
+                });
             }
 
             // setOpenDropdown(false);
@@ -75,7 +77,9 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
                                     <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
                                         {/* Refresh Action */}
                                         <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                            router.reload();
+                                            router.reload({
+                                                only: ['data']
+                                            });
                                             
                                             setTimeout(() => {
                                                 setOpenDropdown(false);
@@ -86,7 +90,7 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
 
                                         {/* Edit Action */}
                                         {(() => {
-                                            // Check if record dialog form is exists
+                                            // Check if dialog form is exists
                                             let tagsDialogSection = document.getElementById('tags-dialogSection');
                                             if(tagsDialogSection){
                                                 return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
@@ -121,7 +125,7 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
 
                                         {/* Delete Action */}
                                         {(() => {
-                                            // Check if record dialog form is exists
+                                            // Check if dialog form is exists
                                             let deleteSection = document.getElementById('tags-deleteDialogSection');
                                             if(deleteSection){
                                                 return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {

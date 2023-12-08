@@ -18,13 +18,12 @@ import ErrorMessage from '@/Components/forms/ErrorMessage';
 // Shadcn Component
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/Components/ui/command';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { ScrollArea } from '@/Components/ui/scroll-area';
+import { useToast } from "@/Components/ui/use-toast";
 import { Textarea } from '@/Components/ui/textarea';
 import { Calendar } from '@/Components/ui/calendar';
 import { Checkbox } from '@/Components/ui/checkbox';
-import { useToast } from "@/Components/ui/use-toast";
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 
@@ -63,6 +62,9 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     const [formTags, setFormTags] = useState<string[] | any[]>([]);
     // Keep Dialog Open?
     const [keepOpenDialog, setKeepOpenDialog] = useState<boolean>(false);
+
+    // Calendar
+    const [calendarOpenState, setCalendarOpenState] = useState<boolean>(false);
 
     // Combobox - Category
     let comboboxCategoryTimeout: any;
@@ -118,7 +120,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     useEffect(() => {
         // Handle Category Item
         clearTimeout(comboboxCategoryTimeout);
-        setComboboxCategoryList([]);
+        // setComboboxCategoryList([]);
 
         if(comboboxCategoryOpenState){
             if (comboboxCategoryAbortController) {
@@ -152,17 +154,12 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         }
     }, [comboboxCategoryInput, comboboxCategoryOpenState]);
     useEffect(() => {
+        setComboboxCategoryInput('');
+    }, [comboboxCategoryOpenState]);
+    useEffect(() => {
         // Handle selection Label
         if(openState){
-            if(formCategory !== '' && comboboxCategoryList.length > 0){
-                const selected: CategoryItem | undefined = comboboxCategoryList.find(
-                    (options: CategoryItem) => options?.uuid === formCategory
-                ) as CategoryItem | undefined;
-    
-                if (selected) {
-                    setComboboxCategoryLabel(selected.name);
-                }
-            } else {
+            if(formCategory === ''){
                 setComboboxCategoryLabel(`Select an option`);
             }
         } else {
@@ -223,7 +220,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }
     useEffect(() => {
         clearTimeout(comboboxFromWalletTimeout);
-        setComboboxFromWalletList([]);
+        // setComboboxFromWalletList([]);
 
         if(comboboxFromWalletOpenState){
             if (comboboxFromWalletAbortController) {
@@ -257,20 +254,15 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         }
     }, [comboboxFromWalletInput, comboboxFromWalletOpenState]);
     useEffect(() => {
+        setComboboxFromWalletInput('');
+    }, [comboboxFromWalletOpenState]);
+    useEffect(() => {
         if(openState){
-            if(formFromWallet !== '' && comboboxFromWalletList.length > 0){
-                const selected: WalletItem | undefined = comboboxFromWalletList.find(
-                    (options: WalletItem) => options?.uuid === formFromWallet
-                ) as WalletItem | undefined;
-    
-                if (selected) {
-                    setComboboxFromWalletLabel(selected.name);
-                }
-            } else {
+            if(formFromWallet === ''){
                 setComboboxFromWalletLabel(`Select an option`);
             }
         } else {
-            if(!formUuid && formCategory === ''){
+            if(!formUuid && formFromWallet === ''){
                 setComboboxFromWalletLabel(`Select an option`);
             }
         }
@@ -327,7 +319,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }
     useEffect(() => {
         clearTimeout(comboboxToWalletTimeout);
-        setComboboxToWalletList([]);
+        // setComboboxToWalletList([]);
 
         if(comboboxToWalletOpenState){
             if (comboboxToWalletAbort) {
@@ -361,20 +353,15 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         }
     }, [comboboxToWalletInput, comboboxToWalletOpenState]);
     useEffect(() => {
+        setComboboxToWalletInput('');
+    }, [comboboxToWalletOpenState]);
+    useEffect(() => {
         if(openState){
-            if(formToWallet !== '' && comboboxToWalletList.length > 0){
-                const selected: WalletItem | undefined = comboboxToWalletList.find(
-                    (options: WalletItem) => options?.uuid === formToWallet
-                ) as WalletItem | undefined;
-    
-                if (selected) {
-                    setComboboxToWalletLabel(selected.name);
-                }
-            } else {
+            if(formToWallet === ''){
                 setComboboxToWalletLabel(`Select an option`);
             }
         } else {
-            if(!formUuid && formCategory === ''){
+            if(!formUuid && formToWallet === ''){
                 setComboboxToWalletLabel(`Select an option`);
             }
         }
@@ -431,7 +418,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }
     useEffect(() => {
         clearTimeout(comboboxTagsTimeout);
-        setComboboxTagsList([]);
+        // setComboboxTagsList([]);
 
         if(comboboxTagsOpenState){
             if (comboboxTagsAbort) {
@@ -464,6 +451,9 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
             };
         }
     }, [comboboxTagsInput, comboboxTagsOpenState]);
+    useEffect(() => {
+        setComboboxTagsInput('')
+    }, [comboboxTagsOpenState]);
 
     // Dialog Action
     useEffect(() => {
@@ -503,7 +493,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         }
     }, [openState]);
 
-    // Record Dialog - Forms
+    // Form Reset
     const resetFormDialog = () => {
         // Planned Payment
         setFormPlannedPaymentUuid('');
@@ -525,6 +515,16 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         setFormTags([]);
 
         setComboboxTagsLabel([]);
+
+        // Update timestamp
+        let now = moment();
+        let hours = now.get('hour');
+        let minutes = now.get('minute');
+        
+        // Update state
+        setFormDate(moment(now).toDate());
+        setFormHours(String(hours));
+        setFormMinutes(String(minutes));
     }
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
@@ -595,19 +595,6 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                     } else {
                         // Reset form
                         resetFormDialog();
-                
-                        // Handle when record dialog is opened
-                        if (openState) {
-                            // Update timestamp
-                            let now = moment();
-                            let hours = now.get('hour');
-                            let minutes = now.get('minute');
-                
-                            // Update state
-                            setFormDate(moment(now).toDate());
-                            setFormHours(String(hours));
-                            setFormMinutes(String(minutes));
-                        }
                     }
             
                     toast({
@@ -659,7 +646,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }
 
     // Calculate Final Amount
-    const formFinalAmount = useMemo(() => {
+    const formCalculateFinalAmount = useMemo(() => {
         // Calculate Final Amount
         let amount: number = formAmount ?? 0;
         let extra: number = formExtraAmount ?? 0;
@@ -817,15 +804,11 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     useEffect(() => {
         // Listen to Trigger Action
         const plannedRecordConfirmation = (event: any) => {
-            console.log('Planned Payment Confirmation', event);
-
             if(event?.detail?.uuid){
                 let uuid = event.detail.uuid;
 
                 // Fetch Data
                 fetchPlannedPaymentData(uuid).then((data: PlannedItem) => {
-                    console.log(data);
-
                     setFormPlannedPaymentUuid(data.uuid);
                     setFormPlannedPaymentName(data.name);
 
@@ -891,12 +874,12 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     return (
         <section id={ `record-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
-                <DialogContent className=" h-full md:h-auto lg:min-w-[800px] max-md:!max-h-[85vh] p-0" data-type="record-dialog">
+                <DialogContent className=" flex flex-col h-auto lg:min-w-[60vw] max-lg:bottom-0 max-lg:top-[unset] max-lg:translate-y-0 p-0" data-type="record-dialog">
                     <DialogHeader className={ ` p-6 pb-2` }>
                         <DialogTitle className={ ` dark:text-white` }>{ formPlannedPaymentUuid ? `Planned Payment: Confirmation` : (formUuid ? `Edit` : `Add new`) } Record</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleSubmitDialog} id={ `record-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh]` }>
+                    <form onSubmit={handleSubmitDialog} id={ `record-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen max-lg:max-h-[50vh] lg:max-h-[65vh]` }>
                         <div className={ ` flex gap-0 lg:gap-6 flex-col lg:flex-row px-6` }>
                             {/* Left */}
                             <div className={ `py-6 w-full lg:w-3/5` }>
@@ -970,8 +953,10 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                                             value={options?.uuid}
                                                                             key={options?.uuid}
                                                                             onSelect={(currentValue) => {
-                                                                                setFormCategory(currentValue === formCategory ? "" : currentValue)
-                                                                                setComboboxCategoryOpenState(false)
+                                                                                setComboboxCategoryLabel(options.name);
+                                                                                setFormCategory(currentValue === formCategory ? "" : currentValue);
+
+                                                                                setComboboxCategoryOpenState(false);
                                                                             }}
                                                                         >
                                                                             <Check
@@ -1010,7 +995,6 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                             <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                                 <Command shouldFilter={ false }>
                                                     <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxFromWalletInput} onValueChange={setComboboxFromWalletInput}/>
-                                                    
                                                     <ScrollArea className="p-0">
                                                         <div className={ `max-h-[10rem]` }>
                                                             <CommandEmpty>{comboboxFromWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
@@ -1020,7 +1004,9 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                                         value={options?.uuid}
                                                                         key={options?.uuid}
                                                                         onSelect={(currentValue) => {
-                                                                            setFormFromWallet(currentValue === formFromWallet ? "" : currentValue)
+                                                                            setComboboxFromWalletLabel(options.name);
+                                                                            setFormFromWallet(currentValue === formFromWallet ? "" : currentValue);
+
                                                                             setComboboxFromWalletOpenState(false)
                                                                         }}
                                                                     >
@@ -1044,53 +1030,72 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                 {/* To Wallet */}
                                 {(() => {
                                     if(formType === 'transfer'){
-                                        return <div className={ ` form--group  ${errorFormDialog?.to_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-to_wallet` }>
-                                            <label className={ ` form--label` }>To</label>
-                                            <div>
-                                                <Popover open={comboboxToWalletOpenState} onOpenChange={setComboboxToWalletOpenState}>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            role="combobox"
-                                                            aria-expanded={comboboxToWalletOpenState}
-                                                            className={ ` w-full justify-between ${errorFormDialog?.to_wallet ? ` !border-red-500` : ''} dark:text-white` }
-                                                        >
-                                                            <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxToWalletLabel}</span>
-                                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                                        <Command shouldFilter={ false }>
-                                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
-                                                            <ScrollArea className="p-0">
-                                                                <div className={ `max-h-[10rem]` }>
-                                                                    <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                                                    <CommandGroup>
-                                                                        {comboboxToWalletList.map((options: WalletItem) => (
-                                                                            <CommandItem
-                                                                                value={options?.uuid}
-                                                                                key={options?.uuid}
-                                                                                onSelect={(currentValue) => {
-                                                                                    setFormToWallet(currentValue === formToWallet ? "" : currentValue)
-                                                                                    setComboboxToWalletOpenState(false)
-                                                                                }}
-                                                                            >
-                                                                                <Check
-                                                                                    className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                                />
-                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
-                                                                            </CommandItem>
-                                                                        ))}
-                                                                    </CommandGroup>
-                                                                </div>
-                                                            </ScrollArea>
-                                                        </Command>
-                                                    </PopoverContent>
-                                                </Popover>
+                                        return (
+                                            <div className={ ` flex flex-col gap-4` }>
+                                                <Button variant={ `outline` } className={ ` inline-flex w-max` } onClick={() => {
+                                                    let temp = {
+                                                        option: formToWallet,
+                                                        label: comboboxToWalletLabel
+                                                    };
 
-                                                <ErrorMessage message={ errorFormDialog?.to_wallet }/>
+                                                    setFormToWallet(formFromWallet);
+                                                    setComboboxToWalletLabel(comboboxFromWalletLabel);
+
+                                                    setFormFromWallet(temp.option);
+                                                    setComboboxFromWalletLabel(temp.label);
+                                                }} type={ `button` }>Switch</Button>
+
+                                                <div className={ ` form--group  ${errorFormDialog?.to_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-to_wallet` }>
+                                                    <label className={ ` form--label` }>To</label>
+                                                    <div>
+                                                        <Popover open={comboboxToWalletOpenState} onOpenChange={setComboboxToWalletOpenState}>
+                                                            <PopoverTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    role="combobox"
+                                                                    aria-expanded={comboboxToWalletOpenState}
+                                                                    className={ ` w-full justify-between ${errorFormDialog?.to_wallet ? ` !border-red-500` : ''} dark:text-white` }
+                                                                >
+                                                                    <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxToWalletLabel}</span>
+                                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                                </Button>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                                                <Command shouldFilter={ false }>
+                                                                    <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
+                                                                    <ScrollArea className="p-0">
+                                                                        <div className={ `max-h-[10rem]` }>
+                                                                            <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                                            <CommandGroup>
+                                                                                {comboboxToWalletList.map((options: WalletItem) => (
+                                                                                    <CommandItem
+                                                                                        value={options?.uuid}
+                                                                                        key={options?.uuid}
+                                                                                        onSelect={(currentValue) => {
+                                                                                            setComboboxToWalletLabel(options.name);
+                                                                                            setFormToWallet(currentValue === formToWallet ? "" : currentValue);
+
+                                                                                            setComboboxToWalletOpenState(false);
+                                                                                        }}
+                                                                                    >
+                                                                                        <Check
+                                                                                            className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                                        />
+                                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
+                                                                                    </CommandItem>
+                                                                                ))}
+                                                                            </CommandGroup>
+                                                                        </div>
+                                                                    </ScrollArea>
+                                                                </Command>
+                                                            </PopoverContent>
+                                                        </Popover>
+
+                                                        <ErrorMessage message={ errorFormDialog?.to_wallet }/>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
+                                        );
                                     }
 
                                     return <></>;
@@ -1176,7 +1181,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                             type={ `text` }
                                             placeholder={ `Final Amount` }
                                             inputMode={ `numeric` }
-                                            value={ (formFinalAmount ?? 0).toString() }
+                                            value={ (formCalculateFinalAmount ?? 0).toString() }
                                             className={ `${errorFormDialog?.final_amount ? ` !border-red-500` : ''}` }
                                             mask={ Number }
                                             unmask={ true }
@@ -1196,7 +1201,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                 <div className={ ` form--group` }>
                                     <div id={ `record_dialog-date` } className={ ` form--group !mb-0 ${errorFormDialog?.date ? ` is--invalid` : ''}` }>
                                         <label className={ ` form--label` }>Timestamp</label>
-                                        <Popover>
+                                        <Popover open={ calendarOpenState } onOpenChange={ setCalendarOpenState }>
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     variant={"outline"}
@@ -1210,7 +1215,10 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                 <Calendar
                                                     mode="single"
                                                     selected={formDate}
-                                                    onSelect={setFormDate}
+                                                    onSelect={(val) => {
+                                                        setFormDate(val);
+                                                        setCalendarOpenState(false);
+                                                    }}
                                                     defaultMonth={formDate}
                                                     initialFocus
                                                 />
@@ -1223,67 +1231,110 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                     {/* Timepickr */}
                                     <div className={ ` flex flex-row gap-4 mt-2 items-center` }>
                                         <div className={ `w-full form--group !mb-0 ${errorFormDialog?.hours ? ` is--invalid` : ''}` } id={ `record_dialog-hours` }>
-                                            <Select onValueChange={(value) => {
-                                                setFormHours(value);
-                                            }} value={ formHours }>
-                                                <SelectTrigger className={ `w-full text-center ${errorFormDialog?.hours ? ` !border-red-500` : ''} dark:text-white` }>
-                                                    <SelectValue placeholder="Hours" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <ScrollArea className="h-40 p-0">
-                                                        {(() => {
-                                                            let hours: any[] = [];
-                                                            for(let i = 0; i < 24; i++){
-                                                                hours.push(
-                                                                    <SelectItem
-                                                                        value={ i.toString() }
-                                                                        key={ `hours-${i}` }
-                                                                        >{ i.toString().padStart(2, '0') }</SelectItem>
-                                                                );
-                                                            }
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        role="combobox"
+                                                        className={ `w-full justify-between ${errorFormDialog?.hours ? ` !border-red-500` : ''} dark:text-white` }
+                                                    >
+                                                        <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{ formHours ? formHours.padStart(2, '0') : '' }</span>
+                                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className=" w-[175px] lg:w-[400px] p-0" align={ `start` }>
+                                                    <Command>
+                                                        <CommandInput placeholder="Search hours" className={ ` border-none focus:ring-0` }/>
+                                                        <ScrollArea className="p-0">
+                                                            <div className={ `max-h-[10rem]` }>
+                                                                <CommandEmpty>No hours found</CommandEmpty>
+                                                                <CommandGroup>
+                                                                    {(() => {
+                                                                        let hours: any[] = [];
+                                                                        for(let i = 0; i < 24; i++){
+                                                                            hours.push(
+                                                                                <CommandItem
+                                                                                    key={ i.toString().padStart(2, '0') }
+                                                                                    value={ i.toString().padStart(2, '0') }
+                                                                                    onSelect={(currentValue) => {
+                                                                                        setFormHours(currentValue);
+                                                                                    }}
+                                                                                >
+                                                                                    <Check
+                                                                                        className={ `mr-2 h-4 w-4 ${formHours?.toString().padStart(2, '0') === i.toString().padStart(2, '0') ? "opacity-100" : "opacity-0"}`}
+                                                                                    />
+                                                                                    {/* <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ i.toString().padStart(2, '0') }</span> */}
+                                                                                    { i.toString().padStart(2, '0') }
+                                                                                </CommandItem>
+                                                                            );
+                                                                        }
 
-                                                            if(hours.length > 0){
-                                                                return hours;
-                                                            }
+                                                                        if(hours.length > 0){
+                                                                            return hours;
+                                                                        }
 
-                                                            return <></>;
-                                                        })()}
-                                                    </ScrollArea>
-                                                </SelectContent>
-                                            </Select>
+                                                                        return <></>;
+                                                                    })()}
+                                                                </CommandGroup>
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </Command>
+                                                </PopoverContent>
+                                            </Popover>
 
                                             <ErrorMessage message={ errorFormDialog?.hours }/>
                                         </div>
                                         <span>:</span>
                                         <div className={ `w-full form--group !mb-0  ${errorFormDialog?.minutes ? ` is--invalid` : ''}` } id={ `record_dialog-minutes` }>
-                                            <Select onValueChange={(value) => {
-                                                setFormMinutes(value);
-                                            }} value={ formMinutes }>
-                                                <SelectTrigger className={ `w-full text-center ${errorFormDialog?.minutes ? ` !border-red-500` : ''} dark:text-white` }>
-                                                    <SelectValue placeholder="Minutes" className={ `` } />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <ScrollArea className="h-40 p-0">
-                                                        {(() => {
-                                                            let hours: any[] = [];
-                                                            for(let i = 0; i <= 59; i++){
-                                                                hours.push(
-                                                                    <SelectItem
-                                                                        value={ i.toString() }
-                                                                        key={ `hours-${i}` }
-                                                                    >{ i.toString().padStart(2, '0') }</SelectItem>
-                                                                );
-                                                            }
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        role="combobox"
+                                                        className={ `w-full justify-between ${errorFormDialog?.minutes ? ` !border-red-500` : ''} dark:text-white` }
+                                                    >
+                                                        <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{ formMinutes ? formMinutes.padStart(2, '0') : '' }</span>
+                                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className=" w-[175px] lg:w-[400px] p-0" align={ `start` }>
+                                                    <Command>
+                                                        <CommandInput placeholder="Search minutes" className={ ` border-none focus:ring-0` }/>
+                                                        <ScrollArea className="p-0">
+                                                            <div className={ `max-h-[10rem]` }>
+                                                                <CommandEmpty>No minutes found</CommandEmpty>
+                                                                <CommandGroup>
+                                                                    {(() => {
+                                                                        let minutes: any[] = [];
+                                                                        for(let i = 1; i <= 59; i++){
+                                                                            minutes.push(
+                                                                                <CommandItem
+                                                                                    key={ i.toString().padStart(2, '0') }
+                                                                                    value={ i.toString().padStart(2, '0') }
+                                                                                    onSelect={(currentValue) => {
+                                                                                        setFormMinutes(currentValue);
+                                                                                    }}
+                                                                                >
+                                                                                    <Check
+                                                                                        className={ `mr-2 h-4 w-4 ${formMinutes?.toString().padStart(2, '0') === i.toString().padStart(2, '0') ? "opacity-100" : "opacity-0"}`}
+                                                                                    />
+                                                                                    { i.toString().padStart(2, '0') }
+                                                                                </CommandItem>
+                                                                            );
+                                                                        }
 
-                                                            if(hours.length > 0){
-                                                                return hours;
-                                                            }
+                                                                        if(minutes.length > 0){
+                                                                            return minutes;
+                                                                        }
 
-                                                            return <></>;
-                                                        })()}
-                                                    </ScrollArea>
-                                                </SelectContent>
-                                            </Select>
+                                                                        return <></>;
+                                                                    })()}
+                                                                </CommandGroup>
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </Command>
+                                                </PopoverContent>
+                                            </Popover>
 
                                             <ErrorMessage message={ errorFormDialog?.minutes }/>
                                         </div>

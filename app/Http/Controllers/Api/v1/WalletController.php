@@ -122,13 +122,27 @@ class WalletController extends Controller
      */
     public function store(Request $request)
     {
+        $user = $request->user();
+
         $request->validate([
             'parent_id' => ['nullable', 'string', 'exists:'.(new \App\Models\Wallet())->getTable().',uuid'],
             'name' => ['required', 'string', 'max:191']
         ]);
 
-        DB::transaction(function () use ($request) {
-            $user = $request->user();
+        if($request->has('parent_id') && !empty($request->parent_id)){
+            $parent = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->parent_id)
+                ->where('user_id', $user->id)
+                ->firstOrFail();
+
+            // Validate can't use self as parent data
+            if(!empty($parent->parent_id)){
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'parent_id' => 'Unable to assign parent wallet: Invalid wallet data'
+                ]);
+            }
+        }
+
+        DB::transaction(function () use ($request, $user) {
             $parent_id = null;
             if($request->has('parent_id') && !empty($request->parent_id)){
                 $parent = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->parent_id)
@@ -181,16 +195,22 @@ class WalletController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        // Validate can't use self as parent data
-        if($request->has('parent_id') && $request->parent_id === $data->uuid){
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'parent_id' => 'Unable to assign parent wallet: Self-assignment is not permitted'
-            ]);
+        if($request->has('parent_id') && !empty($request->parent_id)){
+            // Validate can't use self as parent data
+            if($request->parent_id === $data->uuid){
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'parent_id' => 'Unable to assign parent wallet: Self-assignment is not permitted'
+                ]);
+            } else if($data->child()->exists()){
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'parent_id' => 'Unable to assign parent wallet: '.$request->name.' is parent of another wallet / '.$request->parent_id
+                ]);
+            }
         }
 
         DB::transaction(function () use ($request, $user, $data) {
-            
             $parent_id = $data->parent_id;
+            
             if($request->has('parent_id') && !empty($request->parent_id)){
                 $parent = \App\Models\Wallet::where(DB::raw('BINARY `uuid`'), $request->parent_id)
                     ->where('user_id', $user->id)

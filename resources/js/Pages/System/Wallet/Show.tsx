@@ -39,14 +39,17 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
             }
         }
 
-        document.addEventListener('wallet.deleted-action', handleDialogEvent);
         document.addEventListener('dialog.wallet.hidden', handleDialogEvent);
         document.addEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+
+        document.addEventListener('wallet.deleted-action', handleDialogEvent);
+        
         // Remove the event listener when the component unmounts
         return () => {
-            document.addEventListener('wallet.deleted-action', handleDialogEvent);
             document.removeEventListener('dialog.wallet.hidden', handleDialogEvent);
             document.removeEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+
+            document.addEventListener('wallet.deleted-action', handleDialogEvent);
         };
     });
 
@@ -139,18 +142,22 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
     }
     useEffect(() => {
         // Listen to Record Dialog event
-        const handleDialogRecord = () => {
+        const handleDialogEvent = () => {
             setTimeout(() => {
                 fetchRecordList();
             }, 100);
         }
 
-        document.addEventListener('dialog.record.hidden', handleDialogRecord);
-        document.addEventListener('record.deleted-action', handleDialogRecord);
+        document.addEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+
+        document.addEventListener('dialog.record.hidden', handleDialogEvent);
+        document.addEventListener('record.deleted-action', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialog.record.hidden', handleDialogRecord);
-            document.removeEventListener('record.deleted-action', handleDialogRecord);
+            document.removeEventListener('dialog.wallet.balance-adjustment.hidden', handleDialogEvent);
+
+            document.removeEventListener('dialog.record.hidden', handleDialogEvent);
+            document.removeEventListener('record.deleted-action', handleDialogEvent);
         };
     });
 
@@ -159,6 +166,7 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
             <SystemLayout
                 user={auth.user}
                 header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Wallet Detail: { `${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` }</h2>}
+                fabAction={ [`wallet`] }
             >
                 <Head title={ `Wallet: ${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` } />
 
@@ -187,7 +195,9 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
                                         <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
                                             {/* Refresh Action */}
                                             <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                                router.reload();
+                                                router.reload({
+                                                    only: ['data']
+                                                });
                                                 
                                                 setTimeout(() => {
                                                     setOpenDropdown(false);

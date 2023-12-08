@@ -45,8 +45,14 @@ class RecordController extends Controller
                 ->toArray();
 
             $data->where(function($q) use ($wallet){
-                return $q->whereIn('from_wallet_id', $wallet)
-                    ->orWhereIn('to_wallet_id', $wallet);
+                return $q->where(function($q) use ($wallet){
+                        return $q->where('type', 'expense')
+                            ->whereIn('from_wallet_id', $wallet);
+                    })
+                    ->orWhere(function($q) use ($wallet){
+                        return $q->where('type', 'income')
+                            ->whereIn('from_wallet_id', $wallet);
+                    });
             });
         } else if($request->has('filter_from_wallet') || $request->has('filter_to_wallet')){
             $data->where(function($q) use ($request, $user){
@@ -140,6 +146,8 @@ class RecordController extends Controller
             'minutes' => ['required', 'numeric', 'between:0,59'],
             'notes' => ['nullable', 'string'],
             'tags.*' => ['nullable', 'string', 'exists:'.(new \App\Models\Tags())->getTable().',uuid']
+        ], [
+            'amount.min' => 'The :attribuet field must be greater than 0.'
         ]);
 
         // Store to database

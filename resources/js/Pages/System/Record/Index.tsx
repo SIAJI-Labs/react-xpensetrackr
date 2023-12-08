@@ -4,18 +4,20 @@ import { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 
+// Plugins
+import { ucwords } from '@/function';
+
 // Partials
 import RecordTemplate from '@/Components/template/Record/TemplateList';
+import RecordSkeleton from '@/Components/template/Record/SkeletonList';
 import TemplateNoData from '@/Components/template/TemplateNoData';
 import SystemLayout from '@/Layouts/SystemLayout';
 
 // Shadcn
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import ListSkeleton from '@/Components/template/Record/SkeletonList';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
-import { ucwords } from '@/function';
 
 // Props
 type ContentProps = {
@@ -29,13 +31,13 @@ export default function Index({ auth, type = 'complete' }: PageProps<ContentProp
         return <RecordTemplate record={obj}></RecordTemplate>;
     }
     // Record List - Skeleton
-    let skeletonTemplate = <ListSkeleton/>;
+    let skeletonTemplate = <RecordSkeleton/>;
 
     // Record Filter
     const [recordFilterOpen, setRecordFilterOpen] = useState<boolean>(false);
     const [recordFilterKeyword, setRecordFilterKeyword] = useState<string>('');
     const [recordFilterStatus, setRecordFilterStatus] = useState<string>(type);
-    useEffect(() => {
+    const handleReloadData = () => {
         if(!isFirstRender){
             const timer = setTimeout(() => {
                 setRecordPaginate(paginate_item);
@@ -47,7 +49,15 @@ export default function Index({ auth, type = 'complete' }: PageProps<ContentProp
                 clearTimeout(timer);
             };
         }
-    }, [recordFilterKeyword, recordFilterOpen]);
+    }
+    useEffect(() => {
+        handleReloadData();
+    }, [recordFilterKeyword]);
+    useEffect(() => {
+        if(!recordFilterOpen){
+            handleReloadData();
+        }
+    }, [recordFilterOpen]);
 
     // Record List - Variable Init
     let paginate_item = 5;
@@ -133,19 +143,19 @@ export default function Index({ auth, type = 'complete' }: PageProps<ContentProp
         }
     }
     useEffect(() => {
-        // Listen to Record Dialog event
-        const handleDialogRecord = () => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
             setTimeout(() => {
                 fetchRecordList();
             }, 100);
         }
 
-        document.addEventListener('dialog.record.hidden', handleDialogRecord);
-        document.addEventListener('record.deleted-action', handleDialogRecord);
+        document.addEventListener('dialog.record.hidden', handleDialogEvent);
+        document.addEventListener('record.deleted-action', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialog.record.hidden', handleDialogRecord);
-            document.removeEventListener('record.deleted-action', handleDialogRecord);
+            document.removeEventListener('dialog.record.hidden', handleDialogEvent);
+            document.removeEventListener('record.deleted-action', handleDialogEvent);
         };
     });
 
@@ -272,6 +282,7 @@ export default function Index({ auth, type = 'complete' }: PageProps<ContentProp
                                 })()}
                             </div>
                         </CardContent>
+
                         <CardFooter className={ `flex justify-between items-center` }>
                             <Button
                                 variant={ `outline` }

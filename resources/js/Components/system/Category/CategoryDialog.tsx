@@ -4,7 +4,6 @@ import axios, { AxiosError } from "axios";
 import { CategoryItem } from "@/types";
 
 // Plugins
-import { IMaskMixin } from "react-imask";
 
 // Partials
 import ErrorMessage from "@/Components/forms/ErrorMessage";
@@ -28,14 +27,6 @@ type dialogProps = {
 export default function CategoryDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
     const { toast } = useToast();
-
-    // extend style component
-    const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
-        <Input
-            {...props}
-            ref={inputRef} // bind internal input
-        />
-    ));
 
     // Form
     const [formParent, setFormParent] = useState<string>("");
@@ -130,16 +121,11 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
         }
     }, [comboboxParentInput, openCategoryParent]);
     useEffect(() => {
+        setComboboxParentInput('');
+    }, [openCategoryParent]);
+    useEffect(() => {
         if(openState){
-            if(formParent !== '' && comboboxParentList.length > 0){
-                const selected: CategoryItem | undefined = comboboxParentList.find(
-                    (options: CategoryItem) => options?.uuid === formParent
-                ) as CategoryItem | undefined;
-    
-                if (selected) {
-                    setComboboxParentLabel(`${selected.parent ? `${selected.parent.name} - ` : ''}${selected.name}`);
-                }
-            } else {
+            if(formParent === ''){
                 setComboboxParentLabel(`Select an option`);
             }
         } else {
@@ -160,7 +146,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
     }
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
-    const [formDialogAbortController, setAbortControllerRecordDialog] = useState<AbortController | null>(null);
+    const [formDialogAbortController, setFormDialogAbortController] = useState<AbortController | null>(null);
     const handleFormSubmit: FormEventHandler = (e) => {
         // Cancel previous request
         if(formDialogAbortController instanceof AbortController){
@@ -182,7 +168,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
         // Create a new AbortController
         const abortController = new AbortController();
         // Store the AbortController in state
-        setAbortControllerRecordDialog(abortController);
+        setFormDialogAbortController(abortController);
 
         // Build Form Data
         let formData = new FormData();
@@ -253,7 +239,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
             }, 100);
         }).finally(() => {
             // Clear the AbortController from state
-            setAbortControllerRecordDialog(null);
+            setFormDialogAbortController(null);
         
             // Update to original state
             let submitBtn = document.getElementById('category-dialogSubmit');
@@ -335,7 +321,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                         setComboboxParentLabel(data.parent.name);
                     }
                     
-                    // Open record-dialog
+                    // Open dialog
                     setTimeout(() => {
                         setOpenState(true);
                     }, 100);
@@ -389,8 +375,10 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                                                                 value={options?.uuid}
                                                                 key={options?.uuid}
                                                                 onSelect={(currentValue) => {
-                                                                    setFormParent(currentValue === formParent ? "" : currentValue)
-                                                                    setOpenCategoryParent(false)
+                                                                    setFormParent(currentValue === formParent ? "" : currentValue);
+                                                                    setComboboxParentLabel(options.name);
+                                                                    
+                                                                    setOpenCategoryParent(false);
                                                                 }}
                                                             >
                                                                 <Check
@@ -418,7 +406,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                             <ErrorMessage message={ errorFormDialog?.name }/>
                         </div>
 
-                        {/* Keep open Planned Payment dialog? */}
+                        {/* Keep open dialog? */}
                         <div className={ `form-group` }>
                             <div className={ `flex items-center space-x-2` }>
                                 <Checkbox id="form-category_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {

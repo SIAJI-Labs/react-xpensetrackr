@@ -288,16 +288,17 @@ export default function Record({ auth }: PageProps<ContentProps>) {
     const [formType, setFormType] = useState<string>('expense');
 
     // From Wallet Combobox
-    let fromWalletComboboxTimeout: any;
-    const [openRecordFromWallet, setOpenRecordFromWallet] = useState<boolean>(false);
     const [formFromWallet, setFormFromWallet] = useState<string>("");
-    const [fromWalletComboboxLabel, setFromWalletComboboxLabel] = useState<string>("Select an option");
-    const [fromWalletComboboxList, setFromWalletComboboxList] = useState<string[] | any>([]);
-    const [fromWalletComboboxInput, setFromWalletComboboxInput] = useState<string>("");
-    const [fromWalletComboboxLoad, setFromWalletComboboxLoad] = useState<boolean>(false);
-    const [fromWalletAbortController, setFromWalletAbortController] = useState<AbortController | null>(null);
+    // Combobox - From Wallet
+    let comboboxFromWalletTimeout: any;
+    const [comboboxFromWalletOpenState, setComboboxFromWalletOpenState] = useState<boolean>(false);
+    const [comboboxFromWalletLabel, setComboboxFromWalletLabel] = useState<string>("Select an option");
+    const [comboboxFromWalletList, setComboboxFromWalletList] = useState<string[] | any>([]);
+    const [comboboxFromWalletInput, setComboboxFromWalletInput] = useState<string>("");
+    const [comboboxFromWalletLoadState, setComboboxFromWalletLoadState] = useState<boolean>(false);
+    const [comboboxFromWalletAbortController, setComboboxFromWalletAbortController] = useState<AbortController | null>(null);
     const fetchFromWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
-        setFromWalletComboboxLoad(true);
+        setComboboxFromWalletLoadState(true);
 
         try {
             // Build parameter
@@ -338,25 +339,25 @@ export default function Record({ auth }: PageProps<ContentProps>) {
         return [];
     }
     useEffect(() => {
-        clearTimeout(fromWalletComboboxTimeout);
-        setFromWalletComboboxList([]);
+        clearTimeout(comboboxFromWalletTimeout);
+        // setComboboxFromWalletList([]);
 
-        if(openRecordFromWallet){
-            if (fromWalletAbortController) {
+        if(comboboxFromWalletOpenState){
+            if (comboboxFromWalletAbortController) {
                 // If there is an ongoing request, abort it before making a new one.
-                fromWalletAbortController.abort();
+                comboboxFromWalletAbortController.abort();
             }
 
             // Create a new AbortController for the new request.
             const newAbortController = new AbortController();
-            setFromWalletAbortController(newAbortController);
+            setComboboxFromWalletAbortController(newAbortController);
 
-            fromWalletComboboxTimeout = setTimeout(() => {
-                fetchFromWalletList(fromWalletComboboxInput, newAbortController)
+            comboboxFromWalletTimeout = setTimeout(() => {
+                fetchFromWalletList(comboboxFromWalletInput, newAbortController)
                     .then((data: string[] = []) => {
-                        setFromWalletComboboxLoad(false);
+                        setComboboxFromWalletLoadState(false);
                         if(data){
-                            setFromWalletComboboxList(data);
+                            setComboboxFromWalletList(data);
                         }
                     })
                     .catch((error) => {
@@ -366,37 +367,32 @@ export default function Record({ auth }: PageProps<ContentProps>) {
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (fromWalletAbortController) {
-                    fromWalletAbortController.abort();
+                if (comboboxFromWalletAbortController) {
+                    comboboxFromWalletAbortController.abort();
                 }
             };
         }
-    }, [fromWalletComboboxInput, openRecordFromWallet]);
+    }, [comboboxFromWalletInput, comboboxFromWalletOpenState]);
     useEffect(() => {
-        if(formFromWallet !== '' && fromWalletComboboxList.length > 0){
-            const selected: WalletItem | undefined = fromWalletComboboxList.find(
-                (options: WalletItem) => options?.uuid === formFromWallet
-            ) as WalletItem | undefined;
-
-            if (selected) {
-                setFromWalletComboboxLabel(selected.name);
-            }
-        } else {
-            setFromWalletComboboxLabel(`Select an option`);
+        setComboboxFromWalletInput('');
+    }, [comboboxFromWalletOpenState]);
+    useEffect(() => {
+        if(formFromWallet === ''){
+            setComboboxFromWalletLabel(`Select an option`);
         }
     }, [formFromWallet]);
 
     // To Wallet Combobox
-    let toWalletComboboxTimeout: any;
-    const [openRecordToWallet, setOpenRecordToWallet] = useState<boolean>(false);
     const [formToWallet, setFormToWallet] = useState<string>("");
-    const [toWalletComboboxLabel, setToWalletComboboxLabel] = useState<string>("Select an option");
-    const [toWalletComboboxList, setToWalletComboboxList] = useState<string[] | any>([]);
-    const [toWalletComboboxInput, setToWalletComboboxInput] = useState<string>("");
-    const [toWalletComboboxLoad, setToWalletComboboxLoad] = useState<boolean>(false);
-    const [toWalletAbortController, setToWalletAbortController] = useState<AbortController | null>(null);
+    let comboboxToWalletTimeout: any;
+    const [comboboxToWalletOpenState, setComboboxToWalletOpenState] = useState<boolean>(false);
+    const [comboboxToWalletLabel, setComboboxToWalletLabel] = useState<string>("Select an option");
+    const [comboboxToWalletList, setComboboxToWalletList] = useState<string[] | any>([]);
+    const [comboboxToWalletInput, setComboboxToWalletInput] = useState<string>("");
+    const [comboboxToWalletLoadState, setComboboxToWalletLoadState] = useState<boolean>(false);
+    const [comboboxToWalletAbort, setComboboxToWalletAbort] = useState<AbortController | null>(null);
     const fetchToWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
-        setToWalletComboboxLoad(true);
+        setComboboxToWalletLoadState(true);
 
         try {
             // Build parameter
@@ -437,25 +433,25 @@ export default function Record({ auth }: PageProps<ContentProps>) {
         return [];
     }
     useEffect(() => {
-        clearTimeout(toWalletComboboxTimeout);
-        setToWalletComboboxList([]);
+        clearTimeout(comboboxToWalletTimeout);
+        // setComboboxToWalletList([]);
 
-        if(openRecordToWallet){
-            if (toWalletAbortController) {
+        if(comboboxToWalletOpenState){
+            if (comboboxToWalletAbort) {
                 // If there is an ongoing request, abort it before making a new one.
-                toWalletAbortController.abort();
+                comboboxToWalletAbort.abort();
             }
 
             // Create a new AbortController for the new request.
             const newAbortController = new AbortController();
-            setToWalletAbortController(newAbortController);
+            setComboboxToWalletAbort(newAbortController);
 
-            toWalletComboboxTimeout = setTimeout(() => {
-                fetchToWalletList(toWalletComboboxInput, newAbortController)
+            comboboxToWalletTimeout = setTimeout(() => {
+                fetchToWalletList(comboboxToWalletInput, newAbortController)
                     .then((data: string[] = []) => {
-                        setToWalletComboboxLoad(false);
+                        setComboboxToWalletLoadState(false);
                         if(data){
-                            setToWalletComboboxList(data);
+                            setComboboxToWalletList(data);
                         }
                     })
                     .catch((error) => {
@@ -465,23 +461,18 @@ export default function Record({ auth }: PageProps<ContentProps>) {
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (toWalletAbortController) {
-                    toWalletAbortController.abort();
+                if (comboboxToWalletAbort) {
+                    comboboxToWalletAbort.abort();
                 }
             };
         }
-    }, [toWalletComboboxInput, openRecordToWallet]);
+    }, [comboboxToWalletInput, comboboxToWalletOpenState]);
     useEffect(() => {
-        if(formToWallet !== '' && toWalletComboboxList.length > 0){
-            const selected: WalletItem | undefined = toWalletComboboxList.find(
-                (options: WalletItem) => options?.uuid === formToWallet
-            ) as WalletItem | undefined;
-
-            if (selected) {
-                setToWalletComboboxLabel(selected.name);
-            }
-        } else {
-            setToWalletComboboxLabel(`Select an option`);
+        setComboboxToWalletInput('');
+    }, [comboboxToWalletOpenState]);
+    useEffect(() => {
+        if(formToWallet === ''){
+            setComboboxToWalletLabel(`Select an option`);
         }
     }, [formToWallet]);
 
@@ -511,143 +502,96 @@ export default function Record({ auth }: PageProps<ContentProps>) {
         <PublicLayout>
             <Head title="Quick Action: Create new Record"/>
 
-            <div className={ ` flex flex-col justify-center max-md:justify-end max-md:pb-6 items-center h-screen w-screen` }>
-                <main className={ ` w-full md:max-w-[420px] md:min-w-[420px] px-4 md:px-6` }>
-                    <div className={ ` mb-4` }>
-                        <Link href={ route('sys.index') }>
-                            <ApplicationLogo
-                                fontSizeMain={ ` text-3xl` }   
-                            ></ApplicationLogo>
-                        </Link>
-                    </div>
+            <div className={ ` flex flex-col justify-center max-md:justify-end items-center h-screen w-screen max-h-screen` }>
+                <ScrollArea className={ `p-0 w-full` }>
+                    <main className={ ` w-full md:max-w-[420px] md:min-w-[420px] px-6 md:px-6 max-md:my-10 max-h-screen` }>
+                        <div className={ ` mb-4` }>
+                            <Link href={ route('sys.index') }>
+                                <ApplicationLogo
+                                    fontSizeMain={ ` text-3xl` }   
+                                ></ApplicationLogo>
+                            </Link>
+                        </div>
 
-                    <Card>
-                        {/* <CardHeader className={ `` }>
-                            <div className={ `flex flex-col space-y-2 ` }>
-                                <CardTitle><span className={ ` font-light` }>Hi</span> <span className={ ` font-semibold` }>{auth.user.name}</span>,</CardTitle>
-                                <CardDescription>how's doing? 👋</CardDescription>
-                            </div>
-                        </CardHeader> */}
-                        <CardContent className={ ` pb-2` }>
-                            <div className={ ` transition-all duration-300 ease-in-out py-6 relative overflow-x-clip` } id={ `quick-action-wrapper` }>
-                                <div className={ ` absolute flex flex-row flex-nowrap gap-12 transition-all duration-300 ease-in-out` } id={ `quick-action-container` }>
-                                    {(() => {
-                                        let step = [
-                                            {
-                                                name: 'Step 1',
-                                                key: 'wallet',
-                                                el: <div>
-                                                    {/* Record Type */}
-                                                    <div className={ `form-group mb-4 ${errorBag?.type ? ` is--invalid` : ''}` }>
-                                                        <div className={ ` flex flex-row gap-4 w-full border p-1 rounded-md ${errorBag?.type ? ` !border-red-500` : ''}` } id={ `record_dialog-type` }>
-                                                            {(() => {
-                                                                let recordType: any[] = [];
-                                                                ['income', 'transfer', 'expense'].map((value, index) => {
-                                                                    recordType.push(
-                                                                        <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ formType === value ? `bg-primary ` : ` dark:!text-white !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
-                                                                            setFormType(value);
-                                                                        }} key={ `record_type-${value}` }>
-                                                                            <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
-                                                                        </div>
-                                                                    );
-                                                                });
+                        <div className={ ` flex flex-col gap-2` }>
+                            <Card>
+                                {/* <CardHeader className={ `` }>
+                                    <div className={ `flex flex-col space-y-2 ` }>
+                                        <CardTitle><span className={ ` font-light` }>Hi</span> <span className={ ` font-semibold` }>{auth.user.name}</span>,</CardTitle>
+                                        <CardDescription>how's doing? 👋</CardDescription>
+                                    </div>
+                                </CardHeader> */}
+                                <CardContent className={ ` pb-2` }>
+                                    <div className={ ` transition-all duration-300 ease-in-out py-6 relative overflow-x-clip` } id={ `quick-action-wrapper` }>
+                                        <div className={ ` absolute flex flex-row flex-nowrap gap-12 transition-all duration-300 ease-in-out` } id={ `quick-action-container` }>
+                                            {(() => {
+                                                let step = [
+                                                    {
+                                                        name: 'Step 1',
+                                                        key: 'wallet',
+                                                        el: <div>
+                                                            {/* Record Type */}
+                                                            <div className={ `form-group mb-4 ${errorBag?.type ? ` is--invalid` : ''}` }>
+                                                                <div className={ ` flex flex-row gap-4 w-full border p-1 rounded-md ${errorBag?.type ? ` !border-red-500` : ''}` } id={ `record_dialog-type` }>
+                                                                    {(() => {
+                                                                        let recordType: any[] = [];
+                                                                        ['income', 'transfer', 'expense'].map((value, index) => {
+                                                                            recordType.push(
+                                                                                <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ formType === value ? `bg-primary ` : ` dark:!text-white !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
+                                                                                    setFormType(value);
+                                                                                }} key={ `record_type-${value}` }>
+                                                                                    <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
+                                                                                </div>
+                                                                            );
+                                                                        });
 
-                                                                if(recordType.length > 0){
-                                                                    return recordType;
-                                                                }
+                                                                        if(recordType.length > 0){
+                                                                            return recordType;
+                                                                        }
 
-                                                                return <></>;
-                                                            })()}
-                                                        </div>
+                                                                        return <></>;
+                                                                    })()}
+                                                                </div>
 
-                                                        <ErrorMessage message={ errorBag?.category_id }/>
-                                                    </div>
+                                                                <ErrorMessage message={ errorBag?.category_id }/>
+                                                            </div>
 
-                                                    {/* From Wallet */}
-                                                    <div className={ ` form--group  ${errorBag?.from_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-from_wallet` }>
-                                                        <label className={ ` form--label` }>From</label>
-                                                        <div>
-                                                            <Popover open={openRecordFromWallet} onOpenChange={setOpenRecordFromWallet}>
-                                                                <PopoverTrigger asChild>
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        role="combobox"
-                                                                        aria-expanded={openRecordFromWallet}
-                                                                        className={ `w-full justify-between ${errorBag?.from_wallet ? ` !border-red-500` : ''} dark:text-white` }
-                                                                    >
-                                                                        <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{fromWalletComboboxLabel}</span>
-                                                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                                    </Button>
-                                                                </PopoverTrigger>
-                                                                <PopoverContent className=" w-[250px] lg:w-[350px] p-0 z-[1000]" align={ `start` } side={ `bottom` }>
-                                                                    <Command shouldFilter={ false }>
-                                                                        <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={fromWalletComboboxInput} onValueChange={setFromWalletComboboxInput}/>
-                                                                        <ScrollArea className="p-0">
-                                                                            <div className={ `max-h-[10rem]` }>
-                                                                                <CommandEmpty>{fromWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                                                                <CommandGroup>
-                                                                                    {fromWalletComboboxList.map((options: WalletItem) => (
-                                                                                        <CommandItem
-                                                                                            value={options?.uuid}
-                                                                                            key={options?.uuid}
-                                                                                            onSelect={(currentValue) => {
-                                                                                                setFormFromWallet(currentValue === formFromWallet ? "" : currentValue)
-                                                                                                setOpenRecordFromWallet(false)
-                                                                                            }}
-                                                                                        >
-                                                                                            <Check
-                                                                                                className={ `mr-2 h-4 w-4 ${formFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                                            />
-                                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
-                                                                                        </CommandItem>
-                                                                                    ))}
-                                                                                </CommandGroup>
-                                                                            </div>
-                                                                        </ScrollArea>
-                                                                    </Command>
-                                                                </PopoverContent>
-                                                            </Popover>
-
-                                                            <ErrorMessage message={ errorBag?.from_wallet }/>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* To Wallet */}
-                                                    {(() => {
-                                                        if(formType === 'transfer'){
-                                                            return <div className={ ` form--group  ${errorBag?.to_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-to_wallet` }>
-                                                                <label className={ ` form--label` }>To</label>
+                                                            {/* From Wallet */}
+                                                            <div className={ ` form--group  ${errorBag?.from_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-from_wallet` }>
+                                                                <label className={ ` form--label` }>From</label>
                                                                 <div>
-                                                                    <Popover open={openRecordToWallet} onOpenChange={setOpenRecordToWallet}>
+                                                                    <Popover open={comboboxFromWalletOpenState} onOpenChange={setComboboxFromWalletOpenState}>
                                                                         <PopoverTrigger asChild>
                                                                             <Button
                                                                                 variant="outline"
                                                                                 role="combobox"
-                                                                                aria-expanded={openRecordToWallet}
-                                                                                className={ ` w-full justify-between ${errorBag?.to_wallet ? ` !border-red-500` : ''} dark:text-white` }
+                                                                                aria-expanded={comboboxFromWalletOpenState}
+                                                                                className={ `w-full justify-between ${errorBag?.from_wallet ? ` !border-red-500` : ''} dark:text-white` }
                                                                             >
-                                                                                <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{toWalletComboboxLabel}</span>
+                                                                                <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxFromWalletLabel}</span>
                                                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                                             </Button>
                                                                         </PopoverTrigger>
-                                                                        <PopoverContent className=" w-[250px] lg:w-[350px] p-0 z-[1000]" align={ `start` } side={ `bottom` }>
+                                                                        <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                                                             <Command shouldFilter={ false }>
-                                                                                <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={toWalletComboboxInput} onValueChange={setToWalletComboboxInput}/>
+                                                                                <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxFromWalletInput} onValueChange={setComboboxFromWalletInput}/>
                                                                                 <ScrollArea className="p-0">
                                                                                     <div className={ `max-h-[10rem]` }>
-                                                                                        <CommandEmpty>{toWalletComboboxLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                                                        <CommandEmpty>{comboboxFromWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                                                         <CommandGroup>
-                                                                                            {toWalletComboboxList.map((options: WalletItem) => (
+                                                                                            {comboboxFromWalletList.map((options: WalletItem) => (
                                                                                                 <CommandItem
                                                                                                     value={options?.uuid}
                                                                                                     key={options?.uuid}
                                                                                                     onSelect={(currentValue) => {
-                                                                                                        setFormToWallet(currentValue === formToWallet ? "" : currentValue)
-                                                                                                        setOpenRecordToWallet(false)
+                                                                                                        setComboboxFromWalletLabel(options.name);
+                                                                                                        setFormFromWallet(currentValue === formFromWallet ? "" : currentValue);
+
+                                                                                                        setComboboxFromWalletOpenState(false)
                                                                                                     }}
                                                                                                 >
                                                                                                     <Check
-                                                                                                        className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                                                        className={ `mr-2 h-4 w-4 ${formFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
                                                                                                     />
                                                                                                     <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
                                                                                                 </CommandItem>
@@ -659,256 +603,328 @@ export default function Record({ auth }: PageProps<ContentProps>) {
                                                                         </PopoverContent>
                                                                     </Popover>
 
-                                                                    <ErrorMessage message={ errorBag?.to_wallet }/>
+                                                                    <ErrorMessage message={ errorBag?.from_wallet }/>
                                                                 </div>
                                                             </div>
-                                                        }
 
-                                                        return <></>;
-                                                    })()}
-                                                </div>
-                                            }, {
-                                                name: 'Step 2',
-                                                key: 'amount',
-                                                el: <div>
-                                                    {/* Amount */}
-                                                    <div className={ ` form--group  ${errorBag?.amount ? ` is--invalid` : ''}` } id={ `record_dialog-amount` }>
-                                                        <label className={ `form--label` }>Amount</label>
-                                                        <MaskedInput
-                                                            type={ `text` }
-                                                            placeholder={ `Amount` }
-                                                            inputMode={ `numeric` }
-                                                            value={ (formAmount ?? 0).toString() }
-                                                            className={ `${errorBag?.amount ? ` !border-red-500` : ''}` }
-                                                            mask={ Number }
-                                                            unmask={ true }
-                                                            thousandsSeparator={ `,` }
-                                                            scale={ 2 }
-                                                            radix={ `.` }
-                                                            onBlur={ (element) => {
-                                                                let value = (element.target as HTMLInputElement).value;
-                                                                value = value.replace(',', '');
+                                                            {/* To Wallet */}
+                                                            {(() => {
+                                                                if(formType === 'transfer'){
+                                                                    return (
+                                                                        <div className={ ` flex flex-col gap-4` }>
+                                                                            <Button variant={ `outline` } className={ ` inline-flex w-max` } onClick={() => {
+                                                                                let temp = {
+                                                                                    option: formToWallet,
+                                                                                    label: comboboxToWalletLabel
+                                                                                };
 
-                                                                setFormAmount(Number(value));
-                                                            } }
-                                                        />
+                                                                                setFormToWallet(formFromWallet);
+                                                                                setComboboxToWalletLabel(comboboxFromWalletLabel);
 
-                                                        <ErrorMessage message={ errorBag?.amount }/>
-                                                    </div>
+                                                                                setFormFromWallet(temp.option);
+                                                                                setComboboxFromWalletLabel(temp.label);
+                                                                            }} type={ `button` }>Switch</Button>
 
-                                                    {/* Extra & Final Amount */}
-                                                    <div className={ ` flex flex-col w-full` }>
-                                                        {/* Extra Amount */}
-                                                        <div className={ ` form--group  ${errorBag?.extra_amount ? ` is--invalid` : ''}` } id={ `record_dialog-extra_amount` }>
-                                                            <div className={ ` flex flex-col gap-1` }>
+                                                                            <div className={ ` form--group  ${errorBag?.to_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-to_wallet` }>
+                                                                                <label className={ ` form--label` }>To</label>
+                                                                                <div>
+                                                                                    <Popover open={comboboxToWalletOpenState} onOpenChange={setComboboxToWalletOpenState}>
+                                                                                        <PopoverTrigger asChild>
+                                                                                            <Button
+                                                                                                variant="outline"
+                                                                                                role="combobox"
+                                                                                                aria-expanded={comboboxToWalletOpenState}
+                                                                                                className={ ` w-full justify-between ${errorBag?.to_wallet ? ` !border-red-500` : ''} dark:text-white` }
+                                                                                            >
+                                                                                                <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxToWalletLabel}</span>
+                                                                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                                                            </Button>
+                                                                                        </PopoverTrigger>
+                                                                                        <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                                                                            <Command shouldFilter={ false }>
+                                                                                                <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
+                                                                                                <ScrollArea className="p-0">
+                                                                                                    <div className={ `max-h-[10rem]` }>
+                                                                                                        <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                                                                        <CommandGroup>
+                                                                                                            {comboboxToWalletList.map((options: WalletItem) => (
+                                                                                                                <CommandItem
+                                                                                                                    value={options?.uuid}
+                                                                                                                    key={options?.uuid}
+                                                                                                                    onSelect={(currentValue) => {
+                                                                                                                        setComboboxToWalletLabel(options.name);
+                                                                                                                        setFormToWallet(currentValue === formToWallet ? "" : currentValue);
+
+                                                                                                                        setComboboxToWalletOpenState(false);
+                                                                                                                    }}
+                                                                                                                >
+                                                                                                                    <Check
+                                                                                                                        className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                                                                    />
+                                                                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
+                                                                                                                </CommandItem>
+                                                                                                            ))}
+                                                                                                        </CommandGroup>
+                                                                                                    </div>
+                                                                                                </ScrollArea>
+                                                                                            </Command>
+                                                                                        </PopoverContent>
+                                                                                    </Popover>
+
+                                                                                    <ErrorMessage message={ errorBag?.to_wallet }/>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+
+                                                                return <></>;
+                                                            })()}
+                                                        </div>
+                                                    }, {
+                                                        name: 'Step 2',
+                                                        key: 'amount',
+                                                        el: <div>
+                                                            {/* Amount */}
+                                                            <div className={ ` form--group  ${errorBag?.amount ? ` is--invalid` : ''}` } id={ `record_dialog-amount` }>
+                                                                <label className={ `form--label` }>Amount</label>
+                                                                <MaskedInput
+                                                                    type={ `text` }
+                                                                    placeholder={ `Amount` }
+                                                                    inputMode={ `numeric` }
+                                                                    value={ (formAmount ?? 0).toString() }
+                                                                    className={ `${errorBag?.amount ? ` !border-red-500` : ''}` }
+                                                                    mask={ Number }
+                                                                    unmask={ true }
+                                                                    thousandsSeparator={ `,` }
+                                                                    scale={ 2 }
+                                                                    radix={ `.` }
+                                                                    onBlur={ (element) => {
+                                                                        let value = (element.target as HTMLInputElement).value;
+                                                                        value = value.replace(',', '');
+
+                                                                        setFormAmount(Number(value));
+                                                                    } }
+                                                                />
+
+                                                                <ErrorMessage message={ errorBag?.amount }/>
+                                                            </div>
+
+                                                            {/* Extra & Final Amount */}
+                                                            <div className={ ` flex flex-col w-full` }>
                                                                 {/* Extra Amount */}
-                                                                <div id={ `record_dialog-extra_amount` }>
-                                                                    <label className={ ` form--label` }>Extra</label>
+                                                                <div className={ ` form--group  ${errorBag?.extra_amount ? ` is--invalid` : ''}` } id={ `record_dialog-extra_amount` }>
+                                                                    <div className={ ` flex flex-col gap-1` }>
+                                                                        {/* Extra Amount */}
+                                                                        <div id={ `record_dialog-extra_amount` }>
+                                                                            <label className={ ` form--label` }>Extra</label>
+                                                                            <MaskedInput
+                                                                                type={ `text` }
+                                                                                placeholder={ `Extra Amount` }
+                                                                                inputMode={ `numeric` }
+                                                                                value={ (formExtraAmount ?? 0).toString() }
+                                                                                className={ `${errorBag?.extra_amount ? ` !border-red-500` : ''}` }
+                                                                                mask={ Number }
+                                                                                unmask={ true }
+                                                                                thousandsSeparator={ `,` }
+                                                                                scale={ 2 }
+                                                                                radix={ `.` }
+                                                                                onBlur={ (element) => {
+                                                                                    let value = (element.target as HTMLInputElement).value;
+                                                                                    value = value.replace(',', '');
+
+                                                                                    setFormExtraAmount(Number(value));
+                                                                                } }
+                                                                            />
+
+                                                                            <ErrorMessage message={ errorBag?.extra_amount }/>
+                                                                        </div>
+                                                                        {/* Extra Type */}
+                                                                        <div id={ `record_dialog-extra_type` }>
+                                                                            <span className={ ` text-sm flex flex-row gap-1` }>
+                                                                                <span className={ ` cursor-pointer ${formExtraType === 'amount' ? ` font-semibold` : ''}` } onClick={() => {
+                                                                                    if(formExtraType !== 'amount'){
+                                                                                        setFormExtraType('amount');
+                                                                                    }
+                                                                                }}>Amount</span>
+                                                                                <span>/</span>
+                                                                                <span className={ ` cursor-pointer ${formExtraType === 'percentage' ? ` font-semibold` : ''}` } onClick={() => {
+                                                                                    if(formExtraType !== 'percentage'){
+                                                                                        setFormExtraType('percentage');
+                                                                                    }
+                                                                                }}>Percentage</span>
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Final Amount */}
+                                                                <div className={ ` form--group  ${errorBag?.final_amount ? ` is--invalid` : ''}` } id={ `record_dialog-final_amount` }>
+                                                                    <label className={ ` form--label` }>Final</label>
                                                                     <MaskedInput
                                                                         type={ `text` }
-                                                                        placeholder={ `Extra Amount` }
+                                                                        placeholder={ `Final Amount` }
                                                                         inputMode={ `numeric` }
-                                                                        value={ (formExtraAmount ?? 0).toString() }
-                                                                        className={ `${errorBag?.extra_amount ? ` !border-red-500` : ''}` }
+                                                                        value={ (calculateFinalAmount ?? 0).toString() }
+                                                                        className={ `${errorBag?.final_amount ? ` !border-red-500` : ''}` }
                                                                         mask={ Number }
                                                                         unmask={ true }
                                                                         thousandsSeparator={ `,` }
                                                                         scale={ 2 }
                                                                         radix={ `.` }
-                                                                        onBlur={ (element) => {
-                                                                            let value = (element.target as HTMLInputElement).value;
-                                                                            value = value.replace(',', '');
-
-                                                                            setFormExtraAmount(Number(value));
-                                                                        } }
+                                                                        disabled={ true }
                                                                     />
 
-                                                                    <ErrorMessage message={ errorBag?.extra_amount }/>
-                                                                </div>
-                                                                {/* Extra Type */}
-                                                                <div id={ `record_dialog-extra_type` }>
-                                                                    <span className={ ` text-sm flex flex-row gap-1` }>
-                                                                        <span className={ ` cursor-pointer ${formExtraType === 'amount' ? ` font-semibold` : ''}` } onClick={() => {
-                                                                            if(formExtraType !== 'amount'){
-                                                                                setFormExtraType('amount');
-                                                                            }
-                                                                        }}>Amount</span>
-                                                                        <span>/</span>
-                                                                        <span className={ ` cursor-pointer ${formExtraType === 'percentage' ? ` font-semibold` : ''}` } onClick={() => {
-                                                                            if(formExtraType !== 'percentage'){
-                                                                                setFormExtraType('percentage');
-                                                                            }
-                                                                        }}>Percentage</span>
-                                                                    </span>
+                                                                    <ErrorMessage message={ errorBag?.final_amount }/>
                                                                 </div>
                                                             </div>
                                                         </div>
-
-                                                        {/* Final Amount */}
-                                                        <div className={ ` form--group  ${errorBag?.final_amount ? ` is--invalid` : ''}` } id={ `record_dialog-final_amount` }>
-                                                            <label className={ ` form--label` }>Final</label>
-                                                            <MaskedInput
-                                                                type={ `text` }
-                                                                placeholder={ `Final Amount` }
-                                                                inputMode={ `numeric` }
-                                                                value={ (calculateFinalAmount ?? 0).toString() }
-                                                                className={ `${errorBag?.final_amount ? ` !border-red-500` : ''}` }
-                                                                mask={ Number }
-                                                                unmask={ true }
-                                                                thousandsSeparator={ `,` }
-                                                                scale={ 2 }
-                                                                radix={ `.` }
-                                                                disabled={ true }
-                                                            />
-
-                                                            <ErrorMessage message={ errorBag?.final_amount }/>
+                                                    }, {
+                                                        name: 'Step 3',
+                                                        key: 'note',
+                                                        el: <div>
+                                                            {/* Record Note */}
+                                                            <div className={ ` form--group  ${errorBag?.notes ? ` is--invalid` : ''}` } id={ `record_dialog-note` }>
+                                                                <label className={ ` form--label` }>Note</label>
+                                                                <Textarea className={ ` w-full ${errorBag?.notes ? ` !border-red-500` : ''}` } placeholder="Type your message here." value={ formNotes } onChange={(e) => {
+                                                                    setFormNotes(e.target.value);
+                                                                }}/>
+                                                            
+                                                                <ErrorMessage message={ errorBag?.notes }/>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                            }, {
-                                                name: 'Step 3',
-                                                key: 'note',
-                                                el: <div>
-                                                    {/* Record Note */}
-                                                    <div className={ ` form--group  ${errorBag?.notes ? ` is--invalid` : ''}` } id={ `record_dialog-note` }>
-                                                        <label className={ ` form--label` }>Note</label>
-                                                        <Textarea className={ ` w-full ${errorBag?.notes ? ` !border-red-500` : ''}` } placeholder="Type your message here." value={ formNotes } onChange={(e) => {
-                                                            setFormNotes(e.target.value);
-                                                        }}/>
-                                                    
-                                                        <ErrorMessage message={ errorBag?.notes }/>
-                                                    </div>
-                                                </div>
-                                            }, {
-                                                name: 'Step 4',
-                                                key: 'review',
-                                                el: <div className={ ` mb-4` }>
-                                                    {/* Typw */}
-                                                    <div className={ ` mb-4` }>
-                                                        <span className={ ` block font-semibold` }>Type</span>
-                                                        <Badge>{ ucwords(formType) }</Badge>
-                                                    </div>
+                                                    }, {
+                                                        name: 'Step 4',
+                                                        key: 'review',
+                                                        el: <div className={ ` mb-4` }>
+                                                            {/* Typw */}
+                                                            <div className={ ` mb-4` }>
+                                                                <span className={ ` block font-semibold` }>Type</span>
+                                                                <Badge>{ ucwords(formType) }</Badge>
+                                                            </div>
 
-                                                    {/* Wallet */}
-                                                    <div className={ ` flex flex-row justify-between gap-4` }>
-                                                        <div className={ ` w-full overflow-hidden` }>
-                                                            <span className={ ` block font-semibold` }>From Wallet</span>
-                                                            <span className={ ` block whitespace-nowrap overflow-hidden w-full text-ellipsis` }>{ fromWalletComboboxLabel }</span>
-                                                        </div>
-
-                                                        {(() => {
-                                                            if(formType === 'transfer'){
-                                                                return <div className={ ` w-full overflow-hidden text-right` }>
-                                                                    <span className={ ` block font-semibold` }>To Wallet</span>
-                                                                    <span className={ ` whitespace-nowrap` }>{ toWalletComboboxLabel }</span>
+                                                            {/* Wallet */}
+                                                            <div className={ ` flex flex-row justify-between gap-4` }>
+                                                                <div className={ ` w-full overflow-hidden` }>
+                                                                    <span className={ ` block font-semibold` }>From Wallet</span>
+                                                                    <span className={ ` block whitespace-nowrap overflow-hidden w-full text-ellipsis` }>{ comboboxFromWalletLabel }</span>
                                                                 </div>
-                                                            }
 
-                                                            return <></>;
-                                                        })()}
-                                                    </div>
-
-                                                    {/* Note */}
-                                                    <div className=" w-full p-4 rounded-lg border-2 border-dashed mt-4">
-                                                        <span className=" flex items-center gap-2 text-sm">
-                                                            <i className="fa-solid fa-align-left"></i>
-                                                            <strong>Note(s)</strong>
-                                                        </span>
-                                                        <span className=" block mt-2">{ formNotes ?? 'No description provided' }</span>
-                                                    </div>
-
-                                                    {/* Amount, etc */}
-                                                    <div className={ `mt-4` }>
-                                                        <div className={ `flex justify-between mt-2 text-sm` }>
-                                                            <span>Amount</span>
-                                                            <span data-review="amount">{ formatRupiah(formAmount ?? 0) }</span>
-                                                        </div>
-                                                        <div className={ `flex justify-between mt-1 text-sm` }>
-                                                            <span>
-                                                                <span>Extra</span>
                                                                 {(() => {
-                                                                    if(formExtraType === 'percentage'){
-                                                                        return <span className={ `text-xs` }>({ formExtraAmount ?? 0 }%)</span>;
+                                                                    if(formType === 'transfer'){
+                                                                        return <div className={ ` w-full overflow-hidden text-right` }>
+                                                                            <span className={ ` block font-semibold` }>To Wallet</span>
+                                                                            <span className={ ` whitespace-nowrap` }>{ comboboxToWalletLabel }</span>
+                                                                        </div>
                                                                     }
+
                                                                     return <></>;
                                                                 })()}
-                                                            </span>
-                                                            <span data-review="extra_amount">{ formatRupiah((calculateFinalAmount ?? 0) - (formAmount ?? 0)) }</span>
+                                                            </div>
+
+                                                            {/* Note */}
+                                                            <div className=" w-full p-4 rounded-lg border-2 border-dashed mt-4">
+                                                                <span className=" flex items-center gap-2 text-sm">
+                                                                    <i className="fa-solid fa-align-left"></i>
+                                                                    <strong>Note(s)</strong>
+                                                                </span>
+                                                                <span className=" block mt-2">{ formNotes ?? 'No description provided' }</span>
+                                                            </div>
+
+                                                            {/* Amount, etc */}
+                                                            <div className={ `mt-4` }>
+                                                                <div className={ `flex justify-between mt-2 text-sm` }>
+                                                                    <span>Amount</span>
+                                                                    <span data-review="amount">{ formatRupiah(formAmount ?? 0) }</span>
+                                                                </div>
+                                                                <div className={ `flex justify-between mt-1 text-sm` }>
+                                                                    <span>
+                                                                        <span>Extra</span>
+                                                                        {(() => {
+                                                                            if(formExtraType === 'percentage'){
+                                                                                return <span className={ `text-xs` }>({ formExtraAmount ?? 0 }%)</span>;
+                                                                            }
+                                                                            return <></>;
+                                                                        })()}
+                                                                    </span>
+                                                                    <span data-review="extra_amount">{ formatRupiah((calculateFinalAmount ?? 0) - (formAmount ?? 0)) }</span>
+                                                                </div>
+                                                                <hr className={ `my-1` }/>
+                                                                <div className={ `flex justify-between mt-2` }>
+                                                                    <span className={ `font-semibold` }>Final Amount</span>
+                                                                    <span className={ `font-semibold` } data-review="final_amount">{ formatRupiah(calculateFinalAmount ?? 0) }</span>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <hr className={ `my-1` }/>
-                                                        <div className={ `flex justify-between mt-2` }>
-                                                            <span className={ `font-semibold` }>Final Amount</span>
-                                                            <span className={ `font-semibold` } data-review="final_amount">{ formatRupiah(calculateFinalAmount ?? 0) }</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            }
-                                        ];
+                                                    }
+                                                ];
 
-                                        let formated: any[] = [];
-                                        step.forEach((val, index) => {
-                                            formated.push(
-                                                <section key={ `wizzard-step_${index}` } className={ `quick-action-item ${index === 0 ? `active` : ''} flex flex-col h-[fit-content] px-1` } data-key={ val.key }>
-                                                    { val.el }
-                                                </section>
-                                            );
-                                        });
+                                                let formated: any[] = [];
+                                                step.forEach((val, index) => {
+                                                    formated.push(
+                                                        <section key={ `wizzard-step_${index}` } className={ `quick-action-item ${index === 0 ? `active` : ''} flex flex-col h-[fit-content] px-1` } data-key={ val.key }>
+                                                            { val.el }
+                                                        </section>
+                                                    );
+                                                });
 
-                                        return formated;
-                                    })()}
-                                </div>
-                            </div>
-                        </CardContent>
-                        <CardFooter>
-                            <div className={ ` flex justify-between w-full gap-4` }>
-                                <div className={ ` w-5/12` }>
-                                    <Button variant={ `outline` } className={ formIndex === 0 ? ` !opacity-0` : `` } disabled={ formIndex === 0 } onClick={($refs) => {
-                                        wizardPagination('prev', $refs);
-                                    }}>Prev</Button>
-                                </div>
-                                
-                                {(() => {
-                                    if(formIndex > 0){
-                                        return <Button variant={ `ghost` } className={ `w-3/12` } onClick={($refs) => {
-                                            formReset();
-                                            setFormIndex(0);
-                                        }}>
-                                            <span className={ `text-destructive` }>Reset</span>
-                                        </Button>
-                                    }
-                                    return <></>;
-                                })()}
-
-                                <div className={ ` w-5/12 flex flex-col items-end` }>
-                                    {(() => {
-                                        if(formIndex === formLastIndex){
-                                            // Submit
-                                            return <Button className={ ` w-full` } onClick={($refs) => {
-                                                formSubmit($refs);
-                                            }}>Submit</Button>
-                                        } else {
-                                            // Next action
-                                            return <Button variant={ `outline` } disabled={ formIndex === formLastIndex } onClick={($refs) => {
-                                                wizardPagination('next', $refs);
-                                            }}>Next</Button>
-                                        }
+                                                return formated;
+                                            })()}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <div className={ ` flex justify-between w-full gap-4` }>
+                                        <div className={ ` w-5/12` }>
+                                            <Button variant={ `outline` } className={ formIndex === 0 ? ` !opacity-0` : `` } disabled={ formIndex === 0 } onClick={($refs) => {
+                                                wizardPagination('prev', $refs);
+                                            }}>Prev</Button>
+                                        </div>
                                         
-                                        return <></>;
-                                    })()}
+                                        {(() => {
+                                            if(formIndex > 0){
+                                                return <Button variant={ `ghost` } className={ `w-3/12` } onClick={($refs) => {
+                                                    formReset();
+                                                    setFormIndex(0);
+                                                }}>
+                                                    <span className={ `text-destructive` }>Reset</span>
+                                                </Button>
+                                            }
+                                            return <></>;
+                                        })()}
+
+                                        <div className={ ` w-5/12 flex flex-col items-end` }>
+                                            {(() => {
+                                                if(formIndex === formLastIndex){
+                                                    // Submit
+                                                    return <Button className={ ` w-full` } onClick={($refs) => {
+                                                        formSubmit($refs);
+                                                    }}>Submit</Button>
+                                                } else {
+                                                    // Next action
+                                                    return <Button variant={ `outline` } disabled={ formIndex === formLastIndex } onClick={($refs) => {
+                                                        wizardPagination('next', $refs);
+                                                    }}>Next</Button>
+                                                }
+                                                
+                                                return <></>;
+                                            })()}
+                                        </div>
+                                    </div>
+                                </CardFooter>
+                            </Card>
+
+                            <div className={ ` flex flex-col gap-6 w-full text-center` }>
+                                <Link href={ route('sys.index') } className={ `dark:text-white` }>Go to Dashboard</Link>
+
+                                {/* Theme */}
+                                <div className={ ` flex flex-row gap-4 rounded border p-2 dark:text-white` }>
+                                    <ThemeToggle className={ ` flex flex-row gap-2 w-full` }/>
                                 </div>
                             </div>
-                        </CardFooter>
-                    </Card>
-
-                    <div className={ ` mt-10 flex flex-col gap-6 w-full text-center` }>
-                        <Link href={ route('sys.index') } className={ `dark:text-white` }>Go to Dashboard</Link>
-
-                        {/* Theme */}
-                        <div className={ ` flex flex-row gap-4 rounded border p-2 dark:text-white` }>
-                            <ThemeToggle className={ ` flex flex-row gap-2 w-full` }/>
                         </div>
-                    </div>
-                </main>
+                    </main>
+                </ScrollArea>
             </div>
         </PublicLayout>
     );

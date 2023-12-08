@@ -309,7 +309,7 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
                         let name: any[] = [];
                         (data.wallet_group_item).forEach((value, index) => {
                             uuid.push(value.uuid);
-                            name.push(`${value.parent ? `${value.parent.name} - ` : ''}${value.name}`);
+                            name.push(value.name);
                         });
                         setFormWallet(uuid);
                         setComboboxWalletLabel(name);
@@ -394,14 +394,14 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
                                                                         } else {
                                                                             // Not yet exists, add to array
                                                                             setFormWallet([...formWallet, currentValue])
-                                                                            setComboboxWalletLabel([...comboboxWalletLabel, `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}`]);
+                                                                            setComboboxWalletLabel([...comboboxWalletLabel, options?.name]);
                                                                         }
                                                                     }}
                                                                 >
                                                                     <Check
                                                                         className={ `mr-2 h-4 w-4 ${formWallet.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
                                                                     />
-                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
                                                                 </CommandItem>
                                                             ))}
                                                         </CommandGroup>

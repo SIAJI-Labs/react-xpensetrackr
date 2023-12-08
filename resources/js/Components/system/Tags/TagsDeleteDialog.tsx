@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react';
+import axios, { AxiosError } from 'axios';
+
 // Shadcn
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/Components/ui/alert-dialog';
-import { useEffect, useState } from 'react';
 import { Button } from '@/Components/ui/button';
-import axios, { AxiosError } from 'axios';
 
 type dialogProps = {
     openState: boolean;

@@ -64,7 +64,7 @@ class Category extends Model
     public function child()
     {
         return $this->hasMany(\App\Models\Category::class, 'parent_id')
-            ->orderBy('order_main', 'asc')
+            ->orderBy('order', 'asc')
             ->with('parent');
     }
     public function record()

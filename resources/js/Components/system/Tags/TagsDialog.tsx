@@ -8,13 +8,9 @@ import { IMaskMixin } from "react-imask";
 
 // Partials
 import ErrorMessage from "@/Components/forms/ErrorMessage";
-import { Check, ChevronsUpDown } from "lucide-react";
 
 // Shadcn
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import { ScrollArea } from "@/Components/ui/scroll-area";
 import { useToast } from "@/Components/ui/use-toast";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
@@ -29,14 +25,6 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
     const { toast } = useToast();
 
-    // extend style component
-    const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
-        <Input
-            {...props}
-            ref={inputRef} // bind internal input
-        />
-    ));
-
     // Form
     const [formParent, setFormParent] = useState<string>("");
     const [formUuid, setFormUuid] = useState<string>('');
@@ -44,8 +32,8 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
     // Keep Dialog Open?
     const [keepOpenDialog, setKeepOpenTagsDialog] = useState<boolean>(false);
 
-    // Tags Dialog - Forms
-    const resetTagsDialog = () => {
+    // Form Reset
+    const resetFormDialog = () => {
         setFormUuid('');
         setFormParent('');
         setFormName('');
@@ -54,8 +42,8 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
     }
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
-    const [formDialogAbortController, setAbortControllerRecordDialog] = useState<AbortController | null>(null);
-    const handleTagsDialogSubmit: FormEventHandler = (e) => {
+    const [formDialogAbortController, setFormDialogAbortController] = useState<AbortController | null>(null);
+    const handleFormSubmit: FormEventHandler = (e) => {
         // Cancel previous request
         if(formDialogAbortController instanceof AbortController){
             formDialogAbortController.abort();
@@ -76,7 +64,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
         // Create a new AbortController
         const abortController = new AbortController();
         // Store the AbortController in state
-        setAbortControllerRecordDialog(abortController);
+        setFormDialogAbortController(abortController);
 
         // Build Form Data
         let formData = new FormData();
@@ -109,7 +97,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
                         setOpenState(false);
                     } else {
                         // Reset form
-                        resetTagsDialog();
+                        resetFormDialog();
                     }
             
                     toast({
@@ -147,7 +135,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
             }, 100);
         }).finally(() => {
             // Clear the AbortController from state
-            setAbortControllerRecordDialog(null);
+            setFormDialogAbortController(null);
         
             // Update to original state
             let submitBtn = document.getElementById('tags-dialogSubmit');
@@ -165,7 +153,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
         if(openState){
             document.dispatchEvent(new CustomEvent('dialog.tags.shown', { bubbles: true }));
         } else {
-            resetTagsDialog();
+            resetFormDialog();
             setKeepOpenTagsDialog(false);
 
             // Announce Dialog Global Event
@@ -223,7 +211,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
                     setFormUuid(data.uuid)
                     setFormName(data.name);
                     
-                    // Open record-dialog
+                    // Open dialog
                     setTimeout(() => {
                         setOpenState(true);
                     }, 100);
@@ -247,11 +235,11 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Tags</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleTagsDialogSubmit} id={ `tags-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
+                    <form onSubmit={handleFormSubmit} id={ `tags-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
                         {/* Name */}
                         <div className={ `form--group` }>
                             <label className={ `form--label` }>Name</label>
-                            <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Tags Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
+                            <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Tags Name` } id={ `form-tags_name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
                                 
                             <ErrorMessage message={ errorFormDialog?.name }/>
                         </div>
@@ -259,13 +247,13 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
                         {/* Keep open dialog? */}
                         <div className={ `form-group` }>
                             <div className={ `flex items-center space-x-2` }>
-                                <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
+                                <Checkbox id="form-tags_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
                                     if(typeof value === 'boolean'){
                                         setKeepOpenTagsDialog(value);
                                     }
                                 }} />
                                 <label
-                                    htmlFor="record_dialog-keep_open"
+                                    htmlFor="form-tags_keep_open"
                                     className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
                                 >
                                     Keep Open?
@@ -273,9 +261,10 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
                             </div>
                         </div>
                     </form>
+
                     <DialogFooter className={ ` p-6 pt-2` }>
                         <Button variant={ `ghost` } onClick={() => {
-                            resetTagsDialog();
+                            resetFormDialog();
                         }}>
                             <span>Reset</span>
                         </Button>

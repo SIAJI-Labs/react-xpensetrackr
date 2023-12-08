@@ -4,12 +4,10 @@ import { useEffect, useState } from "react";
 import { PageProps } from "@/types"
 import axios from "axios";
 
-// Apexchart
-import Chart from 'react-apexcharts';
-
 // Plugins
 import { LucideArrowDownAZ, LucideArrowUpAZ } from "lucide-react";
 import { formatRupiah, ucwords } from "@/function";
+import Chart from 'react-apexcharts';
 import moment from "moment";
 
 // Partials
@@ -29,8 +27,9 @@ type ContentProps = {
 export default function Index({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
 	
+	// Skeleton
 	const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [skeletonCount, setSkeletonCount] = useState<number>(5);
+    const [skeletonCount, setSkeletonCount] = useState<number>(12);
 	let skeletonTemplate = (
 		<div className={ `  border rounded p-4 flex flex-col gap-2` }>
 			<div className={ ` flex flex-row justify-between items-center` }>
@@ -54,6 +53,9 @@ export default function Index({ auth }: PageProps<ContentProps>) {
 			</div>
 		</div>
 	);
+
+	// Filter
+	const [filterYear, setFilterYear] = useState<string>(moment().format('Y').toString());
 
 	// Graph conf
     const [graphItemAbortController, setGraphItemAbortController] = useState<AbortController | null>(null);
@@ -238,6 +240,7 @@ export default function Index({ auth }: PageProps<ContentProps>) {
 											enabled: false
 										}
 									},
+									colors: ['#22c55f', '#ef4444', '#fbba47'],
 									stroke: {
 										show: true,
 										width: [0, 0, 3],
@@ -372,22 +375,26 @@ export default function Index({ auth }: PageProps<ContentProps>) {
 									if(el.length > 0){
 										return <>
 											<div className={ ` flex flex-col gap-2` }>
-												<Button variant={ `outline` } className={ ` flex flex-row gap-1 mr-auto` } onClick={() => {
-													let list = graphList;
-													setGraphList(list.reverse());
-													setGraphSort(graphSort === 'asc' ? 'desc' : 'asc');
-												}}>
-													<div className={ ` scale-75` }>
-														{(() => {
-															if(graphSort === 'desc'){
-																return <LucideArrowUpAZ/>
-															}
+												<div className={ ` flex flex-row justify-between` }>
+													<Button variant={ `outline` } className={ ` flex flex-row gap-1 mr-auto` } onClick={() => {
+														let list = graphList;
+														setGraphList(list.reverse());
+														setGraphSort(graphSort === 'asc' ? 'desc' : 'asc');
+													}}>
+														<div className={ ` scale-75` }>
+															{(() => {
+																if(graphSort === 'desc'){
+																	return <LucideArrowUpAZ/>
+																}
 
-															return <LucideArrowDownAZ/>
-														})()}
-													</div>
-													<span className={ `` }>{ ucwords(graphSort) }</span>
-												</Button>
+																return <LucideArrowDownAZ/>
+															})()}
+														</div>
+														<span className={ `` }>{ ucwords(graphSort) }</span>
+													</Button>
+
+													<span className={ `font-semibold` }>{filterYear}</span>
+												</div>
 	
 												<div className={ ` flex flex-col gap-4` }>
 													{el}

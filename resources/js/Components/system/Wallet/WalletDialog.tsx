@@ -168,7 +168,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
     }
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
-    const [formDialogAbortController, setAbortControllerRecordDialog] = useState<AbortController | null>(null);
+    const [formDialogAbortController, setFormDialogAbortController] = useState<AbortController | null>(null);
     const handleFormSubmit: FormEventHandler = (e) => {
         // Cancel previous request
         if(formDialogAbortController instanceof AbortController){
@@ -190,7 +190,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
         // Create a new AbortController
         const abortController = new AbortController();
         // Store the AbortController in state
-        setAbortControllerRecordDialog(abortController);
+        setFormDialogAbortController(abortController);
 
         // Build Form Data
         let formData = new FormData();
@@ -261,7 +261,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
             }, 100);
         }).finally(() => {
             // Clear the AbortController from state
-            setAbortControllerRecordDialog(null);
+            setFormDialogAbortController(null);
         
             // Update to original state
             let submitBtn = document.getElementById('wallet-dialogSubmit');
@@ -344,7 +344,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                         setComboboxParentLabel(data.parent.name);
                     }
                     
-                    // Open record-dialog
+                    // Open dialog
                     setTimeout(() => {
                         setOpenState(true);
                     }, 100);
@@ -370,7 +370,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
 
                     <form onSubmit={handleFormSubmit} id={ `wallet-dialogForms` } className={ ` flex-1 overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
                         {/* Parent Wallet */}
-                        <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `record_dialog-parent` }>
+                        <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `form-wallet_parent` }>
                             <label className={ ` form--label` }>Parent</label>
                             <div>
                                 <Popover open={openWalletParent} onOpenChange={setOpenWalletParent}>
@@ -424,7 +424,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                         {/* Name */}
                         <div className={ `form--group` }>
                             <label className={ `form--label` }>Name</label>
-                            <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Wallet Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
+                            <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Wallet Name` } id={ `form-wallet_name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
                                 
                             <ErrorMessage message={ errorFormDialog?.name }/>
                         </div>
@@ -434,6 +434,7 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                             <label className={ `form--label` }>Starting Balance</label>
                             <MaskedInput
                                 type={ `text` }
+                                id={ `form-wallet_starting_balance` }
                                 placeholder={ `Starting Balance` }
                                 inputMode={ `numeric` }
                                 value={ (formStartingBalance ?? 0).toString() }
@@ -457,13 +458,13 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                         {/* Keep open Wallet dialog? */}
                         <div className={ `form-group` }>
                             <div className={ `flex items-center space-x-2` }>
-                                <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
+                                <Checkbox id="form-wallet_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
                                     if(typeof value === 'boolean'){
                                         setKeepOpenWalletDialog(value);
                                     }
                                 }} />
                                 <label
-                                    htmlFor="record_dialog-keep_open"
+                                    htmlFor="form-wallet_keep_open"
                                     className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
                                 >
                                     Keep Open?

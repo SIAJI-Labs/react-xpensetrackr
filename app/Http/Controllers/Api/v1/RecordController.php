@@ -30,6 +30,7 @@ class RecordController extends Controller
         if($request->has('keyword') && !empty($request->keyword)){
             $data->where('note', 'like', '%'.$request->keyword.'%');
         }
+        // Apply Filter - Wallet
         if($request->has('filter_wallet')){
             $wallet_id = [];
             $filter = $request->filter_wallet;
@@ -71,16 +72,58 @@ class RecordController extends Controller
                             ->pluck('id')
                             ->toArray();
     
+                        $type = 'expense';
                         $column = 'from_wallet_id';
                         if($filterWallet === 'filter_to_wallet'){
-                            $column = 'to_wallet_id';
+                            $column = 'from_wallet_id';
+                            $type = 'income';
                         }
-                        $q->whereIn($column, $wallet);
+                        $q->whereIn($column, $wallet)
+                            ->where('type', $type);
                     }
                 }
     
                 return $q;
             });
+        }
+        // Apply Filter - Category
+        if($request->has('filter_category')){
+            $category_id = [];
+            $filter = $request->filter_category;
+            if(is_array($filter)){
+                $category_id = $filter;
+            } else {
+                $category_id[] = $filter;
+            }
+
+            $categories = \App\Models\Category::whereIn(DB::raw('BINARY `uuid`'), $category_id)
+                ->where('user_id', $user->id)
+                ->pluck('id')
+                ->toArray();
+            
+            $data->whereIn('category_id', $categories);
+        }
+        // Apply Filter - Tags
+        if($request->has('filter_tags')){
+            $tags_id = [];
+            $filter = $request->filter_tags;
+            if(is_array($filter)){
+                $tags_id = $filter;
+            } else {
+                $tags_id[] = $filter;
+            }
+
+            $tags = \App\Models\Tags::whereIn(DB::raw('BINARY `uuid`'), $tags_id)
+                ->where('user_id', $user->id)
+                ->pluck('id')
+                ->toArray();
+            
+            // Fetch Tags Record
+            $tagsRecord = \App\Models\RecordTags::whereIn('tags_id', $tags)
+                ->pluck('record_id')
+                ->toArray();
+
+            $data->whereIn('id', $tagsRecord);
         }
 
         // Apply ordering

@@ -1475,6 +1475,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                             </div>
                         </div>
                     </form>
+                    
                     <DialogFooter className={ ` p-6 pt-2` }>
                         <Button variant={ `ghost` } onClick={() => {
                             resetFormDialog();

@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import Filter from './Partials/Filter';
 
 // Props
 type ContentProps = {
@@ -37,6 +38,10 @@ export default function Index({ auth, type = 'complete' }: PageProps<ContentProp
     const [recordFilterOpen, setRecordFilterOpen] = useState<boolean>(false);
     const [recordFilterKeyword, setRecordFilterKeyword] = useState<string>('');
     const [recordFilterStatus, setRecordFilterStatus] = useState<string>(type);
+    const [recordFilterFromWallet, setRecordFilterFromWallet] = useState<any[]>([]);
+    const [recordFilterToWallet, setRecordFilterToWallet] = useState<any[]>([]);
+    const [recordFilterCategory, setRecordFilterCategory] = useState<any[]>([]);
+    const [recordFilterTags, setRecordFilterTags] = useState<any[]>([]);
     const handleReloadData = () => {
         if(!isFirstRender){
             const timer = setTimeout(() => {
@@ -106,6 +111,27 @@ export default function Index({ auth, type = 'complete' }: PageProps<ContentProp
         for (const key in obj) {
             query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
         }
+
+        // Apply fromWallet filter
+        const filteredFromWallet = recordFilterFromWallet.filter((value) => 'uuid' in value);
+        filteredFromWallet.forEach((value, index) => {
+            query.push(`filter_from_wallet[${index}] = ${value.uuid}`);
+        });
+        // Apply toWallet filter
+        const filteredToWallet = recordFilterToWallet.filter((value) => 'uuid' in value);
+        filteredToWallet.forEach((value, index) => {
+            query.push(`filter_to_wallet[${index}] = ${value.uuid}`);
+        });
+        // Apply category filter
+        const filteredCategory = recordFilterCategory.filter((value) => 'uuid' in value);
+        filteredCategory.forEach((value, index) => {
+            query.push(`filter_category[${index}] = ${value.uuid}`);
+        });
+        // Apply tags filter
+        const filteredTags = recordFilterTags.filter((value) => 'uuid' in value);
+        filteredTags.forEach((value, index) => {
+            query.push(`filter_tags[${index}] = ${value.uuid}`);
+        });
 
         try {
             const response = await axios.get(`${route('api.record.v1.list')}?${query.join('&')}`, {
@@ -208,45 +234,15 @@ export default function Index({ auth, type = 'complete' }: PageProps<ContentProp
                                     setRecordFilterKeyword(event.target.value);
                                 }}/>
 
-                                <Dialog open={ recordFilterOpen } onOpenChange={ setRecordFilterOpen }>
-                                    <DialogTrigger asChild>
-                                        <Button className={ ` w-10 aspect-square` }>
-                                            <i className={ `fa-solid fa-filter` }></i>
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className=" h-full md:h-auto lg:min-w-[800px] max-md:!max-h-[85vh] flex flex-col gap-6" data-type="record-dialog">
-                                        <DialogHeader>
-                                            <DialogTitle>Record: Filter</DialogTitle>
-                                            <DialogDescription>
-                                                <span>Show record data based on certain condition</span>
-                                            </DialogDescription>
-                                        </DialogHeader>
+                                <Filter
+                                    openState={ recordFilterOpen } setOpenState={ setRecordFilterOpen }
 
-                                        <div className={ ` flex flex-col gap-4` }>
-                                            <div className={ ` flex flex-row gap-1 w-full border p-1 rounded-md` }>
-                                                {/* Status Type */}
-                                                {(() => {
-                                                    let pageTypeEl: any[] = [];
-                                                    ['complete', 'pending'].map((value, index) => {
-                                                        pageTypeEl.push(
-                                                            <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ recordFilterStatus === value ? `bg-primary ` : ` dark:!text-white !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
-                                                                setRecordFilterStatus(value);
-                                                            }} key={ `record_type-${value}` }>
-                                                                <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
-                                                            </div>
-                                                        );
-                                                    });
-
-                                                    if(pageTypeEl.length > 0){
-                                                        return pageTypeEl;
-                                                    }
-
-                                                    return <></>;
-                                                })()}
-                                            </div>
-                                        </div>
-                                    </DialogContent>
-                                </Dialog>
+                                    filterStatus={ recordFilterStatus } setFilterStatus={ setRecordFilterStatus }
+                                    filterFromWallet={ recordFilterFromWallet } setFilterFromWallet={ setRecordFilterFromWallet }
+                                    filterToWallet={ recordFilterToWallet } setFilterToWallet={ setRecordFilterToWallet }
+                                    filterCategory={ recordFilterCategory } setFilterCategory={ setRecordFilterCategory }
+                                    filterTags={ recordFilterTags } setFilterTags={ setRecordFilterTags }
+                                />
                             </div>
 
                             {/* Content */}

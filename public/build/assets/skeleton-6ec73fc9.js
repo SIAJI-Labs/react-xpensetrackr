@@ -1,1 +1,0 @@
-import{j as m}from"./app-f0847613.js";import{c as o}from"./button-b2ba4dbd.js";function n({className:e,...t}){return m.jsx("div",{className:o("animate-pulse rounded-md bg-muted",e),...t})}export{n as S};

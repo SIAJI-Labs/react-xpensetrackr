@@ -502,7 +502,7 @@ export default function Record({ auth }: PageProps<ContentProps>) {
         <PublicLayout>
             <Head title="Quick Action: Create new Record"/>
 
-            <div className={ ` min-h-screen flex flex-row items-center max-md:items-end` }>
+            <div className={ ` min-h-[100dvh] flex flex-row items-center max-md:items-end` }>
                 <ScrollArea className={ `p-0 w-full` }>
                     <div className={ ` flex flex-col justify-center items-center max-md:mt-auto` }>
                         <main className={ ` w-full md:max-w-[420px] md:min-w-[420px] px-6 md:px-6 max-md:my-10 max-h-screen` }>

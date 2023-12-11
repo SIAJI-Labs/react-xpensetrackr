@@ -147,7 +147,7 @@ class PlannedPaymentSummaryController extends Controller
             }
 
             $response = [
-                'data' => $data,
+                'data' => $data->values(),
                 'has_more' => $hasMore,
             ];
         }

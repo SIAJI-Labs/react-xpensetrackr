@@ -71,34 +71,25 @@ class PlannedPaymentSummaryController extends Controller
                 $data = $data->get();
                 // Mapping to get formated result
                 $data = collect($data)->map(function($data) use ($period){
-                    $expected_planned_income = [];
-                    $expected_planned_expense = [];
-                    $expected_income = 0;
-                    $expected_expense = 0;
-    
                     $projection = $data->getExpectedProjection($period);
     
                     // Update variable
-                    $data->expected_planned_income = $projection['expected_planned_income']; // Amount
-                    $data->expected_planned_expense = $projection['expected_planned_expense']; // Amount
-                    $data->expected_income = $projection['expected_income']; // Countable
-                    $data->expected_expense = $projection['expected_expense']; // Countable
+                    $data->expected_planned_income = $projection['expected_planned_income'];
+                    $data->expected_planned_expense = $projection['expected_planned_expense'];
+                    $data->expected_income = $projection['expected_income'];
+                    $data->expected_expense = $projection['expected_expense'];
     
                     return $data;
                 })->filter(function($data){
                     // Remove empty data
                     return !empty($data->expected_planned_income) || !empty($data->expected_planned_expense);
                 });
-            } else if(date('Y-m-01', strtotime($period)) < date('Y-m-01')){ // Previous Period
+            } else if(date('Y-m-01', strtotime($period)) < date('Y-m-01')){// Previous Period
                 /**
                  * Already passed
                  */
                 // Pagination
                 $hasMore = false;
-                $perPage = 5;
-                if($request->has('per_page') && is_numeric($request->per_page)){
-                    $perPage = $request->per_page;
-                }
 
                 // Query Builder - Income
                 $toIncome = \App\Models\Wallet::select((new \App\Models\Wallet())->getTable().'.*')
@@ -128,11 +119,23 @@ class PlannedPaymentSummaryController extends Controller
 
                 // Eloquent
                 $data = \App\Models\Wallet::whereIn('id', $array)
+                    ->with('parent')
                     ->orderBy('order_main', 'asc');
 
                 $data = $data->get();
-                $data = collect($data)->filter(function($data, $period){
-                    return $data->getExpectedPlannedPayment($period, 'income', 'count', $data->id) > 0 || $data->getExpectedPlannedPayment($period, 'expense', 'count', $data->id) > 0;
+                $data = collect($data)->map(function($data) use ($period){
+                    // Update variable
+                    $data->expected_planned_income = $data->getExpectedPlannedPayment($period, 'income', 'count', $data->id); // Amount
+                    $data->expected_planned_expense = $data->getExpectedPlannedPayment($period, 'expense', 'count', $data->id); // Amount
+                    $data->expected_income = $data->getExpectedPlannedPayment($period, 'income', 'sum', $data->id); // Countable
+                    $data->expected_expense = $data->getExpectedPlannedPayment($period, 'expense', 'sum', $data->id); // Countable
+    
+                    return $data;
+                })->filter(function($data) use ($period, $request){
+                    $expected_income = $data->getExpectedPlannedPayment($period, 'income', 'count', $data->id);
+                    $expected_expense = $data->getExpectedPlannedPayment($period, 'expense', 'count', $data->id);
+
+                    return $expected_income > 0 || $expected_expense > 0;
                 });
             }
 

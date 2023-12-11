@@ -32,7 +32,8 @@ class Record extends Model
         'datetime',
         'note',
         'timezone',
-        'is_pending'
+        'is_pending',
+        'is_hidden'
     ];
 
     /**

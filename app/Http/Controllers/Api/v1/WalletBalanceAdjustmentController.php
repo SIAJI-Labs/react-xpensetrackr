@@ -59,7 +59,8 @@ class WalletBalanceAdjustmentController extends Controller
                 'datetime' => $timestamp,
                 'note' => 'Balance adjustment',
                 'timezone' => null,
-                'is_pending' => false
+                'is_pending' => false,
+                'is_hidden' => $request->has('hide_record') && $request->hide_record === 'true'
             ]);
             $record->save();
         });

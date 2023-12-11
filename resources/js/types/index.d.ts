@@ -77,7 +77,8 @@ export interface RecordItem {
     datetime: string,
     note: string,
     planned_payment_record: PlannedRecord,
-    record_tags?: TagsItem[]
+    record_tags?: TagsItem[],
+    is_hidden: boolean | number
 }
 export interface TagsItem {
     id: number,

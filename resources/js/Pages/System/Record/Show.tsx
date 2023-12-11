@@ -179,6 +179,18 @@ export default function Show({ auth, record, related }: PageProps<ContentProps>)
                                         </div>
                                     </>
                                 );
+                            } else if(record.is_hidden){
+                                return (
+                                    <>
+                                        <div className=" w-full p-4 rounded-lg border-2 border-dashed">
+                                            <span className=" flex items-center gap-2 text-sm font-normal">
+                                                <i className="fa-solid fa-triangle-exclamation"></i>
+                                                <span className={ `font-normal` }>Hidden record</span>
+                                            </span>
+                                            <span className=" block mt-2">Record is hidden, but affect your wallet balance</span>
+                                        </div>
+                                    </>
+                                );
                             }
 
                             return <></>;

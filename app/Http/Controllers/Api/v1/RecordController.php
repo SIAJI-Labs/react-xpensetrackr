@@ -266,6 +266,7 @@ class RecordController extends Controller
             $data->note = $request->notes;
             $data->is_pending = false;
             $data->timezone = $timezone;
+            $data->is_hidden = $request->has('hide_record') && $request->hide_record === 'true';
             $data->save();
 
             // Handle Planned Payment Confirmation
@@ -428,6 +429,7 @@ class RecordController extends Controller
             $data->note = $request->notes;
             $data->is_pending = false;
             $data->timezone = $timezone;
+            $data->is_hidden = $request->has('hide_record') && $request->hide_record === 'true';
             $data->save();
 
             // Handle tags

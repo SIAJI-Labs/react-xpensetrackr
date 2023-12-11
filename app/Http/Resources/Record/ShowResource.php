@@ -26,6 +26,8 @@ class ShowResource extends JsonResource
             'datetime' => $this->datetime,
             'note' => $this->note,
             'timezone' => $this->timezone,
+            'is_pending' => $this->is_pending,
+            'is_hidden' => $this->is_hidden,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'deleted_at' => $this->deleted_at,

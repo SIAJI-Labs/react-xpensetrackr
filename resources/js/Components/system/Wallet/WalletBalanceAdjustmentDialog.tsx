@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { useToast } from "@/Components/ui/use-toast";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
+import { Checkbox } from "@/Components/ui/checkbox";
 
 type dialogProps = {
     openState: boolean;
@@ -50,6 +51,7 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
     const [formName, setFormName] = useState<string>('');
     const [formCurrentBalance, setFormCurrentBalance] = useState<number>(0);
     const [formActualBalance, setFormActualBalance] = useState<number>(0);
+    const [formHideRecord, setFormHideRecord] = useState<boolean>(true);
 
     // Form Reset
     const resetFormDialog = (force: boolean = false) => {
@@ -65,6 +67,7 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
             setFormName('');
             setFormCurrentBalance(0);
             setFormActualBalance(0);
+            setFormHideRecord(true);
         }
 
         setErrorFormDialog({});
@@ -101,6 +104,7 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
         formData.append('name', formName);
         formData.append('current_balance', formCurrentBalance.toString());
         formData.append('actual_balance', formActualBalance.toString());
+        formData.append('hide_record', formHideRecord.toString());
 
         if(formUuid){
             formData.append('wallet_uuid', formUuid);
@@ -331,6 +335,23 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
                             />
 
                             <ErrorMessage message={ errorFormDialog?.actual_balance }/>
+                        </div>
+
+                        {/* Hide record */}
+                        <div className={ `form-group` }>
+                            <div className={ `flex items-center space-x-2` }>
+                                <Checkbox id="form-hide_record" checked={ formHideRecord } onCheckedChange={(value: any) => {
+                                    if(typeof value === 'boolean'){
+                                        setFormHideRecord(value);
+                                    }
+                                }} />
+                                <label
+                                    htmlFor="form-hide_record"
+                                    className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
+                                >
+                                    Hide record
+                                </label>
+                            </div>
                         </div>
                     </form>
 

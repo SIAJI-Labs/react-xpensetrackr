@@ -60,6 +60,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     const [formMinutes, setFormMinutes] = useState<string>();
     const [formNotes, setFormNotes] = useState<string>('');
     const [formTags, setFormTags] = useState<string[] | any[]>([]);
+    const [formHideRecord, setFormHideRecord] = useState<boolean>(false);
     // Keep Dialog Open?
     const [keepOpenDialog, setKeepOpenDialog] = useState<boolean>(false);
 
@@ -512,6 +513,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         setFormHours(undefined);
         setFormMinutes(undefined);
         setFormNotes('');
+        setFormHideRecord(false);
         setFormTags([]);
 
         setComboboxTagsLabel([]);
@@ -560,6 +562,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         formData.append('hours', String(formHours ?? ''));
         formData.append('minutes', String(formMinutes ?? ''));
         formData.append('notes', String(formNotes ?? ''));
+        formData.append('hide_record', formHideRecord.toString());
         formData.append('timezone', moment.tz.guess());
         if(formTags.length > 0){
             formTags.forEach((value, index) => {
@@ -722,6 +725,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                     setFormDate(date);
                     setFormHours(hours);
                     setFormMinutes(minutes);
+                    setFormHideRecord(data.is_hidden === 1);
                     setFormNotes(data.note ?? '');
 
                     // Update Combobox Label
@@ -1456,20 +1460,39 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                     </div>
                                 </div>
 
-                                {/* Keep open record dialog? */}
-                                <div className={ `form-group` }>
-                                    <div className={ `flex items-center space-x-2` }>
-                                    <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
-                                        if(typeof value === 'boolean'){
-                                            setKeepOpenDialog(value);
-                                        }
-                                    }} />
-                                        <label
-                                            htmlFor="record_dialog-keep_open"
-                                            className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
-                                        >
-                                            Keep Open?
-                                        </label>
+                                <div className={ ` flex flex-col gap-2` }>
+                                    {/* Hide record */}
+                                    <div className={ `form-group` }>
+                                        <div className={ `flex items-center space-x-2` }>
+                                            <Checkbox id="record_dialog-hide_record" checked={ formHideRecord } onCheckedChange={(value) => {
+                                                if(typeof value === 'boolean'){
+                                                    setFormHideRecord(value);
+                                                }
+                                            }} />
+                                            <label
+                                                htmlFor="record_dialog-hide_record"
+                                                className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
+                                            >
+                                                Hide Record
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Keep open record dialog? */}
+                                    <div className={ `form-group` }>
+                                        <div className={ `flex items-center space-x-2` }>
+                                        <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
+                                            if(typeof value === 'boolean'){
+                                                setKeepOpenDialog(value);
+                                            }
+                                        }} />
+                                            <label
+                                                htmlFor="record_dialog-keep_open"
+                                                className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
+                                            >
+                                                Keep Open?
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -135,7 +135,7 @@ export default function TemplateList({ plannedPayment, deleteAction = true, edit
                     <div className={ ` w-full flex flex-col overflow-hidden` }>
                         <span className={ ` whitespace-nowrap overflow-hidden text-ellipsis font-medium` }>
                             {(() => {
-                                if(plannedPayment && 'category_id' in plannedPayment){
+                                if(plannedPayment && 'category' in plannedPayment){
                                     if(plannedPayment.category){
                                         return <>{ plannedPayment.category.name }</>;
                                     }

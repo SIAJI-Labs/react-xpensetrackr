@@ -20,6 +20,7 @@ class ListResource extends JsonResource
             'type' => $this->type,
             'amount' => $this->amount,
             'extra_amount' => $this->extra_amount,
+            'extra_percentage' => $this->extra_percentage,
             'extra_type' => $this->extra_type,
             'final_amount' => $this->amount + $this->extra_amount,
             'date_start' => $this->date_start,

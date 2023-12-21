@@ -178,7 +178,10 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                             <div className={ ` flex flex-row gap-4 w-full justify-between border h-10 rounded-md items-center px-4 cursor-pointer` } id={ `navbar-search` }>
                                 <div className={ ` flex flex-row items-center gap-4` }>
                                     <i className={ `fa-solid fa-magnifying-glass dark:text-white` }></i>
-                                    <span className={ ` leading-none text-muted-foreground text-sm` }>Open Command <span className={ ` hidden md:inline-flex` }> or Search...</span></span>
+                                    <span className={ ` leading-none text-muted-foreground text-sm` }>
+                                        <span className={ `inline-flex md:hidden` }>Command</span>
+                                        <span className={ ` hidden md:inline-flex` }>Open Command or Search...</span>
+                                    </span>
                                 </div>
 
                                 <kbd className=" hidden pointer-events-none lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">

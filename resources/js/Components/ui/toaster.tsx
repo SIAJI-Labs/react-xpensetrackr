@@ -9,12 +9,13 @@ import {
   ToastViewport,
 } from "@/Components/ui/toast"
 import { useToast } from "@/Components/ui/use-toast"
+import { useEffect } from "react"
 
 export function Toaster() {
   const { toasts } = useToast()
 
   return (
-    <ToastProvider duration={5000}>
+    <ToastProvider duration={ 5000 }>
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
           <Toast key={id} {...props}>

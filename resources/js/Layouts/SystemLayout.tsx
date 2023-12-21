@@ -1,5 +1,5 @@
 import React, { useState, PropsWithChildren, ReactNode, useEffect, useMemo, FormEventHandler, useRef } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { User } from '@/types';
 import axios from 'axios';
 
@@ -34,8 +34,11 @@ import { useToast } from '@/Components/ui/use-toast';
 import { ToastAction } from '@/Components/ui/toast';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
+import moment from 'moment';
 
 export default function SystemLayout({ user, header, children, fabAction = null }: PropsWithChildren<{ user: User, header?: ReactNode, fabAction?: any[] | null }>) {
+    const { wAppName } = usePage().props;
+    const [appName, setAppName] = useState<string>(String(wAppName));
     const { toast } = useToast();
     
     // Category Dialog
@@ -153,11 +156,20 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 )} */}
 
                 {/* Main Content */}
-                <div className={ ` flex justify-center p-6` }>
-                    <main className={ ` w-full md:max-w-[420px] md:min-w-[420px] py-[calc(64px)]` }>
+                <div className={ ` flex justify-center px-6 py-6` }>
+                    <main className={ ` w-full md:max-w-[420px] md:min-w-[420px] pt-[calc(64px)]` }>
                         {children}
                     </main>
                 </div>
+
+                {/* Footer */}
+                <footer className={ `md:flex md:justify-center px-6 pb-6` }>
+                    <div className={ ` flex flex-row gap-1 items-center h-10` }>
+                        <span>©</span>
+                        <span>{ moment().format('Y') }</span>
+                        <span>{ appName }</span>
+                    </div>
+                </footer>
 
                 {/* Floating Action Button */}
                 {(() => {
@@ -178,7 +190,6 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                                 </DropdownMenuItem>
                             );
                         }
-
                         // Push planned-payment action
                         if(fabAction.includes('plannedPayment')){
                             action.push(
@@ -193,7 +204,6 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                                 </DropdownMenuItem>
                             );
                         }
-
                         // Push tags action
                         if(fabAction.includes('tags')){
                             action.push(
@@ -208,7 +218,6 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                                 </DropdownMenuItem>
                             );
                         }
-
                         // Push wallet action
                         if(fabAction.includes('wallet')){
                             action.push(
@@ -223,7 +232,6 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                                 </DropdownMenuItem>
                             );
                         }
-
                         // Push wallet action
                         if(fabAction.includes('wallet-group')){
                             action.push(

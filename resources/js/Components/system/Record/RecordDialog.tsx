@@ -57,7 +57,9 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     const [formExtraType, setFormExtraType] = useState<string>('amount');
     const [formDate, setFormDate] = useState<Date>();
     const [formHours, setFormHours] = useState<string>();
+    const [formHoursState, setFormHoursState] = useState<boolean>(false);
     const [formMinutes, setFormMinutes] = useState<string>();
+    const [formMinutesState, setFormMinutesState] = useState<boolean>(false);
     const [formNotes, setFormNotes] = useState<string>('');
     const [formTags, setFormTags] = useState<string[] | any[]>([]);
     const [formHideRecord, setFormHideRecord] = useState<boolean>(false);
@@ -273,7 +275,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     let comboboxToWalletTimeout: any;
     const [comboboxToWalletOpenState, setComboboxToWalletOpenState] = useState<boolean>(false);
     const [comboboxToWalletLabel, setComboboxToWalletLabel] = useState<string>("Select an option");
-    const [comboboxToWalletList, setComboboxToWalletList] = useState<string[] | any>([]);
+    // const [comboboxToWalletList, setComboboxToWalletList] = useState<string[] | any>([]);
     const [comboboxToWalletInput, setComboboxToWalletInput] = useState<string>("");
     const [comboboxToWalletLoadState, setComboboxToWalletLoadState] = useState<boolean>(false);
     const [comboboxToWalletAbort, setComboboxToWalletAbort] = useState<AbortController | null>(null);
@@ -321,6 +323,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     useEffect(() => {
         clearTimeout(comboboxToWalletTimeout);
         // setComboboxToWalletList([]);
+        // setComboboxFromWalletList([]);
 
         if(comboboxToWalletOpenState){
             if (comboboxToWalletAbort) {
@@ -337,7 +340,8 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                     .then((data: string[] = []) => {
                         setComboboxToWalletLoadState(false);
                         if(data){
-                            setComboboxToWalletList(data);
+                            // setComboboxToWalletList(data);
+                            setComboboxFromWalletList(data);
                         }
                     })
                     .catch((error) => {
@@ -1036,7 +1040,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                     if(formType === 'transfer'){
                                         return (
                                             <div className={ ` flex flex-col gap-4` }>
-                                                <Button variant={ `outline` } className={ ` inline-flex w-max` } onClick={() => {
+                                                <Button variant={ `outline` } className={ ` inline-flex gap-1 w-max` } onClick={() => {
                                                     let temp = {
                                                         option: formToWallet,
                                                         label: comboboxToWalletLabel
@@ -1047,7 +1051,10 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
                                                     setFormFromWallet(temp.option);
                                                     setComboboxFromWalletLabel(temp.label);
-                                                }} type={ `button` }>Switch</Button>
+                                                }} type={ `button` }>
+                                                    <i className={ ` fa-solid fa-right-left rotate-90` }></i>
+                                                    <span>Switch</span>
+                                                </Button>
 
                                                 <div className={ ` form--group  ${errorFormDialog?.to_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-to_wallet` }>
                                                     <label className={ ` form--label` }>To</label>
@@ -1071,7 +1078,8 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                                         <div className={ `max-h-[10rem]` }>
                                                                             <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                                             <CommandGroup>
-                                                                                {comboboxToWalletList.map((options: WalletItem) => (
+                                                                                {/* {comboboxToWalletList.map((options: WalletItem) => ( */}
+                                                                                {comboboxFromWalletList.map((options: WalletItem) => (
                                                                                     <CommandItem
                                                                                         value={options?.uuid}
                                                                                         key={options?.uuid}
@@ -1235,7 +1243,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                     {/* Timepickr */}
                                     <div className={ ` flex flex-row gap-4 mt-2 items-center` }>
                                         <div className={ `w-full form--group !mb-0 ${errorFormDialog?.hours ? ` is--invalid` : ''}` } id={ `record_dialog-hours` }>
-                                            <Popover>
+                                            <Popover open={ formHoursState } onOpenChange={ setFormHoursState }>
                                                 <PopoverTrigger asChild>
                                                     <Button
                                                         variant="outline"
@@ -1262,6 +1270,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                                                     value={ i.toString().padStart(2, '0') }
                                                                                     onSelect={(currentValue) => {
                                                                                         setFormHours(currentValue);
+                                                                                        setFormHoursState(false);
                                                                                     }}
                                                                                 >
                                                                                     <Check
@@ -1290,7 +1299,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                         </div>
                                         <span>:</span>
                                         <div className={ `w-full form--group !mb-0  ${errorFormDialog?.minutes ? ` is--invalid` : ''}` } id={ `record_dialog-minutes` }>
-                                            <Popover>
+                                            <Popover open={ formMinutesState } onOpenChange={ setFormMinutesState }>
                                                 <PopoverTrigger asChild>
                                                     <Button
                                                         variant="outline"
@@ -1310,13 +1319,14 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                                 <CommandGroup>
                                                                     {(() => {
                                                                         let minutes: any[] = [];
-                                                                        for(let i = 1; i <= 59; i++){
+                                                                        for(let i = 0; i <= 59; i++){
                                                                             minutes.push(
                                                                                 <CommandItem
                                                                                     key={ i.toString().padStart(2, '0') }
                                                                                     value={ i.toString().padStart(2, '0') }
                                                                                     onSelect={(currentValue) => {
                                                                                         setFormMinutes(currentValue);
+                                                                                        setFormMinutesState(false);
                                                                                     }}
                                                                                 >
                                                                                     <Check

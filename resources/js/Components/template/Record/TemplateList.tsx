@@ -32,7 +32,7 @@ export default function TemplateList({ record, deleteAction = true, editAction =
             {(() => {
                 if(record?.is_hidden){
                     return <>
-                        <div className={ ` flex flex-col gap-4 border rounded p-4 cursor-pointer` } data-toggle="hidden-record">
+                        <div className={ ` flex flex-col gap-4 border rounded p-4 cursor-pointer overflow-hidden` } data-toggle="hidden-record">
                             <div className={ `${showHidden ? 'block' : 'hidden'}` }>
                                 {/* Date, amount and action */}
                                 <div className={ ` flex flex-row justify-between flex-wrap-reverse` } onClick={($refs) => {
@@ -121,6 +121,10 @@ export default function TemplateList({ record, deleteAction = true, editAction =
                             
                             <div className={ ` relative flex flex-row justify-center` }>
                                 <div className={ ` absolute left-0 top-1/2 border-b border-dashed border-spacing-10 w-full` }></div>
+
+                                <div className={ ` absolute -left-4 -top-4 h-[calc(100%+2rem)] w-1/4 bg-gradient-to-r from-white via-white to-transparent` }></div>
+                                <div className={ ` absolute -right-4 -top-4 h-[calc(100%+2rem)] w-1/4 bg-gradient-to-l from-white via-white to-transparent` }></div>
+
                                 <Button variant={ `outline` } className={ ` w-fit z-10 h-8 py-0` } onClick={($refs) => {
                                     setShowHidden(!showHidden);
                                 }}>

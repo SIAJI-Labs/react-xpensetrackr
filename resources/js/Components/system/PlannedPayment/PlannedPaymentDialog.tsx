@@ -271,7 +271,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
     let comboboxToWalletTimeout: any;
     const [comboboxToWalletOpenState, setComboboxToWalletOpenState] = useState<boolean>(false);
     const [comboboxToWalletLabel, setComboboxToWalletLabel] = useState<string>("Select an option");
-    const [comboboxToWalletList, setComboboxToWalletList] = useState<string[] | any>([]);
+    // const [comboboxToWalletList, setComboboxToWalletList] = useState<string[] | any>([]);
     const [comboboxToWalletInput, setComboboxToWalletInput] = useState<string>("");
     const [comboboxToWalletLoadState, setComboboxToWalletLoadState] = useState<boolean>(false);
     const [comboboxToWalletAbort, setComboboxToWalletAbort] = useState<AbortController | null>(null);
@@ -319,6 +319,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
     useEffect(() => {
         clearTimeout(comboboxToWalletTimeout);
         // setComboboxToWalletList([]);
+        // setComboboxFromWalletList([]);
 
         if(comboboxToWalletOpenState){
             if (comboboxToWalletAbort) {
@@ -335,7 +336,8 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                     .then((data: string[] = []) => {
                         setComboboxToWalletLoadState(false);
                         if(data){
-                            setComboboxToWalletList(data);
+                            // setComboboxToWalletList(data);
+                            setComboboxFromWalletList(data);
                         }
                     })
                     .catch((error) => {
@@ -880,55 +882,75 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                 {/* To Wallet */}
                                 {(() => {
                                     if(formType === 'transfer'){
-                                        return <div className={ ` form--group  ${errorFormDialog?.to_wallet ? ` is--invalid` : ''}` } id={ `form-planned_dialog_to_wallet` }>
-                                            <label className={ ` form--label` }>To</label>
-                                            <div>
-                                                <Popover open={comboboxToWalletOpenState} onOpenChange={setComboboxToWalletOpenState}>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            role="combobox"
-                                                            aria-expanded={comboboxToWalletOpenState}
-                                                            className={ ` w-full justify-between ${errorFormDialog?.to_wallet ? ` !border-red-500` : ''} dark:text-white` }
-                                                        >
-                                                            <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxToWalletLabel}</span>
-                                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                                        <Command shouldFilter={ false }>
-                                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
-                                                            <ScrollArea className="p-0">
-                                                                <div className={ `max-h-[10rem]` }>
-                                                                    <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                                                    <CommandGroup>
-                                                                        {comboboxToWalletList.map((options: WalletItem) => (
-                                                                            <CommandItem
-                                                                                value={options?.uuid}
-                                                                                key={options?.uuid}
-                                                                                onSelect={(currentValue) => {
-                                                                                    setFormToWallet(currentValue === formToWallet ? "" : currentValue);
-                                                                                    setComboboxToWalletLabel(options.name);
+                                        return (
+                                            <div className={ ` flex flex-col gap-4` }>
+                                                <Button variant={ `outline` } className={ ` inline-flex gap-1 w-max` } onClick={() => {
+                                                    let temp = {
+                                                        option: formToWallet,
+                                                        label: comboboxToWalletLabel
+                                                    };
 
-                                                                                    setComboboxToWalletOpenState(false);
-                                                                                }}
-                                                                            >
-                                                                                <Check
-                                                                                    className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                                />
-                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
-                                                                            </CommandItem>
-                                                                        ))}
-                                                                    </CommandGroup>
-                                                                </div>
-                                                            </ScrollArea>
-                                                        </Command>
-                                                    </PopoverContent>
-                                                </Popover>
+                                                    setFormToWallet(formFromWallet);
+                                                    setComboboxToWalletLabel(comboboxFromWalletLabel);
 
-                                                <ErrorMessage message={ errorFormDialog?.to_wallet }/>
-                                            </div>
-                                        </div>
+                                                    setFormFromWallet(temp.option);
+                                                    setComboboxFromWalletLabel(temp.label);
+                                                }} type={ `button` }>
+                                                    <i className={ ` fa-solid fa-right-left rotate-90` }></i>
+                                                    <span>Switch</span>
+                                                </Button>
+                                                
+                                                <div className={ ` form--group  ${errorFormDialog?.to_wallet ? ` is--invalid` : ''}` } id={ `form-planned_dialog_to_wallet` }>
+                                                    <label className={ ` form--label` }>To</label>
+                                                    <div>
+                                                        <Popover open={comboboxToWalletOpenState} onOpenChange={setComboboxToWalletOpenState}>
+                                                            <PopoverTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    role="combobox"
+                                                                    aria-expanded={comboboxToWalletOpenState}
+                                                                    className={ ` w-full justify-between ${errorFormDialog?.to_wallet ? ` !border-red-500` : ''} dark:text-white` }
+                                                                >
+                                                                    <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxToWalletLabel}</span>
+                                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                                </Button>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                                                <Command shouldFilter={ false }>
+                                                                    <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
+                                                                    <ScrollArea className="p-0">
+                                                                        <div className={ `max-h-[10rem]` }>
+                                                                            <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                                            <CommandGroup>
+                                                                                {/* {comboboxToWalletList.map((options: WalletItem) => ( */}
+                                                                                {comboboxFromWalletList.map((options: WalletItem) => (
+                                                                                    <CommandItem
+                                                                                        value={options?.uuid}
+                                                                                        key={options?.uuid}
+                                                                                        onSelect={(currentValue) => {
+                                                                                            setFormToWallet(currentValue === formToWallet ? "" : currentValue);
+                                                                                            setComboboxToWalletLabel(options.name);
+
+                                                                                            setComboboxToWalletOpenState(false);
+                                                                                        }}
+                                                                                    >
+                                                                                        <Check
+                                                                                            className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                                        />
+                                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
+                                                                                    </CommandItem>
+                                                                                ))}
+                                                                            </CommandGroup>
+                                                                        </div>
+                                                                    </ScrollArea>
+                                                                </Command>
+                                                            </PopoverContent>
+                                                        </Popover>
+
+                                                        <ErrorMessage message={ errorFormDialog?.to_wallet }/>
+                                                    </div>
+                                                </div>
+                                            </div>)
                                     }
 
                                     return <></>;

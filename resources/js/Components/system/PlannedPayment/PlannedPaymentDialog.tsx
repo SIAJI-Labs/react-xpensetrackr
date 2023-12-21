@@ -43,6 +43,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
         />
     ));
 
+    const [calendarMinDate, setCalendarMinDate] = useState<string | undefined>();
     // Form Variable
     const [formUuid, setFormUuid] = useState<string>('');
     const [formName, setFormName] = useState<string>('');
@@ -471,6 +472,8 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
     
     // Planned Payment Dialog - Forms
     const resetFormDialog = () => {
+        setCalendarMinDate(undefined);
+    
         setFormUuid('');
         setFormName('');
         setFormType('expense');
@@ -675,6 +678,8 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                     let raw = momentFormated('YYYY-MM-DD', data.date_start, moment.tz.guess());
                     let date = moment(raw).toDate();
 
+                    setCalendarMinDate(date.toString());
+
                     // Update State
                     setFormUuid(data.uuid)
                     setFormName(data.name);
@@ -799,6 +804,24 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                                         <div className={ `max-h-[10rem]` }>
                                                             <CommandEmpty>{comboboxCategoryLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
                                                             <CommandGroup>
+                                                                {(() => {
+                                                                    if(comboboxCategoryLoadState){
+                                                                        return <>
+                                                                            <CommandItem
+                                                                                value=''
+                                                                                key={ `category_loading-state` }
+                                                                                disabled={ true }
+                                                                            >
+                                                                                <Check
+                                                                                    className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                                />
+                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                            </CommandItem>
+                                                                        </>;
+                                                                    }
+
+                                                                    return <></>;
+                                                                })()}
                                                                 {comboboxCategoryList.map((options: CategoryItem) => (
                                                                     <CommandItem
                                                                         value={options?.uuid}
@@ -829,7 +852,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
 
                                 {/* From Wallet */}
                                 <div className={ ` form--group  ${errorFormDialog?.from_wallet ? ` is--invalid` : ''}` } id={ `form-planned_dialog_from_wallet` }>
-                                    <label className={ ` form--label` }>From</label>
+                                    <label className={ ` form--label` }>{ formType === 'income' ? 'To' : 'From' }</label>
                                     <div>
                                         <Popover open={comboboxFromWalletOpenState} onOpenChange={setComboboxFromWalletOpenState}>
                                             <PopoverTrigger asChild>
@@ -851,6 +874,24 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                                         <div className={ `max-h-[10rem]` }>
                                                             <CommandEmpty>{comboboxFromWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                             <CommandGroup>
+                                                                {(() => {
+                                                                    if(comboboxFromWalletLoadState){
+                                                                        return <>
+                                                                            <CommandItem
+                                                                                value=''
+                                                                                key={ `from_wallet_loading-state` }
+                                                                                disabled={ true }
+                                                                            >
+                                                                                <Check
+                                                                                    className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                                />
+                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                            </CommandItem>
+                                                                        </>;
+                                                                    }
+
+                                                                    return <></>;
+                                                                })()}
                                                                 {comboboxFromWalletList.map((options: WalletItem) => (
                                                                     <CommandItem
                                                                         value={options?.uuid}
@@ -922,6 +963,24 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                                                         <div className={ `max-h-[10rem]` }>
                                                                             <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                                             <CommandGroup>
+                                                                                {(() => {
+                                                                                    if(comboboxToWalletLoadState){
+                                                                                        return <>
+                                                                                            <CommandItem
+                                                                                                value=''
+                                                                                                key={ `to_wallet_loading-state` }
+                                                                                                disabled={ true }
+                                                                                            >
+                                                                                                <Check
+                                                                                                    className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                                                />
+                                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                                            </CommandItem>
+                                                                                        </>;
+                                                                                    }
+
+                                                                                    return <></>;
+                                                                                })()}
                                                                                 {/* {comboboxToWalletList.map((options: WalletItem) => ( */}
                                                                                 {comboboxFromWalletList.map((options: WalletItem) => (
                                                                                     <CommandItem
@@ -1149,6 +1208,19 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                                         setCalendarOpenState(false);
                                                     }}
                                                     defaultMonth={formDate}
+                                                    disabled={(date) => {
+                                                            let isDisabled = false;
+                                                            let today = moment();
+                                                            if(calendarMinDate){
+                                                                today = moment(calendarMinDate);
+                                                            }
+
+                                                            if(moment(moment(date).format('YYYY-MM-DD')) < moment(moment(today).format('YYYY-MM-DD'))){
+                                                                isDisabled = true;
+                                                            }
+                                                            return isDisabled;
+                                                        }
+                                                    }
                                                     initialFocus
                                                 />
                                             </PopoverContent>
@@ -1191,6 +1263,24 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                                             <div className={ `max-h-[10rem]` }>
                                                                 <CommandEmpty>{comboboxTagsLoadState ? `Loading...` : `No tags found.`}</CommandEmpty>
                                                                 <CommandGroup>
+                                                                    {(() => {
+                                                                        if(comboboxTagsLoadState){
+                                                                            return <>
+                                                                                <CommandItem
+                                                                                    value=''
+                                                                                    key={ `tags_loading-state` }
+                                                                                    disabled={ true }
+                                                                                >
+                                                                                    <Check
+                                                                                        className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                                    />
+                                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                                </CommandItem>
+                                                                            </>;
+                                                                        }
+
+                                                                        return <></>;
+                                                                    })()}
                                                                     {comboboxTagsList.map((options: TagsItem) => (
                                                                         <CommandItem
                                                                             value={options?.uuid}

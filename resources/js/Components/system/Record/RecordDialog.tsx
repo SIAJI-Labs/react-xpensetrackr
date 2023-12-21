@@ -956,6 +956,24 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                         <div className={ `max-h-[10rem]` }>
                                                             <CommandEmpty>{comboboxCategoryLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
                                                             <CommandGroup>
+                                                                    {(() => {
+                                                                        if(comboboxCategoryLoadState){
+                                                                            return <>
+                                                                                <CommandItem
+                                                                                    value=''
+                                                                                    key={ `category_loading-state` }
+                                                                                    disabled={ true }
+                                                                                >
+                                                                                    <Check
+                                                                                        className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                                    />
+                                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                                </CommandItem>
+                                                                            </>;
+                                                                        }
+
+                                                                        return <></>;
+                                                                    })()}
                                                                     {comboboxCategoryList.map((options: CategoryItem) => (
                                                                         <CommandItem
                                                                             value={options?.uuid}
@@ -986,7 +1004,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
                                 {/* From Wallet */}
                                 <div className={ ` form--group  ${errorFormDialog?.from_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-from_wallet` }>
-                                    <label className={ ` form--label` }>From</label>
+                                    <label className={ ` form--label` }>{ formType === 'income' ? 'To' : 'From' }</label>
                                     <div>
                                         <Popover open={comboboxFromWalletOpenState} onOpenChange={setComboboxFromWalletOpenState}>
                                             <PopoverTrigger asChild>
@@ -1007,6 +1025,24 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                         <div className={ `max-h-[10rem]` }>
                                                             <CommandEmpty>{comboboxFromWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                             <CommandGroup>
+                                                                {(() => {
+                                                                    if(comboboxFromWalletLoadState){
+                                                                        return <>
+                                                                            <CommandItem
+                                                                                value=''
+                                                                                key={ `from_wallet_loading-state` }
+                                                                                disabled={ true }
+                                                                            >
+                                                                                <Check
+                                                                                    className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                                />
+                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                            </CommandItem>
+                                                                        </>;
+                                                                    }
+
+                                                                    return <></>;
+                                                                })()}
                                                                 {comboboxFromWalletList.map((options: WalletItem) => (
                                                                     <CommandItem
                                                                         value={options?.uuid}
@@ -1078,6 +1114,24 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                                         <div className={ `max-h-[10rem]` }>
                                                                             <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                                             <CommandGroup>
+                                                                                {(() => {
+                                                                                    if(comboboxToWalletLoadState){
+                                                                                        return <>
+                                                                                            <CommandItem
+                                                                                                value=''
+                                                                                                key={ `to_wallet_loading-state` }
+                                                                                                disabled={ true }
+                                                                                            >
+                                                                                                <Check
+                                                                                                    className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                                                />
+                                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                                            </CommandItem>
+                                                                                        </>;
+                                                                                    }
+
+                                                                                    return <></>;
+                                                                                })()}
                                                                                 {/* {comboboxToWalletList.map((options: WalletItem) => ( */}
                                                                                 {comboboxFromWalletList.map((options: WalletItem) => (
                                                                                     <CommandItem
@@ -1232,6 +1286,9 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                         setCalendarOpenState(false);
                                                     }}
                                                     defaultMonth={formDate}
+                                                    disabled={(date) =>
+                                                        moment(moment(date).format('YYYY-MM-DD')) > moment(moment().format('YYYY-MM-DD'))
+                                                    }
                                                     initialFocus
                                                 />
                                             </PopoverContent>
@@ -1388,6 +1445,24 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                             <div className={ `max-h-[10rem]` }>
                                                                 <CommandEmpty>{comboboxTagsLoadState ? `Loading...` : `No tags found.`}</CommandEmpty>
                                                                 <CommandGroup>
+                                                                    {(() => {
+                                                                        if(comboboxTagsLoadState){
+                                                                            return <>
+                                                                                <CommandItem
+                                                                                    value=''
+                                                                                    key={ `tags_loading-state` }
+                                                                                    disabled={ true }
+                                                                                >
+                                                                                    <Check
+                                                                                        className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                                    />
+                                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                                </CommandItem>
+                                                                            </>;
+                                                                        }
+
+                                                                        return <></>;
+                                                                    })()}
                                                                     {comboboxTagsList.map((options: TagsItem) => (
                                                                         <CommandItem
                                                                             value={options?.uuid}

@@ -22,6 +22,8 @@ import { Link } from "@inertiajs/react";
 
 export default function Notification({ user, className = '' }: PropsWithChildren<{ user: User, className?: string }>) {
     const isFirstRender = useIsFirstRender();
+
+    const [notificationState, setNotificationState] = useState<boolean>(false);
     
     let paginate_item = 5;
     // Planned Payment Data - Overdue
@@ -196,14 +198,22 @@ export default function Notification({ user, className = '' }: PropsWithChildren
     // Handle notification state
     const handleNotification = () => {
         setTimeout(() => {
-            // Add notification state
-            let bell = document.querySelector('[data-type="notification-bell"]');
-            if(bell){
-                bell.classList.remove('fa-shake');
-                if(plannedOverdueItem && plannedOverdueItem?.length > 0 || plannedTodayItem && plannedTodayItem?.length > 0 || plannedUpcomingItem && plannedUpcomingItem?.length > 0){
-                    bell.classList.add('fa-shake');
-                }
+            let notification = false;
+
+            if(plannedOverdueItem && plannedOverdueItem?.length > 0 || plannedTodayItem && plannedTodayItem?.length > 0 || plannedUpcomingItem && plannedUpcomingItem?.length > 0){
+                notification = true;
             }
+            console.log(notification);
+            setNotificationState(notification);
+
+            // // Add notification state
+            // let bell = document.querySelector('[data-type="notification-bell"]');
+            // if(bell){
+            //     bell.classList.remove('fa-shake');
+            //     if(plannedOverdueItem && plannedOverdueItem?.length > 0 || plannedTodayItem && plannedTodayItem?.length > 0 || plannedUpcomingItem && plannedUpcomingItem?.length > 0){
+            //         bell.classList.add('fa-shake');
+            //     }
+            // }
         }, 100);
     }
     // Handle on Paginate State change
@@ -221,6 +231,9 @@ export default function Notification({ user, className = '' }: PropsWithChildren
     useEffect(() => {
         handlePlannedChange('upcoming');
     }, [plannedUpcomingPaginate]);
+    useEffect(() => {
+        handleNotification();
+    }, [plannedOverdueItem, plannedTodayItem, plannedUpcomingItem]);
 
     // Handle record/planned change
     useEffect(() => {
@@ -249,13 +262,44 @@ export default function Notification({ user, className = '' }: PropsWithChildren
     return <>
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant={ `ghost` } className={ ` dark:text-white aspect-square` }><i className={ `fa-regular fa-bell ${plannedOverdueItem && plannedOverdueItem.length > 0 || plannedTodayItem && plannedTodayItem.length > 0 || plannedUpcomingItem && plannedUpcomingItem.length > 0 ? `fa-shake` : ``}` } data-type="notification-bell"></i></Button>
+                <Button variant={ `ghost` } className={ ` relative dark:text-white aspect-square` }>
+                    <i className={ `fa-regular fa-bell ${notificationState ? `fa-shake` : ``}` } data-type="notification-bell"></i>
+                    {(() => {
+                        if(notificationState){
+                            return <>
+                                <div className={ ` absolute right-2 top-2` }>
+                                    <span className={ `relative flex h-2 w-2` }>
+                                        <span className={ `animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75` }></span>
+                                        <span className={ `relative inline-flex rounded-full h-2 w-2 bg-primary opacity-75` }></span>
+                                    </span>
+                                </div>
+                            </>;
+                        }
+
+                        return <></>;
+                    })()}
+                </Button>
             </SheetTrigger>
             <SheetContent side={ `right` } className={ `p-0 w-screen md:w-96 dark:!text-white` }>
                 <ScrollArea className={ ` h-screen p-6 py-0` }>
-                    <div className={ ` flex flex-col gap-6 my-6` }>
-                        <div className={ ` p-6 sticky top-0` }>
-                            <SheetHeader className={ ` relative after:absolute after:-top-6 after:-left-6 after:w-[calc(100%+3rem)] after:h-32 after:bg-gradient-to-b after:from-background after:via-background after:to-transparent after:z-[-1] z-10 pb-6 pointer-events-none select-none` }>
+                    <div className={ ` flex flex-col gap-6 mb-6 z-[50]` }>
+                        <div className={ `sticky pt-6 top-0` }>
+                            <SheetHeader className={ ` 
+                                relative 
+                                after:absolute 
+                                after:-top-6 
+                                after:-left-6 
+                                after:w-[calc(100%+3rem)] 
+                                after:h-28
+                                after:bg-gradient-to-b 
+                                after:from-background 
+                                after:via-background 
+                                after:to-transparent 
+                                after:z-[-1] 
+                                z-10 
+                                pointer-events-none
+                                select-none` }
+                            >
                                 <SheetTitle className={ ` leading-none` }>Notification</SheetTitle>
                                 <SheetDescription className={ `!mt-0 leading-none` }>
                                     See all of your notification in one panel
@@ -412,7 +456,7 @@ export default function Notification({ user, className = '' }: PropsWithChildren
                                                                                 <Button
                                                                                     key={ `planned_action-load_more` }
                                                                                     variant={ `outline` }
-                                                                                    className={ `dark:border-white` }
+                                                                                    className={ `dark:border-white disabled:z-[-1]` }
                                                                                     disabled={ !paginate_state }
                                                                                     onClick={() => {
                                                                                         switch(val){

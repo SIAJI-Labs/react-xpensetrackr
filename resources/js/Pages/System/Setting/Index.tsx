@@ -8,11 +8,11 @@ import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardHeader } from '@/Components/ui/card';
 
 // Shadcn Component
+
 type ContentProps = {
-    inspire: string,
 }
 
-export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps>) {
+export default function Setting({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
 
     return (
@@ -65,7 +65,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
                                 name: 'Timezone',
                                 description: 'Select your timezone',
                                 icon: 'fa-solid fa-user-clock',
-                                link: null
+                                link: route('sys.setting.timezone.index')
                             }, 
                         ]
                     }, 

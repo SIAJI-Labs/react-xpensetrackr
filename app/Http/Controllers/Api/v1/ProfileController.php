@@ -69,6 +69,43 @@ class ProfileController extends Controller
         // Override file location
         $this->fileUploadTraitsDestination = 'files/user'.'/'.$user->uuid;   
 
+        if($request->has('action')){
+            // Update Preference
+            if(in_array($request->action, [
+                'timezone-preference'
+            ])){
+                $tz = config('siaji.list_of.timezone');
+                // Collection
+                $tz_collection = collect($tz);
+                // Array of value
+                $tz_arr = $tz_collection->pluck('tzCode')->toArray();
+
+                $request->validate([
+                    'timezone' => ['required', 'string', 'in:'.implode(',', $tz_arr)]
+                ]);
+
+                DB::transaction(function() use ($request, $user){
+                    if($request->action === 'timezone-preference'){
+                        // Update timezone Preference
+                        $data = new \App\Models\UserPreference();
+                        if(!empty($user->getPreference('timezone'))){
+                            $data = $user->userPreference()->where('key', 'timezone')
+                                ->first();
+                        }
+
+                        $data->user_id = $user->id;
+                        $data->key = 'timezone';
+                        $data->value = $request->timezone;
+                        $data->save();
+                    }
+                });
+            }
+
+            return $this->formatedJsonResponse(200, 'Data Updated', [
+                'data' => $user
+            ]);
+        }
+
         DB::transaction(function () use ($user, $request) {
             $user->name = $request->name;
             $user->email = $request->email;

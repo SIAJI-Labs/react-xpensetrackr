@@ -110,6 +110,13 @@ export interface WalletGroupItem {
     wallet_group_item?: WalletItem[]
 }
 
+export interface Timezone {
+    label: string,
+    tzCode: string,
+    name: string,
+    utc: string,
+}
+
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     auth: {
         user: User;

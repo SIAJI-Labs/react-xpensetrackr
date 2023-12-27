@@ -59,6 +59,13 @@ Route::group([
     });
 
     // Setting
+    Route::group([
+        'prefix' => 'setting',
+        'as' => 'setting.'
+    ], function(){
+        // Timezone
+        Route::get('timezone', [\App\Http\Controllers\System\Setting\TimezoneController::class, 'index'])->name('timezone.index');
+    });
     Route::get('setting', [\App\Http\Controllers\System\SettingController::class, 'index'])->name('setting.index');
 
     // Tags

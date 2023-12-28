@@ -12,6 +12,7 @@ import TemplateNoData from '@/Components/template/TemplateNoData';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import SkeletonList from '@/Components/template/Notification/SkeletonList';
 import TemplateList from '@/Components/template/Notification/TemplateList';
+import { Button } from '@/Components/ui/button';
 
 type ContentProps = {
     inspire: string,
@@ -177,6 +178,27 @@ export default function Notification({ auth, inspire = '' }: PageProps<ContentPr
                         return <TemplateNoData/>;
                     })()}
                 </CardContent>
+                <CardFooter className={ `flex justify-between items-center` }>
+                    {/* Footer */}
+                    <Button
+                        variant={ `outline` }
+                        className={ `dark:border-white` }
+                        disabled={ !paginateState }
+                        onClick={() => {
+                            setPaginateState(false);
+                            setPaginate(paginate + paginate_item);
+                        }}
+                    >Load more</Button>
+                    {(() => {
+                        if(notificationCountShown > 0 && notificationCountTotal > 0){
+                            return <>
+                                <span className={ `text-sm` }>Showing {notificationCountShown} of {notificationCountTotal} entries</span>
+                            </>;
+                        }
+
+                        return <></>
+                    })()}
+                </CardFooter>
             </Card>
         </SystemLayout>
     );

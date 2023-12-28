@@ -1,5 +1,5 @@
 export interface User {
-    id: number,
+    // id: number,
     uuid: string,
     name: string,
     email: string,
@@ -9,7 +9,7 @@ export interface User {
 }
 
 export interface CategoryItem {
-    id: number,
+    // id: number,
     uuid: string,
     user_id: number,
     parent_id: number,
@@ -19,7 +19,7 @@ export interface CategoryItem {
     deleted_at?: string | null
 }
 export interface PlannedItem {
-    id: number,
+    // id: number,
     uuid: string,
     number: string,
     user_id: number,
@@ -47,7 +47,7 @@ export interface PlannedItem {
     deleted_at?: string,
 }
 export interface PlannedRecord {
-    id: number,
+    // id: number,
     uuid: string,
     planned_payment_id: number,
     planned_payment: PlannedItem,
@@ -57,7 +57,7 @@ export interface PlannedRecord {
     period: string
 }
 export interface RecordItem {
-    id: number,
+    // id: number,
     uuid: string,
     user_id: number,
     category_id: number,
@@ -81,14 +81,14 @@ export interface RecordItem {
     is_hidden: boolean | number
 }
 export interface TagsItem {
-    id: number,
+    // id: number,
     uuid: string,
     user_id: number,
     name: string,
     deleted_at?: string | null
 }
 export interface WalletItem {
-    id: number,
+    // id: number,
     uuid: string,
     user_id: number;
     parent_id: number,
@@ -102,12 +102,33 @@ export interface WalletItem {
     deleted_at?: string | null
 }
 export interface WalletGroupItem {
-    id: number,
+    // id: number,
     uuid: string,
     user_id: number,
     name: string,
     balance?: number,
     wallet_group_item?: WalletItem[]
+}
+
+export interface NotificationActionDetail {
+    title: string,
+    route: string
+}
+export interface NotificationAction {
+    title: string,
+    message: string,
+    actions: NotificationActionDetail[],
+    data: NotificationAction
+}
+export interface NotificationItem {
+    // id: number,
+    uuid: string,
+    title: string,
+    message: string,
+    action: NotificationAction | any,
+    is_seen: boolean,
+    created_at: string,
+    seen_at?: string | undefined | null
 }
 
 export interface Timezone {

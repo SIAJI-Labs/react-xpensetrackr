@@ -1,10 +1,10 @@
 import SystemLayout from '@/Layouts/SystemLayout';
 import { useIsFirstRender } from '@/lib/utils';
+import { Head, Link } from '@inertiajs/react';
 import { PageProps } from '@/types';
 
 // Partials
 import TemplateNoData from '@/Components/template/TemplateNoData';
-import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardHeader } from '@/Components/ui/card';
 
 // Shadcn Component

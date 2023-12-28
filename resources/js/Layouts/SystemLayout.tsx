@@ -35,6 +35,7 @@ import { ToastAction } from '@/Components/ui/toast';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
 import moment from 'moment';
+import NotificationDialog from '@/Components/system/Notification/NotificationDialog';
 
 export default function SystemLayout({ user, header, children, fabAction = null }: PropsWithChildren<{ user: User, header?: ReactNode, fabAction?: any[] | null }>) {
     const { wAppName } = usePage().props;
@@ -103,6 +104,12 @@ export default function SystemLayout({ user, header, children, fabAction = null 
     const [openWalletGroupDeleteDialog, setOpenWalletGroupDeleteDialog] = useState<boolean>(false);
     const handleOpenWalletGroupDeleteDialog = (isOpen: boolean) => {
         setOpenWalletGroupDeleteDialog(isOpen);
+    };
+
+    // Notification Dialog
+    const [openNotificationDialog, setOpenNotificationDialog] = useState<boolean>(false);
+    const handleOpenNotificationDialog = (isOpen: boolean) => {
+        setOpenNotificationDialog(isOpen);
     };
 
     // Axios Global error handling
@@ -296,6 +303,9 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 {/* Wallet Modal - Dialog */}
                 <WalletGroupDialog openState={ openWalletGroupDialog } setOpenState={ handleOpenWalletGroupDialog }/>
                 <WalletGroupDeleteDialog openState={ openWalletGroupDeleteDialog } setOpenState={ handleOpenWalletGroupDeleteDialog }/>
+
+                {/* Wallet Modal - Dialog */}
+                <NotificationDialog openState={ openNotificationDialog } setOpenState={ handleOpenNotificationDialog }/>
             </div>
 
             <Toaster/>

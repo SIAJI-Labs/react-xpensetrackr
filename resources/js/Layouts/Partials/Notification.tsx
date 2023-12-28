@@ -203,7 +203,6 @@ export default function Notification({ user, className = '' }: PropsWithChildren
             if(plannedOverdueItem && plannedOverdueItem?.length > 0 || plannedTodayItem && plannedTodayItem?.length > 0 || plannedUpcomingItem && plannedUpcomingItem?.length > 0){
                 notification = true;
             }
-            console.log(notification);
             setNotificationState(notification);
 
             // // Add notification state

@@ -56,6 +56,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\UserPreference::class, 'user_id');
     }
+    public function notification()
+    {
+        return $this->hasMany(\App\Models\Notification::class, 'user_id');
+    }
     public function category()
     {
         return $this->hasMany(\App\Models\Category::class, 'user_id');

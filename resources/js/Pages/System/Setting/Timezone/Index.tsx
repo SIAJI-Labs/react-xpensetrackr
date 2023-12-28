@@ -1,18 +1,23 @@
+import { FormEventHandler, useEffect, useState } from "react";
+import { Head, router } from "@inertiajs/react";
 import { PageProps, Timezone } from "@/types";
 
-// Partials
-import SystemLayout from "@/Layouts/SystemLayout";
-import { Head, router } from "@inertiajs/react";
-import { Card, CardContent } from "@/Components/ui/card";
-import { FormEventHandler, useEffect, useState } from "react";
-import moment from "moment-timezone";
-import axios, { AxiosError } from "axios";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import { Button } from "@/Components/ui/button";
+// Plugins
 import { Check, ChevronsUpDown } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
-import { ScrollArea } from "@/Components/ui/scroll-area";
+import axios, { AxiosError } from "axios";
+import moment from "moment-timezone";
+
+// Partials
+import BackButton from "@/Components/template/TemplateBackButton";
 import ErrorMessage from "@/Components/forms/ErrorMessage";
+import SystemLayout from "@/Layouts/SystemLayout";
+
+// Shadcn
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
+import { ScrollArea } from "@/Components/ui/scroll-area";
+import { Card, CardContent } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
 
 type ContentProps = {
     server: string,
@@ -32,8 +37,6 @@ export default function Setting({ auth, server, preference, list }: PageProps<Co
     const [errorForm, setErrorForm] = useState<{ [key: string]: string[] }>({});
     const [formAbortController, setAbortControllerRecord] = useState<AbortController | null>(null);
     const handleFormSubmit: FormEventHandler = (e) => {
-        console.log('Form Submit');
-
         e.preventDefault();
         // Update submit button to loading state
         let submitBtn = document.getElementById('timezone-submit');
@@ -45,6 +48,11 @@ export default function Setting({ auth, server, preference, list }: PageProps<Co
         }
         // Reset error bag
         setErrorForm({});
+
+        // Cancel previous request
+        if(formAbortController instanceof AbortController){
+            formAbortController.abort();
+        }
 
         // Create a new AbortController
         const abortController = new AbortController();
@@ -67,7 +75,6 @@ export default function Setting({ auth, server, preference, list }: PageProps<Co
                 abortController.abort = c;
             })
         }).then((response) => {
-            console.log(response);
             if (response.status === 200) {
                 router.reload({
                     only: ['server', 'preference']
@@ -127,6 +134,10 @@ export default function Setting({ auth, server, preference, list }: PageProps<Co
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Timezone</h2>}
         >
             <Head title="Timezone" />
+
+            <div className="flex flex-col gap-6">
+                <BackButton className={ `px-0` }/>
+            </div>
 
             <Card>
                 <CardContent className={ ` p-6` }>

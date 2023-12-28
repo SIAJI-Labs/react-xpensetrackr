@@ -302,5 +302,20 @@ Route::group([
                 Route::get('list', [\App\Http\Controllers\Api\v1\Report\CashFlowController::class, 'index'])->name('list');
             });
         });
+
+        // Notification
+        Route::group([
+            'prefix' => 'notification',
+            'as' => 'notification.'
+        ], function(){
+            // v1
+            Route::group([
+                'prefix' => 'v1',
+                'as' => 'v1.'
+            ], function(){
+                Route::get('list', [\App\Http\Controllers\Api\v1\Report\NotificationController::class, 'index'])->name('list');
+                Route::get('/{uuid}', [\App\Http\Controllers\Api\v1\Report\NotificationController::class, 'show'])->name('show');
+            });
+        });
     });
 });

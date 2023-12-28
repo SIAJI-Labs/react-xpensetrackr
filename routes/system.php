@@ -56,6 +56,9 @@ Route::group([
         // Cashflow
         Route::get('cash-flow/{period}', [\App\Http\Controllers\System\Report\CashFlowController::class, 'show'])->name('cash-flow.show');
         Route::get('cash-flow', [\App\Http\Controllers\System\Report\CashFlowController::class, 'index'])->name('cash-flow.index');
+
+        // Notification
+        Route::get('notification', \App\Http\Controllers\System\NotificationController::class)->name('notification.index');
     });
 
     // Setting

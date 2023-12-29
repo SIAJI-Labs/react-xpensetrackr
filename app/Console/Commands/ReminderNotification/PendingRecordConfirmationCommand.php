@@ -28,14 +28,16 @@ class PendingRecordConfirmationCommand extends Command
      * Execute the console command.
      */
     public function handle()
-    {
-        Log::debug("Debug on Notification Reminder, pending record ~ ".date('Y-m-d H:i:s')." - \App\Console\Commands\ReminderNotification\PendingRecordConfirmationCommand");
-    
+    {    
         // Fetch user that already receive notification
         $notified = \App\Models\Notification::where('type', $this->notificationType)
             ->whereDate('created_at', date('Y-m-d'))
             ->pluck('user_id')
             ->toArray();
+
+        Log::debug("Debug on Notification Reminder, pending record ~ ".date('Y-m-d H:i:s')." - \App\Console\Commands\ReminderNotification\PendingRecordConfirmationCommand", [
+            'notified' => count($notified)
+        ]);
 
         // Fetch user where set preference to receive notification
         $users = \App\Models\User::whereNotIn('user_id', $notified) // Ignore notified user

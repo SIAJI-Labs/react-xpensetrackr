@@ -28,13 +28,15 @@ class PlannedPaymentCommand extends Command
      */
     public function handle()
     {
-        Log::debug("Debug on Notification Reminder, planned payment ~ ".date('Y-m-d H:i:s')." - \App\Console\Commands\ReminderNotification\PlannedPaymentCommand");
-    
         // Fetch user that already receive notification
         $notified = \App\Models\Notification::where('type', $this->notificationType)
             ->whereDate('created_at', date('Y-m-d'))
             ->pluck('user_id')
             ->toArray();
+        
+        Log::debug("Debug on Notification Reminder, planned payment ~ ".date('Y-m-d H:i:s')." - \App\Console\Commands\ReminderNotification\PlannedPaymentCommand", [
+            'notified' => count($notified)
+        ]);
 
         // Fetch user where set preference to receive notification
         $users = \App\Models\User::whereNotIn('user_id', $notified) // Ignore notified user

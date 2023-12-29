@@ -135,6 +135,7 @@ export default function SystemLayout({ user, header, children, fabAction = null 
         throw error;
     });
 
+    const [notificationAbortController, setNotificationAbortController] = useState<AbortController | null>(null);
     // Listen to notification setting
     useEffect(() => {
         const handleUserNotification = (notificationPerm: any) => {
@@ -183,7 +184,22 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                                 }
                             }
 
-                            axios.post(route('api.notification.v1.subscribe'), formData)
+                            // Cancel previous request
+                            if(notificationAbortController instanceof AbortController){
+                                notificationAbortController.abort();
+                            }
+
+                            // Create a new AbortController
+                            const abortController = new AbortController();
+                            // Store the AbortController in state
+                            setNotificationAbortController(abortController);
+                            
+                            axios.post(route('api.notification.v1.subscribe'), formData, {
+                                    cancelToken: new axios.CancelToken(function executor(c) {
+                                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                                        abortController.abort = c;
+                                    })
+                                })
                                 .then(function (response) {
                                     // console.log(response);
                                 })
@@ -192,6 +208,9 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                                 })
                                 .then(function (response) {
                                     // console.log(response);
+                                }).finally(() => {
+                                    // Clear the AbortController from state
+                                    setNotificationAbortController(null);
                                 });
                         })
                         .catch((error) => {

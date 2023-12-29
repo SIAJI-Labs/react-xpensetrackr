@@ -68,6 +68,9 @@ Route::group([
     ], function(){
         // Timezone
         Route::get('timezone', [\App\Http\Controllers\System\Setting\TimezoneController::class, 'index'])->name('timezone.index');
+
+        // Notification
+        Route::get('notification', [\App\Http\Controllers\System\Setting\NotificationController::class, 'index'])->name('notification.index');
     });
     Route::get('setting', [\App\Http\Controllers\System\SettingController::class, 'index'])->name('setting.index');
 

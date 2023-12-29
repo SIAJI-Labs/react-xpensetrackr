@@ -38,9 +38,10 @@ class PendingRecordConfirmationCommand extends Command
             ->toArray();
 
         // Fetch user where set preference to receive notification
-        $users = \App\Models\UserPreference::where('key', 'has_notification')
-            ->where('value', '1')
-            ->whereNotIn('user_id', $notified) // Ignore notified user
+        $users = \App\Models\User::whereNotIn('user_id', $notified) // Ignore notified user
+            ->whereHas('record', function($q){
+                return $q->where('is_pending', true);
+            })
             ->distinct()
             ->chunk(100, function(\Illuminate\Support\Collection $users){
                 // Log::info("Info on Fetched Users", [
@@ -50,10 +51,9 @@ class PendingRecordConfirmationCommand extends Command
                 //     ]
                 // ]);
 
-                foreach($users as $preference){
+                foreach($users as $user){
                     $timezone = 'UTC';
                     // Check if related user setting up their timezone
-                    $user = $preference->user;
                     if($user->getPreference('timezone') !== []){
                         // Override default timezone
                         $timezone = $user->getPreference('timezone') ;
@@ -68,9 +68,9 @@ class PendingRecordConfirmationCommand extends Command
                     $default_date = date('Y-m-d');
                     $default_time = date('H:i:s', strtotime(str_pad(env('REMINDER_PENDING_RECORD_HOURS', '20'), 2, '0', STR_PAD_LEFT) .':'. str_pad(env('REMINDER_PENDING_RECORD_MINUTES', '00'), 2, '0', STR_PAD_LEFT) .':'. date('s')));
                     $setting = date('Y-m-d H:i:s', strtotime($default_date.' '.$default_time));
-                    if($user->getPreference('reminder_pending_record') !== [] && validateDateFormat($user->getPreference('reminder_pending_record'), 'H:i')){
+                    if($user->getPreference('notification_pendingRecord_time') !== [] && validateDateFormat($user->getPreference('notification_pendingRecord_time'), 'H:i')){
                         // Override configuration based on user preference
-                        $setting = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' '.$user->getPreference('reminder_pending_record').':00'));
+                        $setting = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' '.$user->getPreference('notification_pendingRecord_time').':00'));
                     }
 
                     // Add range

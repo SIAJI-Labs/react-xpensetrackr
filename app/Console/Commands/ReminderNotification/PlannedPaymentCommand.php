@@ -37,15 +37,13 @@ class PlannedPaymentCommand extends Command
             ->toArray();
 
         // Fetch user where set preference to receive notification
-        $users = \App\Models\UserPreference::where('key', 'has_notification')
-            ->where('value', '1')
-            ->whereNotIn('user_id', $notified) // Ignore notified user
+        $users = \App\Models\User::whereNotIn('user_id', $notified) // Ignore notified user
+            ->whereHas('plannedPayment')
             ->distinct()
             ->chunk(100, function(\Illuminate\Support\Collection $users){
-                foreach($users as $preference){
+                foreach($users as $user){
                     $timezone = 'UTC';
                     // Check if related user setting up their timezone
-                    $user = $preference->user;
                     if($user->getPreference('timezone') !== []){
                         // Override default timezone
                         $timezone = $user->getPreference('timezone') ;
@@ -58,11 +56,11 @@ class PlannedPaymentCommand extends Command
 
                     // Default configuration
                     $default_date = date('Y-m-d');
-                    $default_time = date('H:i:s', strtotime(str_pad(env('REMINDER_PENDING_RECORD_HOURS', '20'), 2, '0', STR_PAD_LEFT) .':'. str_pad(env('REMINDER_PENDING_RECORD_MINUTES', '00'), 2, '0', STR_PAD_LEFT) .':'. date('s')));
+                    $default_time = date('H:i:s', strtotime(str_pad(env('REMINDER_PLANNED_PAYMENT_HOURS', '08'), 2, '0', STR_PAD_LEFT) .':'. str_pad(env('REMINDER_PLANNED_PAYMENT_MINUTES', '00'), 2, '0', STR_PAD_LEFT) .':'. date('s')));
                     $setting = date('Y-m-d H:i:s', strtotime($default_date.' '.$default_time));
-                    if($user->getPreference('reminder_planned_payment') !== [] && validateDateFormat($user->getPreference('reminder_planned_payment'), 'H:i')){
+                    if($user->getPreference('notification_plannedPayment_time') !== [] && validateDateFormat($user->getPreference('notification_plannedPayment_time'), 'H:i')){
                         // Override configuration based on user preference
-                        $setting = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' '.$user->getPreference('reminder_planned_payment').':00'));
+                        $setting = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' '.$user->getPreference('notification_plannedPayment_time').':00'));
                     }
 
                     // Add range

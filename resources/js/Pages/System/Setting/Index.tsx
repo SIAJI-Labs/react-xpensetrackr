@@ -57,10 +57,10 @@ export default function Setting({ auth }: PageProps<ContentProps>) {
                         description: null,
                         items: [
                             {
-                                name: 'Noticiation',
+                                name: 'Notification',
                                 description: 'Handle your notification preferences',
                                 icon: 'fa-solid fa-bell',
-                                link: null
+                                link: route('sys.setting.notification.index')
                             }, {
                                 name: 'Timezone',
                                 description: 'Select your timezone',
@@ -96,7 +96,7 @@ export default function Setting({ auth }: PageProps<ContentProps>) {
                                     </div>
                                 </div>;
                                 if(sub.link){
-                                    content = <Link href={ sub.link }>
+                                    content = <Link href={ sub.link } key={ `link_setting-${ikey}_${key}` }>
                                         { content }
                                     </Link>
                                 }

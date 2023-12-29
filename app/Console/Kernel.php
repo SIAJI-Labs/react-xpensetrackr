@@ -20,6 +20,10 @@ class Kernel extends ConsoleKernel
             Log::info('Initialize debug file - '.date('Y-m-d H:i:s').' ~ \App\Console\Kernel@schedule');
         })->dailyAt('00:00');
 
+        // Notification
+        $schedule->command('notification-reminder:pending-record')->everyFifteenMinutes();
+        $schedule->command('notification-reminder:planned-payment')->everyFifteenMinutes();
+
         // Fetch Inpsiration of the day
         $schedule->command('inspire:get-quotes')->dailyAt('00:00');
     }

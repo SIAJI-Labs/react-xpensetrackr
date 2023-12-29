@@ -22,7 +22,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
     const [avatar, setAvatar] = useState<string>();
 
     // Search Command
-    const [openSearchCommand, setOpenSearchCommand] = useState<boolean>(false)
+    const [openSearchCommand, setOpenSearchCommand] = useState<boolean>(false);
     useEffect(() => {
         document.getElementById('navbar-search')?.addEventListener('click', () => {
             setOpenSearchCommand(true);
@@ -71,7 +71,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                 max-sm:data-[state=open]:!zoom-in-100
             `}>
                 <CommandInput placeholder="Type a command or search..." className={ ` border-none focus:ring-0` }/>
-                <CommandList className={ `max-sm:h-auto max-sm:max-h-[75vh]` }>
+                <CommandList className={ `max-sm:h-auto max-sm:max-h-[75dvh]` }>
                     <CommandEmpty>No results found.</CommandEmpty>
 
                     {(() => {
@@ -105,6 +105,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                                 name: 'Report',
                                 items: [
                                     { name: 'Cash Flow', icon: '', link: route('sys.report.cash-flow.index') },
+                                    { name: 'Notification', icon: '', link: route('sys.report.notification.index') },
                                 ]
                             }, { // Misc Group
                                 name: 'Miscellaneous',

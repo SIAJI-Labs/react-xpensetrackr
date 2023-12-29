@@ -1,6 +1,6 @@
 import { useIsFirstRender } from "@/lib/utils";
 import { PropsWithChildren, useEffect, useState } from "react";
-import { PlannedItem, User } from "@/types";
+import { NotificationItem, PlannedItem, User } from "@/types";
 
 // Partials
 import TemplateNoData from "@/Components/template/TemplateNoData";
@@ -19,9 +19,12 @@ import { Input } from "@/Components/ui/input";
 import axios from "axios";
 import { ScrollArea } from "@/Components/ui/scroll-area";
 import { Link } from "@inertiajs/react";
+import TemplateList from "@/Components/template/Notification/TemplateList";
 
 export default function Notification({ user, className = '' }: PropsWithChildren<{ user: User, className?: string }>) {
     const isFirstRender = useIsFirstRender();
+
+    const [notificationState, setNotificationState] = useState<boolean>(false);
     
     let paginate_item = 5;
     // Planned Payment Data - Overdue
@@ -51,6 +54,15 @@ export default function Notification({ user, className = '' }: PropsWithChildren
     const [plannedUpcomingCountTotal, setPlannedUpcomingCountTotal] = useState<number>(0);
     const [plannedUpcomingPaginate, setPlannedUpcomingPaginate] = useState<number>(paginate_item);
     const [plannedUpcomingPaginateState, setPlannedUpcomingPaginateState] = useState<boolean>(false);
+
+    // Notification
+    const [notificationItemAbortController, setNotificationItemAbortController] = useState<AbortController | null>(null);
+    const [notificationIsLoading, setNotificationIsLoading] = useState<boolean>(true);
+    const [notificationItem, setNotificationItem] = useState<NotificationItem[] | undefined>();
+    const [notificationCountShown, setNotificationCountShown] = useState<number>(0);
+    const [notificationCountTotal, setNotificationCountTotal] = useState<number>(0);
+    const [notificationPaginate, setNotificationPaginate] = useState<number>(paginate_item);
+    const [notificationPaginateState, setNotificationPaginateState] = useState<boolean>(false);
 
     const fetchPlannedList = async(type: string = 'overdue') => {
         let paginateLimit = 0;
@@ -194,23 +206,30 @@ export default function Notification({ user, className = '' }: PropsWithChildren
     }
 
     // Handle notification state
-    const handleNotification = () => {
+    const handleNotificationState = () => {
         setTimeout(() => {
-            // Add notification state
-            let bell = document.querySelector('[data-type="notification-bell"]');
-            if(bell){
-                bell.classList.remove('fa-shake');
-                if(plannedOverdueItem && plannedOverdueItem?.length > 0 || plannedTodayItem && plannedTodayItem?.length > 0 || plannedUpcomingItem && plannedUpcomingItem?.length > 0){
-                    bell.classList.add('fa-shake');
-                }
+            let notification = false;
+
+            if(plannedOverdueItem && plannedOverdueItem?.length > 0 || plannedTodayItem && plannedTodayItem?.length > 0 || plannedUpcomingItem && plannedUpcomingItem?.length > 0 || notificationItem && notificationItem.length > 0){
+                notification = true;
             }
+            setNotificationState(notification);
+
+            // // Add notification state
+            // let bell = document.querySelector('[data-type="notification-bell"]');
+            // if(bell){
+            //     bell.classList.remove('fa-shake');
+            //     if(plannedOverdueItem && plannedOverdueItem?.length > 0 || plannedTodayItem && plannedTodayItem?.length > 0 || plannedUpcomingItem && plannedUpcomingItem?.length > 0){
+            //         bell.classList.add('fa-shake');
+            //     }
+            // }
         }, 100);
     }
     // Handle on Paginate State change
     const handlePlannedChange = (type: string = 'overdue') => {
         fetchPlannedList(type);
 
-        handleNotification();
+        handleNotificationState();
     }
     useEffect(() => {
         handlePlannedChange('overdue');
@@ -221,6 +240,74 @@ export default function Notification({ user, className = '' }: PropsWithChildren
     useEffect(() => {
         handlePlannedChange('upcoming');
     }, [plannedUpcomingPaginate]);
+    useEffect(() => {
+        handleNotificationState();
+    }, [plannedOverdueItem, plannedTodayItem, plannedUpcomingItem]);
+
+    // Notification
+    const fetchNotificationList = async() => {
+        let paginateLimit = 0;
+        // Show skeleton
+        setNotificationIsLoading(true);
+        paginateLimit = notificationPaginate;
+        
+        if(notificationItemAbortController instanceof AbortController){
+            notificationItemAbortController.abort();
+        }
+
+        // Create a new AbortController
+        const abortController = new AbortController();
+        // Store the AbortController in state
+        setNotificationItemAbortController(abortController);
+
+        // Build parameter
+        const query = [];
+        const obj = {
+            limit: paginateLimit,
+            state: 'unseen'
+        }
+        for (const key in obj) {
+            query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
+        }
+
+        try {
+            const response = await axios.get(`${route('api.report.notification.v1.list')}?${query.join('&')}`, {
+                cancelToken: new axios.CancelToken(function executor(c) {
+                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                    abortController.abort = c;
+                })
+            });
+        
+            // Use response.data instead of req.json() to get the JSON data
+            let jsonResponse = response.data;
+            setNotificationItem(jsonResponse.result.data);
+            setNotificationPaginateState(jsonResponse.result.has_more);
+            setNotificationCountShown((jsonResponse.result.data).length);
+            if('total' in jsonResponse.result){
+                setNotificationCountTotal(jsonResponse.result.total);
+            }
+
+            handleNotificationState();
+            setNotificationIsLoading(false);
+
+            // Clear the AbortController from state
+            setNotificationItemAbortController(null);
+        } catch (error) {
+            if (axios.isCancel(error)) {
+                // Handle the cancellation here if needed
+                console.log('Request was canceled', error);
+            } else {
+                // Handle other errors
+                console.error('Error:', error);
+            }
+        }
+    }
+    useEffect(() => {
+        fetchNotificationList();
+    }, [notificationPaginate]);
+    useEffect(() => {
+        handleNotificationState();
+    }, [notificationItem]);
 
     // Handle record/planned change
     useEffect(() => {
@@ -231,7 +318,7 @@ export default function Notification({ user, className = '' }: PropsWithChildren
                     handlePlannedChange('today');
                     handlePlannedChange('upcoming');
 
-                    handleNotification();
+                    handleNotificationState();
                 }, 100);
             }
             document.addEventListener('dialog.record.hidden', handleDialogEvent);
@@ -245,17 +332,64 @@ export default function Notification({ user, className = '' }: PropsWithChildren
             };
         }
     });
+    useEffect(() => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
+            setTimeout(() => {
+                fetchNotificationList();
+            }, 100);
+        }
+
+        document.addEventListener('dialog.notification.hidden', handleDialogEvent);
+        document.addEventListener('notification.update', handleDialogEvent);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.notification.hidden', handleDialogEvent);
+            document.removeEventListener('notification.update', handleDialogEvent);
+        };
+    });
 
     return <>
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant={ `ghost` } className={ ` dark:text-white aspect-square` }><i className={ `fa-regular fa-bell ${plannedOverdueItem && plannedOverdueItem.length > 0 || plannedTodayItem && plannedTodayItem.length > 0 || plannedUpcomingItem && plannedUpcomingItem.length > 0 ? `fa-shake` : ``}` } data-type="notification-bell"></i></Button>
+                <Button variant={ `ghost` } className={ ` relative dark:text-white aspect-square` }>
+                    <i className={ `fa-regular fa-bell ${notificationState ? `fa-shake` : ``}` } data-type="notification-bell"></i>
+                    {(() => {
+                        if(notificationState){
+                            return <>
+                                <div className={ ` absolute right-2 top-2` }>
+                                    <span className={ `relative flex h-2 w-2` }>
+                                        <span className={ `animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75` }></span>
+                                        <span className={ `relative inline-flex rounded-full h-2 w-2 bg-primary opacity-75` }></span>
+                                    </span>
+                                </div>
+                            </>;
+                        }
+
+                        return <></>;
+                    })()}
+                </Button>
             </SheetTrigger>
             <SheetContent side={ `right` } className={ `p-0 w-screen md:w-96 dark:!text-white` }>
                 <ScrollArea className={ ` h-screen p-6 py-0` }>
-                    <div className={ ` flex flex-col gap-6 my-6` }>
-                        <div className={ ` p-6 sticky top-0` }>
-                            <SheetHeader className={ ` relative after:absolute after:-top-6 after:-left-6 after:w-[calc(100%+3rem)] after:h-32 after:bg-gradient-to-b after:from-background after:via-background after:to-transparent after:z-[-1] z-10 pb-6 pointer-events-none select-none` }>
+                    <div className={ ` flex flex-col gap-6 mb-6 z-[50]` }>
+                        <div className={ `sticky pt-6 pb-4 top-0` }>
+                            <SheetHeader className={ ` 
+                                relative 
+                                after:absolute 
+                                after:-top-6 
+                                after:-left-6 
+                                after:w-[calc(100%+3rem)] 
+                                after:h-28
+                                after:bg-gradient-to-b 
+                                after:from-background 
+                                after:via-background 
+                                after:to-transparent 
+                                after:z-[-1] 
+                                z-10 
+                                pointer-events-none
+                                select-none` }
+                            >
                                 <SheetTitle className={ ` leading-none` }>Notification</SheetTitle>
                                 <SheetDescription className={ `!mt-0 leading-none` }>
                                     See all of your notification in one panel
@@ -412,7 +546,7 @@ export default function Notification({ user, className = '' }: PropsWithChildren
                                                                                 <Button
                                                                                     key={ `planned_action-load_more` }
                                                                                     variant={ `outline` }
-                                                                                    className={ `dark:border-white` }
+                                                                                    className={ `dark:border-white disabled:z-[-1]` }
                                                                                     disabled={ !paginate_state }
                                                                                     onClick={() => {
                                                                                         switch(val){
@@ -467,28 +601,79 @@ export default function Notification({ user, className = '' }: PropsWithChildren
 
                                 {/* Notification */}
                                 <TabsContent value="notification">
-                                    <TemplateNoData/>
-                                    {/* <Card>
-                                        <CardHeader>
-                                            <CardTitle>Password</CardTitle>
-                                            <CardDescription>
-                                                Change your password here. After saving, you'll be logged out.
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="space-y-2">
-                                            <div className="space-y-1">
-                                                <Label htmlFor="current">Current password</Label>
-                                                <Input id="current" type="password" />
+                                {(() => {
+                                    let notificationList: any[] = [];
+                                    let data: any[] | undefined = [];
+                                    let shown: number = 0;
+                                    let total: number = 0;
+                                    let paginate: number = 0;
+                                    let paginate_state: boolean = false;
+
+                                    data = notificationItem;
+                                    paginate = notificationPaginate;
+                                    paginate_state = notificationPaginateState;
+                                    if(notificationCountShown){
+                                        shown = notificationCountShown;
+                                    }
+                                    if(notificationCountTotal){
+                                        total = notificationCountTotal;
+                                    }
+
+                                    if(data){
+                                        data.forEach((notif, key) => {
+                                            notificationList.push(
+                                                <div key={ `notification_item-${key}` }>
+                                                    <TemplateList notification={ notif }/>
+                                                </div>
+                                            );
+                                        });
+                                    }
+
+                                    if(notificationList.length > 0){
+                                        return <div className=" flex flex-col gap-6">
+                                            <div className="">
+                                                { notificationList }
                                             </div>
-                                            <div className="space-y-1">
-                                                <Label htmlFor="new">New password</Label>
-                                                <Input id="new" type="password" />
-                                            </div>
-                                        </CardContent>
-                                        <CardFooter>
-                                            <Button>Save password</Button>
-                                        </CardFooter>
-                                    </Card> */}
+
+                                            {(() => {
+                                                let actionButton: any = [];
+                                                actionButton.push(
+                                                    <Button
+                                                        key={ `planned_action-load_more` }
+                                                        variant={ `outline` }
+                                                        className={ `dark:border-white disabled:z-[-1]` }
+                                                        disabled={ !paginate_state }
+                                                        onClick={() => {
+                                                            setNotificationPaginate(notificationPaginate + paginate_item);
+                                                        }}
+                                                    >Load more</Button>
+                                                );
+
+                                                if(total > 0 && shown > 0){
+                                                    actionButton.push(
+                                                        <div className={ `` } key={ `planned_action-shown` }>
+                                                            <span className={ `text-sm` }>Showing {shown} of {total} entries</span>
+                                                        </div>
+                                                    );
+                                                }
+                                                
+                                                if(actionButton.length > 0){
+                                                    return (
+                                                        <div className={ ` flex flex-row justify-between items-center` }>
+                                                            { actionButton }
+                                                        </div>
+                                                    );
+                                                }
+
+                                                return <></>;
+                                            })()}
+                                        </div>
+                                    }
+
+                                    return <>
+                                        <TemplateNoData/>
+                                    </>
+                                })()}
                                 </TabsContent>
                             </Tabs>
                         </div>

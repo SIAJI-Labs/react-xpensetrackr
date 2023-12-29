@@ -11,10 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasPushSubscriptions;
 
     /**
      * The attributes that are mass assignable.
@@ -52,6 +53,14 @@ class User extends Authenticatable
      * 
      * @return model
      */
+    public function userPreference()
+    {
+        return $this->hasMany(\App\Models\UserPreference::class, 'user_id');
+    }
+    public function notification()
+    {
+        return $this->hasMany(\App\Models\Notification::class, 'user_id');
+    }
     public function category()
     {
         return $this->hasMany(\App\Models\Category::class, 'user_id');

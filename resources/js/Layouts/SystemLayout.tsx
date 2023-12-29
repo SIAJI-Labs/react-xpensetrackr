@@ -35,8 +35,12 @@ import { ToastAction } from '@/Components/ui/toast';
 import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
 import moment from 'moment';
+import NotificationDialog from '@/Components/system/Notification/NotificationDialog';
+import { storePushSubscription, urlBase64ToUint8Array } from '@/function';
+import { useIsFirstRender } from '@/lib/utils';
 
 export default function SystemLayout({ user, header, children, fabAction = null }: PropsWithChildren<{ user: User, header?: ReactNode, fabAction?: any[] | null }>) {
+    const isFirstRender = useIsFirstRender();
     const { wAppName } = usePage().props;
     const [appName, setAppName] = useState<string>(String(wAppName));
     const { toast } = useToast();
@@ -105,6 +109,12 @@ export default function SystemLayout({ user, header, children, fabAction = null 
         setOpenWalletGroupDeleteDialog(isOpen);
     };
 
+    // Notification Dialog
+    const [openNotificationDialog, setOpenNotificationDialog] = useState<boolean>(false);
+    const handleOpenNotificationDialog = (isOpen: boolean) => {
+        setOpenNotificationDialog(isOpen);
+    };
+
     // Axios Global error handling
     axios.interceptors.response.use((response) => response, (error) => {
         if(error.response && error.response.data){
@@ -124,6 +134,85 @@ export default function SystemLayout({ user, header, children, fabAction = null 
 
         throw error;
     });
+
+    // Listen to notification setting
+    useEffect(() => {
+        const handleUserNotification = (notificationPerm: any) => {
+            console.log(notificationPerm);
+
+            if(notificationPerm.state === 'granted'){
+                // Register push notification information to system
+                let vapid_pubkey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+                if(typeof vapid_pubkey !== 'undefined' && vapid_pubkey){
+                    navigator.serviceWorker.ready
+                        .then((registration) => {
+                            const subscribeOptions = {
+                                userVisibleOnly: true,
+                                applicationServerKey: urlBase64ToUint8Array(vapid_pubkey)
+                            };
+                
+                            return registration.pushManager.subscribe(subscribeOptions);
+                        })
+                        .then((pushSubscription) => {
+                            // console.log('Received PushSubscription: ', JSON.stringify(pushSubscription));
+                            // storePushSubscription(pushSubscription);
+                            let formData = new FormData();
+
+                            // Handle Push Subscription data
+                            let pushString = JSON.stringify(pushSubscription);
+                            let data = JSON.parse(pushString);
+                            for(const key in data){
+                                if(typeof data[key] === 'object'){
+                                    let dynamicKey = key;
+                                    let value = data[key];
+
+                                    if(data[key] !== null){
+                                        let child = data[key];
+                                        for(const childKey in child){
+                                            dynamicKey = `${key}[${childKey}]`;
+                                            value = child[childKey];
+
+                                            formData.append(dynamicKey, value);
+                                        }
+                                    } else {
+                                        formData.append(dynamicKey, value);
+                                    }
+
+                                } else if(typeof data[key] === 'string'){
+                                    formData.append(key, data[key]);
+                                }
+                            }
+
+                            axios.post(route('api.notification.v1.subscribe'), formData)
+                                .then(function (response) {
+                                    // console.log(response);
+                                })
+                                .catch(function (error) {
+                                    // console.log(error);
+                                })
+                                .then(function (response) {
+                                    // console.log(response);
+                                });
+                        })
+                        .catch((error) => {
+                            console.error('Service Worker registration failed:', error);
+                        });
+                }
+            }
+        }
+
+        if(isFirstRender){
+            if ('permissions' in navigator) {
+                navigator.permissions.query({ name: 'notifications' }).then(function (notificationPerm) {
+                    notificationPerm.onchange = () => {
+                        handleUserNotification(notificationPerm);
+                    }
+                });
+            }
+        }
+    });
+
+    
 
     return (
         <ThemeProvider defaultTheme="light" storageKey="xtrackr-theme">
@@ -296,6 +385,9 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 {/* Wallet Modal - Dialog */}
                 <WalletGroupDialog openState={ openWalletGroupDialog } setOpenState={ handleOpenWalletGroupDialog }/>
                 <WalletGroupDeleteDialog openState={ openWalletGroupDeleteDialog } setOpenState={ handleOpenWalletGroupDeleteDialog }/>
+
+                {/* Wallet Modal - Dialog */}
+                <NotificationDialog openState={ openNotificationDialog } setOpenState={ handleOpenNotificationDialog }/>
             </div>
 
             <Toaster/>

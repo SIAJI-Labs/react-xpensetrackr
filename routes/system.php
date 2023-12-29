@@ -56,9 +56,22 @@ Route::group([
         // Cashflow
         Route::get('cash-flow/{period}', [\App\Http\Controllers\System\Report\CashFlowController::class, 'show'])->name('cash-flow.show');
         Route::get('cash-flow', [\App\Http\Controllers\System\Report\CashFlowController::class, 'index'])->name('cash-flow.index');
+
+        // Notification
+        Route::get('notification', \App\Http\Controllers\System\NotificationController::class)->name('notification.index');
     });
 
     // Setting
+    Route::group([
+        'prefix' => 'setting',
+        'as' => 'setting.'
+    ], function(){
+        // Timezone
+        Route::get('timezone', [\App\Http\Controllers\System\Setting\TimezoneController::class, 'index'])->name('timezone.index');
+
+        // Notification
+        Route::get('notification', [\App\Http\Controllers\System\Setting\NotificationController::class, 'index'])->name('notification.index');
+    });
     Route::get('setting', [\App\Http\Controllers\System\SettingController::class, 'index'])->name('setting.index');
 
     // Tags

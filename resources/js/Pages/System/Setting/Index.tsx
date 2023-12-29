@@ -1,18 +1,18 @@
 import SystemLayout from '@/Layouts/SystemLayout';
 import { useIsFirstRender } from '@/lib/utils';
+import { Head, Link } from '@inertiajs/react';
 import { PageProps } from '@/types';
 
 // Partials
 import TemplateNoData from '@/Components/template/TemplateNoData';
-import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardHeader } from '@/Components/ui/card';
 
 // Shadcn Component
+
 type ContentProps = {
-    inspire: string,
 }
 
-export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps>) {
+export default function Setting({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
 
     return (
@@ -57,15 +57,15 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
                         description: null,
                         items: [
                             {
-                                name: 'Noticiation',
+                                name: 'Notification',
                                 description: 'Handle your notification preferences',
                                 icon: 'fa-solid fa-bell',
-                                link: null
+                                link: route('sys.setting.notification.index')
                             }, {
                                 name: 'Timezone',
                                 description: 'Select your timezone',
                                 icon: 'fa-solid fa-user-clock',
-                                link: null
+                                link: route('sys.setting.timezone.index')
                             }, 
                         ]
                     }, 
@@ -96,7 +96,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps
                                     </div>
                                 </div>;
                                 if(sub.link){
-                                    content = <Link href={ sub.link }>
+                                    content = <Link href={ sub.link } key={ `link_setting-${ikey}_${key}` }>
                                         { content }
                                     </Link>
                                 }

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Traits\FileUploadTrait;
 use App\Traits\JsonResponseTrait;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
@@ -68,6 +69,114 @@ class ProfileController extends Controller
         $user = $request->user();
         // Override file location
         $this->fileUploadTraitsDestination = 'files/user'.'/'.$user->uuid;   
+
+        if($request->has('action')){
+            // Update Preference
+            if(in_array($request->action, [
+                'timezone-preference',
+                'notification-preference'
+            ])){
+                // Update Timezone Preference
+                if($request->action === 'timezone-preference'){
+                    $tz = config('siaji.list_of.timezone');
+                    // Collection
+                    $tz_collection = collect($tz);
+                    // Array of value
+                    $tz_arr = $tz_collection->pluck('tzCode')->toArray();
+    
+                    $request->validate([
+                        'timezone' => ['required', 'string', 'in:'.implode(',', $tz_arr)]
+                    ]);
+    
+                    DB::transaction(function() use ($request, $user){
+                        if($request->action === 'timezone-preference'){
+                            // Update timezone Preference
+                            $data = new \App\Models\UserPreference();
+                            if(!empty($user->getPreference('timezone'))){
+                                $data = $user->userPreference()->where('key', 'timezone')
+                                    ->first();
+                            }
+    
+                            $data->user_id = $user->id;
+                            $data->key = 'timezone';
+                            $data->value = $request->timezone;
+                            $data->save();
+                        }
+                    });
+                }
+
+                // Update Notification Preference
+                if($request->action === 'notification-preference'){
+                    if($request->has('state') && in_array($request->state, [
+                        'notification', 'notification_plannedPayment', 'notification_pendingRecord'
+                    ])){
+                        $key = match($request->state){
+                            'notification' => 'has_notification',
+                            'notification_plannedPayment' => 'notification_plannedPayment',
+                            'notification_pendingRecord' => 'notification_pendingRecord',
+                        };
+
+                        $request->validate([
+                            'state_value' => ['required', 'string', 'in:1,0,true,false']
+                        ]);
+
+                        DB::transaction(function() use($request, $user, $key){
+                            $data = new \App\Models\UserPreference();
+                            if($user->getPreference($key) !== []){
+                                $preference = \App\Models\UserPreference::where('user_id', $user->id)
+                                    ->where('key', $key)
+                                    ->first();
+                                if(!empty($preference)){
+                                    $data = $preference;
+                                }
+                            }
+
+                            $data->user_id = $user->id;
+                            $data->key = $key;
+                            $data->value = in_array(strtolower($request->state_value), ['false', '1']) ? false : (bool)$request->state_value;
+                            $data->save();
+                        });
+                    } else if($request->has('state') && in_array($request->state, [
+                        'time_plannedPayment', 'time_pendingRecord'
+                    ])){
+                        $key = match($request->state){
+                            'time_plannedPayment' => 'notification_plannedPayment_time',
+                            'time_pendingRecord' => 'notification_pendingRecord_time',
+                        };
+
+                        $request->validate([
+                            'state_value' => ['required', 'string']
+                        ]);
+                        if(!validateDateFormat($request->state_value, 'H:i')){
+                            throw \Illuminate\Validation\ValidationException::withMessages([
+                                'state_value' => 'The selected value use invalid time format (H:i).'
+                            ]);
+                        }
+
+                        DB::transaction(function() use($request, $user, $key){
+                            $data = new \App\Models\UserPreference();
+                            if($user->getPreference($key) !== []){
+                                $preference = \App\Models\UserPreference::where('user_id', $user->id)
+                                    ->where('key', $key)
+                                    ->first();
+                                if(!empty($preference)){
+                                    $data = $preference;
+                                }
+                            }
+
+                            $data->user_id = $user->id;
+                            $data->key = $key;
+                            $data->value = $request->state_value;
+                            $data->save();
+                        });
+                    }
+                }
+            }
+
+            return $this->formatedJsonResponse(200, 'Data Updated', [
+                'data' => $user
+            ]);
+        }
 
         DB::transaction(function () use ($user, $request) {
             $user->name = $request->name;

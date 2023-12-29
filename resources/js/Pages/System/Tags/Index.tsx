@@ -200,37 +200,37 @@ export default function Index({ auth }: PageProps<ContentProps>) {
                             </div>
                             {/* Content */}
                             <div className={ ` flex flex-col gap-4` }>
-                            {(() => {
-                                if(contentIsLoading){
-                                    let element: any[] = [];
-                                    for(let i = 0; i < skeletonCount; i++){
-                                        element.push(
-                                            <div key={ `skeleton-${i}` }>
-                                                {listSkeleton()}
-                                            </div>
-                                        );
-                                    }
-
-                                    return element;
-                                } else {
-                                    let tagsElement: any[] = [];
-                                    let defaultContent = <TemplateNoData></TemplateNoData>;
-
-                                    // Loop through response
-                                    if(tagsItem && tagsItem.length > 0){
-                                        tagsItem.map((val, index) => {
-                                            tagsElement.push(
-                                                <div key={ `tags_item-${index}` }>
-                                                    {listTemplate(val)}
+                                {(() => {
+                                    if(contentIsLoading){
+                                        let element: any[] = [];
+                                        for(let i = 0; i < skeletonCount; i++){
+                                            element.push(
+                                                <div key={ `skeleton-${i}` }>
+                                                    {listSkeleton()}
                                                 </div>
                                             );
-                                        });
+                                        }
+
+                                        return element;
+                                    } else {
+                                        let tagsElement: any[] = [];
+                                        let defaultContent = <TemplateNoData></TemplateNoData>;
+
+                                        // Loop through response
+                                        if(tagsItem && tagsItem.length > 0){
+                                            tagsItem.map((val, index) => {
+                                                tagsElement.push(
+                                                    <div key={ `tags_item-${index}` }>
+                                                        {listTemplate(val)}
+                                                    </div>
+                                                );
+                                            });
+                                        }
+
+                                        return tagsElement.length > 0 ? tagsElement : defaultContent;
                                     }
 
-                                    return tagsElement.length > 0 ? tagsElement : defaultContent;
-                                }
-
-                                return <></>;
+                                    return <></>;
                                 })()}
                             </div>
                         </div>

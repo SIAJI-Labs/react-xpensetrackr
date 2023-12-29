@@ -14,8 +14,16 @@ class DashboardController extends Controller
      */
     public function __invoke(Request $request)
     {
+        $quote = \App\Models\Inspiration::orderBy('created_at', 'desc')
+            ->first();
+        if(!empty($quote)){
+            $quote = '"'.$quote->quotes.'" — '.$quote->author;
+        } else {
+            $quote = \Illuminate\Foundation\Inspiring::quote();
+        }
+
         return Inertia::render('System/Dashboard/Index', [
-            'inspire' =>  \Illuminate\Foundation\Inspiring::quote()
+            'inspire' =>  $quote
         ]);
     }
 }

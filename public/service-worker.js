@@ -617,7 +617,7 @@ function ke(f, e, r, t) {
   return f ? l.toString() : l;
 }
 const Qe = "https://laravel-shadcn.test";
-ke("public.notification.subscribe");
+ke("api.notification.v1.subscribe");
 _e();
 function _e() {
   if (!1 in navigator) {

@@ -318,4 +318,19 @@ Route::group([
             });
         });
     });
+
+    // Notification
+    Route::group([
+        'prefix' => 'notification',
+        'as' => 'notification.'
+    ], function(){
+        // v1
+        Route::group([
+            'prefix' => 'v1',
+            'as' => 'v1.'
+        ], function(){
+            // Subscribe
+            Route::post('subscribe', [\App\Http\Controllers\Api\v1\Notification\SubscribeController::class, 'store'])->name('subscribe');
+        });
+    });
 });

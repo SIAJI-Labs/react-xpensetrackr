@@ -4,7 +4,7 @@ import route from 'ziggy-js';
 
 const loggedIn = false;
 const swBase = import.meta.env.VITE_APP_URL;
-const subscribeBase = route('public.notification.subscribe');
+const subscribeBase = route('api.notification.v1.subscribe');
 const vapid_pubkey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 // Initialize Service Worker
@@ -46,23 +46,23 @@ function initPush(){
         return;
     }
 
-    new Promise(function (resolve, reject) {
-        // Request Permission
-        const permissionResult = Notification.requestPermission(function (result) {
-            resolve(result);
-        });
+    // new Promise(function (resolve, reject) {
+    //     // Request Permission
+    //     const permissionResult = Notification.requestPermission(function (result) {
+    //         resolve(result);
+    //     });
 
-        if (permissionResult) {
-            permissionResult.then(resolve, reject);
-        }
-    }).then((permissionResult) => {
-        if (permissionResult !== 'granted') {
-            // alert('We weren\'t granted permission.');
-            throw new Error('We weren\'t granted permission.');
-        }
+    //     if (permissionResult) {
+    //         permissionResult.then(resolve, reject);
+    //     }
+    // }).then((permissionResult) => {
+    //     if (permissionResult !== 'granted') {
+    //         // alert('We weren\'t granted permission.');
+    //         throw new Error('We weren\'t granted permission.');
+    //     }
 
-        subscribeUser();
-    });
+    //     subscribeUser();
+    // });
 }
 
 function subscribeUser() {

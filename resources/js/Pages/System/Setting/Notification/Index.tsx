@@ -18,9 +18,10 @@ import { ScrollArea } from "@/Components/ui/scroll-area";
 import { Card, CardContent } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/Components/ui/form";
-import { Head } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import { Switch } from "@/Components/ui/switch";
 import { useIsFirstRender } from "@/lib/utils";
+import { Separator } from "@/Components/ui/separator";
 
 type ContentProps = {
     notificationState: boolean,
@@ -30,7 +31,7 @@ type ContentProps = {
     notificationPendingRecordTime: string | null,
 }
 
-export default function Notification({ 
+export default function NotificationSetting({ 
     auth, 
     notificationState, 
     notificationPlannedPaymentState, notificationPlannedPaymentTime, 
@@ -182,18 +183,55 @@ export default function Notification({
 
             <Card id={ `preference-notification` }>
                 <CardContent className={ ` flex flex-col gap-6 p-6` }>
-                    <div className={ `flex flex-row items-center justify-between rounded-lg border p-4` }>
-                        <div className={ ` flex flex-col gap-1 space-y-0.5 leading-none` }>
-                            <label className={ `text-base font-medium leading-tight` }>Receive notification</label>
-                            <span className={ ` text-sm leading-none` }>Receive push notification</span>
+                    <div className={ ` flex flex-col gap-4 rounded-lg border p-4` }>
+                        <div className={ `flex flex-row items-center justify-between` }>
+                            <div className={ ` flex flex-col gap-1 space-y-0.5 leading-none` }>
+                                <label className={ `text-base font-medium leading-tight` }>Push notification</label>
+                                <span className={ ` text-sm leading-none` }>Receive push notification</span>
+                            </div>
+                            <Switch
+                                checked={ formNotificationState }
+                                onCheckedChange={(checked) => {
+                                    setFormNotificationState(checked);
+                                }}
+                            />
                         </div>
-                        <Switch
-                            checked={ formNotificationState }
-                            onCheckedChange={(checked) => {
-                                setFormNotificationState(checked);
-                            }}
-                        />
+                        {(() => {
+                            // Check if notification is supported
+                            if ("Notification" in window && formNotificationState) {
+                                // Check if user already granted permission
+                                if(['denied', 'default'].includes(String(Notification.permission)) || Notification.permission === undefined){
+                                    return <>
+                                        <div className=" w-full flex flex-row gap-1 p-4 rounded-lg border-2 border-dashed border-red-300">
+                                            <span>We're not granted push notification permission { Notification.permission === 'denied' ? <strong className={ `underline text-sm` }> (Permission Denied)</strong> : '' }.</span>
+                                            
+                                            {(() => {
+                                                if(Notification.permission === 'default'){
+                                                    return <Button variant={ `link` } className={ ` h-auto p-0 text-base` } onClick={() => {
+                                                        Notification.requestPermission().then(permission => {
+                                                            router.reload();
+                                                        });
+                                                    }}>Give permission</Button>
+                                                }
+
+                                                return <></>;
+                                            })()}
+                                        </div>
+                                    </>;
+                                }
+                            } else if(!("Notification" in window)) {
+                                return <>
+                                    <div className=" w-full p-4 rounded-lg border-2 border-dashed border-yellow-500">
+                                        <span>Push notification is not supported in this device</span>
+                                    </div>
+                                </>;
+                            }
+
+                            return <></>;
+                        })()}
                     </div>
+
+                    <Separator/>
 
                     <fieldset className={ ` ${ formNotificationState ? `` : ` opacity-50` } flex flex-col gap-4` } disabled={ !formNotificationState }>
                         <div className={ ` flex flex-col gap-4 border p-4 rounded-lg` }>
@@ -204,7 +242,7 @@ export default function Notification({
                                         setFormPlannedPaymentState(checked);
                                     }}/>
                                 </div>
-                                <span className={ ` text-sm leading-none` }>Reminde me about my upcoming, today, and overdue scheduled payment</span>
+                                <span className={ ` text-sm leading-none` }>Remind me about my upcoming, today, and overdue scheduled payment</span>
                             </div>
 
                             {/* Planned Payment timestamp */}
@@ -281,7 +319,7 @@ export default function Notification({
                                         setFormPendingRecordState(checked);
                                     }}/>
                                 </div>
-                                <span className={ ` text-sm leading-none` }>Reminde me about my pending record</span>
+                                <span className={ ` text-sm leading-none` }>Remind me about my pending record via Push Notification</span>
                             </div>
 
                             {/* Pending Record timestamp */}

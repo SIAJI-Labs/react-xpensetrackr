@@ -21,8 +21,3 @@ require __DIR__.'/auth.php';
 
 // Homepage - Landing Page
 Route::get('/', \App\Http\Controllers\Public\HomepageController::class)->name('public.index');
-
-// Notification
-Route::get('notification-subscribe', function(){
-    return response()->json('ok');
-})->name('public.notification.subscribe');

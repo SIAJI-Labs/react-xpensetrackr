@@ -39,7 +39,7 @@ class PlannedPaymentCommand extends Command
         ]);
 
         // Fetch user where set preference to receive notification
-        $users = \App\Models\User::whereNotIn('user_id', $notified) // Ignore notified user
+        $users = \App\Models\User::whereNotIn('id', $notified) // Ignore notified user
             ->whereHas('plannedPayment')
             ->distinct()
             ->chunk(100, function(\Illuminate\Support\Collection $users){

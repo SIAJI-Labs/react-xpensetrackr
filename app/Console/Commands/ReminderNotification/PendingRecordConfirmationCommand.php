@@ -40,7 +40,7 @@ class PendingRecordConfirmationCommand extends Command
         ]);
 
         // Fetch user where set preference to receive notification
-        $users = \App\Models\User::whereNotIn('user_id', $notified) // Ignore notified user
+        $users = \App\Models\User::whereNotIn('id', $notified) // Ignore notified user
             ->whereHas('record', function($q){
                 return $q->where('is_pending', true);
             })

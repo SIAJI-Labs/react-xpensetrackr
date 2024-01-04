@@ -10,6 +10,8 @@ import '@/function';
 import '@/../plugins/fontawesome/all.scss';
 
 // Partials - Dialog
+import BudgetDeleteDialog from '@/Components/system/Budget/BudgetDeleteDialog';
+import BudgetDialog from '@/Components/system/Budget/BudgetDialog';
 import CategoryDeleteDialog from '@/Components/system/Category/CategoryDeleteDialog';
 import CategoryDialog from '@/Components/system/Category/CategoryDialog';
 import PlannedPaymentDeleteDialog from '@/Components/system/PlannedPayment/PlannedPaymentDeleteDialog';
@@ -30,21 +32,28 @@ import Navbar from './Partials/Navbar';
 
 // Shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
-import { useToast } from '@/Components/ui/use-toast';
-import { ToastAction } from '@/Components/ui/toast';
-import { Toaster } from "@/Components/ui/toaster";
 import { Button } from '@/Components/ui/button';
 import moment from 'moment';
 import NotificationDialog from '@/Components/system/Notification/NotificationDialog';
 import { storePushSubscription, urlBase64ToUint8Array } from '@/function';
 import { useIsFirstRender } from '@/lib/utils';
+import { Toaster, toast } from 'sonner';
 
 export default function SystemLayout({ user, header, children, fabAction = null }: PropsWithChildren<{ user: User, header?: ReactNode, fabAction?: any[] | null }>) {
     const isFirstRender = useIsFirstRender();
     const { wAppName } = usePage().props;
     const [appName, setAppName] = useState<string>(String(wAppName));
-    const { toast } = useToast();
     
+    // Budget Dialog
+    const [openBudgetDialog, setOpenBudgetDialog] = useState<boolean>(false);
+    const handleOpenBudgetDialog = (isOpen: boolean) => {
+        setOpenBudgetDialog(isOpen);
+    };
+    const [openBudgetDeleteDialog, setOpenBudgetDeleteDialog] = useState<boolean>(false);
+    const handleOpenBudgetDeleteDialog = (isOpen: boolean) => {
+        setOpenBudgetDeleteDialog(isOpen);
+    };
+
     // Category Dialog
     const [openCategoryDialog, setOpenCategoryDialog] = useState<boolean>(false);
     const handleOpenCategoryDialog = (isOpen: boolean) => {
@@ -121,12 +130,12 @@ export default function SystemLayout({ user, header, children, fabAction = null 
             let errors = error.response.data;
             if('message' in errors && errors.message === 'Unauthenticated.'){
                 // 401 due to 419 or other
-                toast({
-                    title: "419: Token Missmatch",
+                toast("419: Token Missmatch", {
                     description: "Please refresh the page",
-                    action: <ToastAction altText="Refresh" onClick={() => {
-                        location.reload();
-                    }}>Refresh</ToastAction>,
+                    action: {
+                        label: "Refresh",
+                        onClick: () => location.reload()
+                    },
                     duration: undefined
                 });
             }
@@ -284,6 +293,20 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                     if(fabAction !== null){
                         let action: any = [];
 
+                        // Push budget action
+                        if(fabAction.includes('budget')){
+                            action.push(
+                                <DropdownMenuItem onClick={() => {
+                                    document.dispatchEvent(new CustomEvent('budget.edit-action', {
+                                            bubbles: true,
+                                        }
+                                    ));
+                                }} className={ `cursor-pointer flex items-center gap-2` } key={ `fab-budget` }>
+                                    <i className={ `fa-solid fa-money-bills h-4 w-4 text-center` }></i>
+                                    <span className={ `` }>Budget</span>
+                                </DropdownMenuItem>
+                            );
+                        }
                         // Push category action
                         if(fabAction.includes('category')){
                             action.push(
@@ -380,6 +403,10 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                     }}>Add record</Button>
                 })()}
                 
+                {/* Budget Modal - Dialog */}
+                <BudgetDialog openState={ openBudgetDialog } setOpenState={ handleOpenBudgetDialog }/>
+                <BudgetDeleteDialog openState={ openBudgetDeleteDialog } setOpenState={ handleOpenBudgetDeleteDialog }/>
+                
                 {/* Category Modal - Dialog */}
                 <CategoryDialog openState={ openCategoryDialog } setOpenState={ handleOpenCategoryDialog }/>
                 <CategoryDeleteDialog openState={ openCategoryDeleteDialog } setOpenState={ handleOpenCategoryDeleteDialog }/>
@@ -409,7 +436,8 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 <NotificationDialog openState={ openNotificationDialog } setOpenState={ handleOpenNotificationDialog }/>
             </div>
 
-            <Toaster/>
+            {/* <Toaster/> */}
+            <Toaster closeButton/>
         </ThemeProvider>
     );
 }

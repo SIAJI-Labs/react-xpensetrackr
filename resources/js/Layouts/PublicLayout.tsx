@@ -6,9 +6,30 @@ import '@/../plugins/fontawesome/all.scss';
 
 // Shadcn
 import { ThemeProvider } from '@/Components/template/theme-provider';
-import { Toaster } from '@/Components/ui/toaster';
+import { Toaster, toast } from 'sonner';
+import axios from 'axios';
 
 export default function Guest({ children }: PropsWithChildren) {
+    // Axios Global error handling
+    axios.interceptors.response.use((response) => response, (error) => {
+        if(error.response && error.response.data){
+            let errors = error.response.data;
+            if('message' in errors && errors.message === 'Unauthenticated.'){
+                // 401 due to 419 or other
+                toast("419: Token Missmatch", {
+                    description: "Please refresh the page",
+                    action: {
+                        label: "Refresh",
+                        onClick: () => location.reload()
+                    },
+                    duration: undefined
+                });
+            }
+        }
+
+        throw error;
+    });
+
     return (
         <ThemeProvider defaultTheme="light" storageKey="xtrackr-theme">
             <Head>

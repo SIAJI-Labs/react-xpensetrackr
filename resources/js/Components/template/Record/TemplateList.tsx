@@ -1,4 +1,4 @@
-import { useState, PropsWithChildren, ReactNode } from 'react';
+import { useState, PropsWithChildren, ReactNode, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { RecordItem } from '@/types';
 
@@ -11,6 +11,7 @@ import "@/../css/siaji.scss";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/Components/ui/dropdown-menu';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
+import { useIsFirstRender } from '@/lib/utils';
 
 type TemplateProps = {
     record?: RecordItem,
@@ -19,6 +20,8 @@ type TemplateProps = {
 }
 
 export default function TemplateList({ record, deleteAction = true, editAction = true }: PropsWithChildren<TemplateProps> ){
+    const isFirstRender = useIsFirstRender();
+
     // Generate random string as section-key
     let r = (Math.random() + 1).toString(36).substring(7);
 
@@ -26,6 +29,79 @@ export default function TemplateList({ record, deleteAction = true, editAction =
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
     // State for Hidden
     const [showHidden, setShowHidden] = useState<boolean>(false);
+
+    // Small Information
+    const [elSmallInformation, setElSmallInformation] = useState<ReactNode | undefined>(undefined);
+    const handleElSmallInformation = () => {
+        const information = [];
+
+        // Type
+        if(record?.type){
+            information.push(
+                <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_type-${record?.uuid}` }>
+                    <i className={ `fa-solid fa-flag leading-none text-xs` }></i>
+                    <span>{ucwords(record?.type)}</span>
+                </Badge>
+            );
+        }
+
+        // Wallet
+        if(record?.from_wallet){
+            let walletName = [];
+            walletName.push(<span key={ `from_wallet-${record?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ record?.from_wallet?.name }</span>);
+            if(record?.to_wallet){
+                // Push to Wallet
+                walletName.push(<i key={ `icon_wallet-${record?.uuid}` } className={ `fa-solid ${record?.type === 'expense' ? 'fa-caret-right' : 'fa-caret-left'}` }></i>);
+                walletName.push(<span key={ `to_wallet-${record?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ record?.to_wallet?.name }</span>);
+            }
+            
+            information.push(
+                <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_wallet-${record?.uuid}` }>
+                    <i className={ `fa-solid fa-wallet leading-none text-xs` }></i>
+                    <span className={ ` flex items-center gap-1` }>{ walletName }</span>
+                </Badge>
+            );
+        }
+
+        // Notes
+        if(record?.note){
+            information.push(
+                <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_notes-${record?.uuid}` }>
+                    <i className={ `fa-solid fa-align-left leading-none text-xs` }></i>
+                    <span>Notes</span>
+                </Badge>
+            );
+        }
+
+        // Tags
+        if(record?.record_tags && record.record_tags.length > 0){
+            information.push(
+                <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_tags-${record?.uuid}` }>
+                    <i className={ `fa-solid fa-hashtag leading-none text-xs` }></i>
+                    <span>Tags</span>
+                </Badge>
+            );
+        }
+
+        if(information.length > 0){
+            setElSmallInformation(
+                <>
+                    <div className={ ` mt-2 flex flex-row gap-2 flex-wrap` } key={ `record_information-${record?.uuid}` }>
+                        {information}
+                    </div>
+                </>
+            );
+        }
+    }
+
+    useEffect(() => {
+        if(isFirstRender){
+            handleElSmallInformation();
+        }
+    });
+    useEffect(() => {
+        handleElSmallInformation;
+    }, [record]);
 
     return (
         <section key={r}>
@@ -117,6 +193,15 @@ export default function TemplateList({ record, deleteAction = true, editAction =
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Extra Information */}
+                                {(() => {
+                                    if(elSmallInformation){
+                                        return elSmallInformation;
+                                    }
+
+                                    return <></>;
+                                })()}
                             </div>
                             
                             <div className={ ` relative flex flex-row justify-center` }>
@@ -125,7 +210,7 @@ export default function TemplateList({ record, deleteAction = true, editAction =
                                 <div className={ ` absolute -left-4 -top-4 h-[calc(100%+2rem)] w-1/4 bg-gradient-to-r from-white via-white to-transparent` }></div>
                                 <div className={ ` absolute -right-4 -top-4 h-[calc(100%+2rem)] w-1/4 bg-gradient-to-l from-white via-white to-transparent` }></div>
 
-                                <Button variant={ `outline` } className={ ` w-fit z-10 h-8 py-0` } onClick={($refs) => {
+                                <Button variant={ `outline` } className={ ` w-fit z-10 h-8 py-0 z-[9]` } onClick={($refs) => {
                                     setShowHidden(!showHidden);
                                 }}>
                                     <span className={ `` }>See {showHidden ? 'less' : 'more'}</span>
@@ -237,63 +322,11 @@ export default function TemplateList({ record, deleteAction = true, editAction =
 
                         {/* Extra Information */}
                         {(() => {
-                            const information = [];
-
-                            // Type
-                            if(record?.type){
-                                information.push(
-                                    <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_type-${record?.uuid}` }>
-                                        <i className={ `fa-solid fa-flag leading-none text-xs` }></i>
-                                        <span>{ucwords(record?.type)}</span>
-                                    </Badge>
-                                );
+                            if(elSmallInformation){
+                                return elSmallInformation;
                             }
 
-                            // Wallet
-                            if(record?.from_wallet){
-                                let walletName = [];
-                                walletName.push(<span key={ `from_wallet-${record?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ record?.from_wallet?.name }</span>);
-                                if(record?.to_wallet){
-                                    // Push to Wallet
-                                    walletName.push(<i key={ `icon_wallet-${record?.uuid}` } className={ `fa-solid ${record?.type === 'expense' ? 'fa-caret-right' : 'fa-caret-left'}` }></i>);
-                                    walletName.push(<span key={ `to_wallet-${record?.uuid}` } className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{ record?.to_wallet?.name }</span>);
-                                }
-                                
-                                information.push(
-                                    <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_wallet-${record?.uuid}` }>
-                                        <i className={ `fa-solid fa-wallet leading-none text-xs` }></i>
-                                        <span className={ ` flex items-center gap-1` }>{ walletName }</span>
-                                    </Badge>
-                                );
-                            }
-
-                            // Notes
-                            if(record?.note){
-                                information.push(
-                                    <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_notes-${record?.uuid}` }>
-                                        <i className={ `fa-solid fa-align-left leading-none text-xs` }></i>
-                                        <span>Notes</span>
-                                    </Badge>
-                                );
-                            }
-
-                            // Tags
-                            if(record?.record_tags && record.record_tags.length > 0){
-                                information.push(
-                                    <Badge variant={ `secondary` } className={ ` rounded flex flex-row gap-1 items-center` } key={ `record_tags-${record?.uuid}` }>
-                                        <i className={ `fa-solid fa-hashtag leading-none text-xs` }></i>
-                                        <span>Tags</span>
-                                    </Badge>
-                                );
-                            }
-
-                            if(information.length > 0){
-                                return <>
-                                    <div className={ ` mt-2 flex flex-row gap-2 flex-wrap` } key={ `record_information-${record?.uuid}` }>
-                                        {information}
-                                    </div>
-                                </>;
-                            }
+                            return <></>;
                         })()}
                     </div>
                 </>;

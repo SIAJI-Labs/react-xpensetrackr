@@ -14,15 +14,18 @@ import Sidebar from '@/Layouts/Partials/Sidebar';
 
 // Shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
-import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/Components/ui/command';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import Notification from './Notification';
+import CommandCenter from './CommandCenter';
 
 export default function Navbar({ user, className = '' }: PropsWithChildren<{ user: User, className?: string }>) {
     const [avatar, setAvatar] = useState<string>();
 
     // Search Command
     const [openSearchCommand, setOpenSearchCommand] = useState<boolean>(false);
+    const handleOpenSearchCommand = (isOpen: boolean) => {
+        setOpenSearchCommand(isOpen);
+    };
     useEffect(() => {
         document.getElementById('navbar-search')?.addEventListener('click', () => {
             setOpenSearchCommand(true);
@@ -30,17 +33,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
     }, []);
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
-            if(openSearchCommand && e.key === 'Enter'){
-                e.preventDefault();
-                // Fetch active menu
-                let activeItem = document.querySelector('[cmdk-item][data-selected="true"]');
-                if(activeItem && activeItem.closest('a')){
-                    let url = activeItem.closest('a')?.href;
-                    if(url){
-                        router.visit(url);
-                    }
-                }
-            } else if (e.key === "/" && (e.metaKey || e.ctrlKey)) {
+            if (e.key === "/" && (e.metaKey || e.ctrlKey)) {
                 // Show command on control + k
                 e.preventDefault()
                 setOpenSearchCommand((openSearchCommand) => !openSearchCommand)
@@ -57,106 +50,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
     return (
         <>
             {/* Command */}
-            <CommandDialog open={openSearchCommand} onOpenChange={setOpenSearchCommand} className={ `
-                max-sm:bottom-0
-                max-sm:top-[unset]
-                max-sm:translate-y-0
-                
-                max-sm:data-[state=closed]:!slide-out-to-bottom-[50%]
-                max-sm:data-[state=closed]:!slide-out-to-left-[0%]
-                max-sm:data-[state=closed]:!zoom-out-100
-
-                max-sm:data-[state=open]:!slide-in-from-bottom-[50%]
-                max-sm:data-[state=open]:!slide-in-from-left-[0%]
-                max-sm:data-[state=open]:!zoom-in-100
-            `}>
-                <CommandInput placeholder="Type a command or search..." className={ ` border-none focus:ring-0` }/>
-                <CommandList className={ `max-sm:h-auto max-sm:max-h-[75dvh]` }>
-                    <CommandEmpty>No results found.</CommandEmpty>
-
-                    {(() => {
-                        let el: any[] = [];
-                        let items: any = [
-                            { // Suggestion Group
-                                name: 'Suggestion',
-                                items: [
-                                    { name: 'Quick Action: Create new Record', icon: '', link: route('sys.quick-action.record') },
-                                    { name: 'Quick Action: Planned Payment Summary', icon: '', link: route('sys.planned-payment.index', { type: 'summary' }) },
-                                    { name: 'Quick Action: Show Pending Record', icon: '', link: route('sys.record.index', { type: 'pending' }) },
-                                ]
-                            }, { // Feature Group
-                                name: 'Feature',
-                                items: [
-                                    { name: 'Dashboard', icon: '', link: route('sys.index') },
-                                    { name: 'Budget', icon: '', link: null },
-                                    { name: 'Category', icon: '', link: route('sys.category.index') },
-                                    { name: 'Debt', icon: '', link: null },
-                                    { name: 'Goals', icon: '', link: null },
-                                    { name: 'Planned Payment', icon: '', link: route('sys.planned-payment.index') },
-                                    { name: 'Record', icon: '', link: route('sys.record.index') },
-                                    { name: 'Record Template', icon: '', link: null },
-                                    { name: 'Shopping List', icon: '', link: null },
-                                    { name: 'Tags', icon: '', link: route('sys.tags.index') },
-                                    { name: 'Wallet', icon: '', link: route('sys.wallet.index') },
-                                    { name: 'Wallet Group', icon: '', link: route('sys.wallet-group.index') },
-                                    { name: 'Wallet Share', icon: '', link: null },
-                                ]
-                            }, { // Report
-                                name: 'Report',
-                                items: [
-                                    { name: 'Cash Flow', icon: '', link: route('sys.report.cash-flow.index') },
-                                    { name: 'Notification', icon: '', link: route('sys.report.notification.index') },
-                                ]
-                            }, { // Misc Group
-                                name: 'Miscellaneous',
-                                items: [
-                                    { name: 'Profile', icon: ' fa-solid fa-user', link: route('sys.profile.index') },
-                                    { name: 'Setting', icon: 'fa-solid fa-cog', link: route('sys.setting.index') },
-                                ]
-                            }
-                        ];
-
-                        if(items.length > 0){
-                            items.forEach((item: any) => {
-                                let submenu: any[] = [];
-                                if(item.items && (item.items).length > 0){
-                                    (item.items).forEach((sub: any)=> {
-                                        let icon = <div className={ `w-6 flex items-center justify-center` }>
-                                            <i className={ `text-center ${sub.icon && sub.icon !== '' ? sub.icon : ` fa-regular fa-circle`}` }></i>
-                                        </div>
-                                        let content = <CommandItem className={ ` flex flex-row gap-2 !py-2 ${sub.link ? ` cursor-pointer` : `cursor-not-allowed opacity-50`}` } key={ `cmg_${(item.name).toLowerCase()}-${(sub.name).toLowerCase()}` }>
-                                            { icon }
-                                            <span>{sub.name}</span>
-                                        </CommandItem>
-
-                                        if(sub.link){
-                                            content = <Link href={ sub.link } className={ `cursor-pointer` } key={ `cmg_${(item.name).toLowerCase()}-${(sub.name).toLowerCase()}` }>
-                                                { content }
-                                            </Link>
-                                        }
-
-                                        submenu.push(content)
-                                    });
-                                }
-
-                                if(submenu.length > 0){
-                                    el.push(
-                                        <CommandGroup heading={ item.name } className={ ` !pb-2` } key={ `command_group-${(item.name).toLowerCase()}` }>
-                                            { submenu }
-                                        </CommandGroup>
-                                    );
-                                }
-                            });
-
-                            if(el.length > 0){
-                                return el;
-                            }
-                        }
-
-                        return <></>;
-                    })()}
-                </CommandList>
-            </CommandDialog>
+            <CommandCenter openState={ openSearchCommand } setOpenState={ handleOpenSearchCommand }/>
             
             <nav className=" bg-background/75 backdrop-blur border-b fixed w-full z-10">
                 {/* Navbar */}

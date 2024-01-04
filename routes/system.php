@@ -29,6 +29,10 @@ Route::group([
     // Dashboard
     Route::get('dashboard', \App\Http\Controllers\System\DashboardController::class)->name('index');
 
+    // Budget
+    Route::get('budget', [\App\Http\Controllers\System\BudgetController::class, 'index'])->name('budget.index');
+    Route::get('budget/{uuid}', [\App\Http\Controllers\System\BudgetController::class, 'show'])->name('budget.show');
+
     // Category Re-Order
     Route::get('category/re-order', [\App\Http\Controllers\System\CategoryReOrderController::class, 'index'])->name('category.re-order.index');
     // Category

@@ -25,6 +25,7 @@ export default function Notification({ user, className = '' }: PropsWithChildren
     const isFirstRender = useIsFirstRender();
 
     const [notificationState, setNotificationState] = useState<boolean>(false);
+    const [notificationTab, setNotificationTab] = useState<string>('plannedPayment');
     
     let paginate_item = 5;
     // Planned Payment Data - Overdue
@@ -372,20 +373,26 @@ export default function Notification({ user, className = '' }: PropsWithChildren
             </SheetTrigger>
             <SheetContent side={ `right` } className={ `p-0 w-screen md:w-96 dark:!text-white` }>
                 <ScrollArea className={ ` h-screen p-6 py-0` }>
-                    <div className={ ` flex flex-col gap-6 mb-6 z-[50]` }>
-                        <div className={ `sticky pt-6 pb-4 top-0` }>
+                    <div className={ ` relative flex flex-col gap-2 mb-6` }>
+                        <div className={ `
+                            sticky 
+                            pt-6 
+                            top-0
+
+                            after:absolute 
+                            after:-top-6 
+                            after:-left-6 
+                            after:w-[calc(100%+3rem)] 
+                            after:h-52
+                            after:bg-gradient-to-b 
+                            after:from-background 
+                            after:via-background 
+                            after:to-transparent 
+                            after:z-[-1] 
+                        ` }>
                             <SheetHeader className={ ` 
                                 relative 
-                                after:absolute 
-                                after:-top-6 
-                                after:-left-6 
-                                after:w-[calc(100%+3rem)] 
-                                after:h-28
-                                after:bg-gradient-to-b 
-                                after:from-background 
-                                after:via-background 
-                                after:to-transparent 
-                                after:z-[-1] 
+                                
                                 z-10 
                                 pointer-events-none
                                 select-none` }
@@ -395,287 +402,321 @@ export default function Notification({ user, className = '' }: PropsWithChildren
                                     See all of your notification in one panel
                                 </SheetDescription>
                             </SheetHeader>
+
+                            {/* Tabs Trigger */}
+                            <div className={ ` mt-6 bg-gray-100 p-1 rounded-md z-10` }>
+                                {(() => {
+                                    let buttons: any = [];
+                                    [
+                                        {
+                                            name: 'Planned Payment',
+                                            key: 'plannedPayment'
+                                        }, {
+                                            name: 'Notification',
+                                            key: 'notification'
+                                        }
+                                    ].forEach((value, index) => {
+                                        buttons.push(
+                                            <Button
+                                                variant={ `link` }
+                                                className={ `hover:no-underline w-1/2 h-auto py-1.5 rounded-sm !font-medium !text-sm ${notificationTab === value.key ? `bg-background text-black` : ` text-gray-500`}` }
+                                                key={ value.key }
+                                                onClick={() => {
+                                                    setNotificationTab(value.key);
+                                                }}
+                                            >{ value.name }</Button>
+                                        );
+                                    });
+
+                                    return buttons;
+                                })()}
+                            </div>
                         </div>
-                        
+
+                        {/* Tabs Content */}
                         <div className={ `` }>
-                            <Tabs defaultValue="planned-payment">
-                                <TabsList className="grid w-full grid-cols-2">
-                                    <TabsTrigger value="planned-payment">Planned Payment</TabsTrigger>
-                                    <TabsTrigger value="notification">Notification</TabsTrigger>
-                                </TabsList>
-                                {/* Planned Payment Notification */}
-                                <TabsContent value="planned-payment">
-                                    <div className={ ` flex flex-col gap-4` }>
-                                        {(() => {
-                                            let element: any = [];
-                                            ['overdue', 'today', 'upcoming'].forEach((val) => {
-                                                element.push(
-                                                    <div className={ ` p-6 border rounded flex flex-col gap-4 dark:text-white` } key={ `planned_payment-${val}` }>
-                                                        <h6 className={ `font-semibold underline` }>{ ucwords(val) }</h6>
+                            {(() => {
+                                if(notificationTab === 'plannedPayment'){
+                                    return <>
+                                        <div className={ ` flex flex-col gap-4` }>
+                                            {(() => {
+                                                let element: any = [];
+                                                ['overdue', 'today', 'upcoming'].forEach((val) => {
+                                                    element.push(
+                                                        <div className={ ` p-6 border rounded flex flex-col gap-4 dark:text-white` } key={ `planned_payment-${val}` }>
+                                                            <h6 className={ `font-semibold underline` }>{ ucwords(val) }</h6>
 
-                                                        <div className={ ` flex flex-col gap-2` }>
-                                                            {(() => {
-                                                                let plannedList: any[] = [];
-                                                                let data: any[] | undefined = [];
-                                                                let shown: number = 0;
-                                                                let total: number = 0;
-                                                                let paginate: number = 0;
-                                                                let paginate_state: boolean = false;
-                                                                switch(val){
-                                                                    case 'overdue':
-                                                                        data = plannedOverdueItem;
-                                                                        paginate = plannedOverduePaginate;
-                                                                        paginate_state = plannedOverduePaginateState;
-                                                                        if(plannedOverdueCountShown){
-                                                                            shown = plannedOverdueCountShown;
-                                                                        }
-                                                                        if(plannedOverdueCountTotal){
-                                                                            total = plannedOverdueCountTotal;
-                                                                        }
-                                                                        break;
-                                                                    case 'today':
-                                                                        data = plannedTodayItem;
-                                                                        paginate = plannedTodayPaginate;
-                                                                        paginate_state = plannedTodayPaginateState;
-                                                                        if(plannedTodayCountShown){
-                                                                            shown = plannedTodayCountShown;
-                                                                        }
-                                                                        if(plannedTodayCountTotal){
-                                                                            total = plannedTodayCountTotal;
-                                                                        }
-                                                                        break;
-                                                                    case 'upcoming':
-                                                                        data = plannedUpcomingItem;
-                                                                        paginate = plannedUpcomingPaginate;
-                                                                        paginate_state = plannedUpcomingPaginateState;
-                                                                        if(plannedUpcomingCountShown){
-                                                                            shown = plannedUpcomingCountShown;
-                                                                        }
-                                                                        if(plannedUpcomingCountTotal){
-                                                                            total = plannedUpcomingCountTotal;
-                                                                        }
-                                                                        break;
-                                                                }
+                                                            <div className={ ` flex flex-col gap-2` }>
+                                                                {(() => {
+                                                                    let plannedList: any[] = [];
+                                                                    let data: any[] | undefined = [];
+                                                                    let shown: number = 0;
+                                                                    let total: number = 0;
+                                                                    let paginate: number = 0;
+                                                                    let paginate_state: boolean = false;
+                                                                    switch(val){
+                                                                        case 'overdue':
+                                                                            data = plannedOverdueItem;
+                                                                            paginate = plannedOverduePaginate;
+                                                                            paginate_state = plannedOverduePaginateState;
+                                                                            if(plannedOverdueCountShown){
+                                                                                shown = plannedOverdueCountShown;
+                                                                            }
+                                                                            if(plannedOverdueCountTotal){
+                                                                                total = plannedOverdueCountTotal;
+                                                                            }
+                                                                            break;
+                                                                        case 'today':
+                                                                            data = plannedTodayItem;
+                                                                            paginate = plannedTodayPaginate;
+                                                                            paginate_state = plannedTodayPaginateState;
+                                                                            if(plannedTodayCountShown){
+                                                                                shown = plannedTodayCountShown;
+                                                                            }
+                                                                            if(plannedTodayCountTotal){
+                                                                                total = plannedTodayCountTotal;
+                                                                            }
+                                                                            break;
+                                                                        case 'upcoming':
+                                                                            data = plannedUpcomingItem;
+                                                                            paginate = plannedUpcomingPaginate;
+                                                                            paginate_state = plannedUpcomingPaginateState;
+                                                                            if(plannedUpcomingCountShown){
+                                                                                shown = plannedUpcomingCountShown;
+                                                                            }
+                                                                            if(plannedUpcomingCountTotal){
+                                                                                total = plannedUpcomingCountTotal;
+                                                                            }
+                                                                            break;
+                                                                    }
 
-                                                                if(data){
-                                                                    data.forEach((planned, key) => {
-                                                                        plannedList.push(
-                                                                            <div className={ ` border-b last:border-b-0 py-4 last:pb-0 first:pt-0 flex flex-col gap-2` } key={ `planned_list-${planned.uuid}` }>
-                                                                                <span className={ ` leading-none font-medium` }>{ planned.name }</span>
+                                                                    if(data){
+                                                                        data.forEach((planned, key) => {
+                                                                            plannedList.push(
+                                                                                <div className={ ` border-b last:border-b-0 py-4 last:pb-0 first:pt-0 flex flex-col gap-2` } key={ `planned_list-${planned.uuid}` }>
+                                                                                    <span className={ ` leading-none font-medium` }>{ planned.name }</span>
 
-                                                                                <div className={ ` flex flex-col gap-1` }>
-                                                                                    {/* Type and Date */}
-                                                                                    <div className={ ` flex flex-row justify-between text-sm leading-none` }>
-                                                                                        <span>{ ucwords(planned.type) }</span>
-                                                                                        <span>{ momentFormated('MMM Do, YYYY', planned.date_start) }</span>
-                                                                                    </div>
+                                                                                    <div className={ ` flex flex-col gap-1` }>
+                                                                                        {/* Type and Date */}
+                                                                                        <div className={ ` flex flex-row justify-between text-sm leading-none` }>
+                                                                                            <span>{ ucwords(planned.type) }</span>
+                                                                                            <span>{ momentFormated('MMM Do, YYYY', planned.date_start) }</span>
+                                                                                        </div>
 
-                                                                                    {/* Wallet and Amount */}
-                                                                                    <div className={ ` flex flex-row justify-between text-sm leading-none` }>
-                                                                                        <span>{(() => {
-                                                                                            let walletName = [planned.from_wallet.name];
-                                                                                            if(planned.to_wallet){
-                                                                                                walletName.push(planned.to_wallet.name);
-                                                                                            }
-
-                                                                                            if(walletName.length > 0){
-                                                                                                return <div className={ ` flex flex-row gap-1 whitespace-nowrap overflow-hidden text-ellipsis` }>
-                                                                                                    {(() => {
-                                                                                                        let walletName = <span className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{planned.from_wallet.name}</span>;
-                                                                                                        if(planned.to_wallet){
-                                                                                                            walletName = <>
-                                                                                                                <span className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{planned.from_wallet.name}</span>
-                                                                                                                <span className={ `fa-solid fa-caret-right` }></span>
-                                                                                                                <span className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{planned.to_wallet.name}</span>
-                                                                                                            </>;
-                                                                                                        }
-
-                                                                                                        return <div className={ ` flex flex-row whitespace-nowrap overflow-hidden text-ellipsis gap-1` }>{walletName}</div>;
-                                                                                                    })()}
-                                                                                                </div>
-                                                                                            }
-
-                                                                                            return <span>-</span>;
-                                                                                        })()}</span>
-                                                                                        <span className={ `${planned.type === 'income' ? ` text-green-500` : ` text-red-500`} whitespace-nowrap` }>{ formatRupiah(planned.amount + planned.extra_amount) }</span>
-                                                                                    </div>
-                                                                                </div>
-                                                                                {/* Action */}
-                                                                                <div className={ ` flex flex-row justify-between gap-4` }>
-                                                                                    <Link href={ route('sys.planned-payment.show', planned.uuid) } className={ ` w-full` }>
-                                                                                        <Button variant={ `outline` } className={ ` w-full !h-auto py-2 leading-none` }><span className={ `leading-none` }>Detail</span></Button>
-                                                                                    </Link>
-                                                                                    <Button variant={ `default` } className={ ` w-full !h-auto py-2 leading-none` } onClick={($refs) => {
-                                                                                        let el = $refs.target as HTMLElement;
-                                                                                        if(el){
-                                                                                            let originalText = el.innerHTML;
-                                                                                            el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
-
-                                                                                            const revertToOriginalText = () => {
-                                                                                                if(originalText){
-                                                                                                    el.innerHTML = originalText;
+                                                                                        {/* Wallet and Amount */}
+                                                                                        <div className={ ` flex flex-row justify-between text-sm leading-none` }>
+                                                                                            <span>{(() => {
+                                                                                                let walletName = [planned.from_wallet.name];
+                                                                                                if(planned.to_wallet){
+                                                                                                    walletName.push(planned.to_wallet.name);
                                                                                                 }
 
-                                                                                                document.removeEventListener('dialog.record.shown', revertToOriginalText);
-                                                                                            }
-                                                                                            document.addEventListener('dialog.record.shown', revertToOriginalText);
-                                                                                        }
+                                                                                                if(walletName.length > 0){
+                                                                                                    return <div className={ ` flex flex-row gap-1 whitespace-nowrap overflow-hidden text-ellipsis` }>
+                                                                                                        {(() => {
+                                                                                                            let walletName = <span className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{planned.from_wallet.name}</span>;
+                                                                                                            if(planned.to_wallet){
+                                                                                                                walletName = <>
+                                                                                                                    <span className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{planned.from_wallet.name}</span>
+                                                                                                                    <span className={ `fa-solid fa-caret-right` }></span>
+                                                                                                                    <span className={ ` max-w-[5rem] whitespace-nowrap overflow-hidden text-ellipsis` }>{planned.to_wallet.name}</span>
+                                                                                                                </>;
+                                                                                                            }
 
-                                                                                        document.dispatchEvent(new CustomEvent('record-dialog.planned-payment.confirmation', {
-                                                                                            bubbles: true, 
-                                                                                            detail: {
-                                                                                                uuid: planned && 'uuid' in planned ? planned.uuid : null
+                                                                                                            return <div className={ ` flex flex-row whitespace-nowrap overflow-hidden text-ellipsis gap-1` }>{walletName}</div>;
+                                                                                                        })()}
+                                                                                                    </div>
+                                                                                                }
+
+                                                                                                return <span>-</span>;
+                                                                                            })()}</span>
+                                                                                            <span className={ `${planned.type === 'income' ? ` text-green-500` : ` text-red-500`} whitespace-nowrap` }>{ formatRupiah(planned.amount + planned.extra_amount) }</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    {/* Action */}
+                                                                                    <div className={ ` flex flex-row justify-between gap-4` }>
+                                                                                        <Link href={ route('sys.planned-payment.show', planned.uuid) } className={ ` w-full` }>
+                                                                                            <Button variant={ `outline` } className={ ` w-full !h-auto py-2 leading-none` }><span className={ `leading-none` }>Detail</span></Button>
+                                                                                        </Link>
+                                                                                        <Button variant={ `default` } className={ ` w-full !h-auto py-2 leading-none` } onClick={($refs) => {
+                                                                                            let el = $refs.target as HTMLElement;
+                                                                                            if(el){
+                                                                                                let originalText = el.innerHTML;
+                                                                                                el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+
+                                                                                                const revertToOriginalText = () => {
+                                                                                                    if(originalText){
+                                                                                                        el.innerHTML = originalText;
+                                                                                                    }
+
+                                                                                                    document.removeEventListener('dialog.record.shown', revertToOriginalText);
+                                                                                                }
+                                                                                                document.addEventListener('dialog.record.shown', revertToOriginalText);
                                                                                             }
-                                                                                        }))
-                                                                                    }}><span className={ ` leading-none` }>Approve</span></Button>
+
+                                                                                            document.dispatchEvent(new CustomEvent('record-dialog.planned-payment.confirmation', {
+                                                                                                bubbles: true, 
+                                                                                                detail: {
+                                                                                                    uuid: planned && 'uuid' in planned ? planned.uuid : null
+                                                                                                }
+                                                                                            }))
+                                                                                        }}><span className={ ` leading-none` }>Approve</span></Button>
+                                                                                    </div>
                                                                                 </div>
-                                                                            </div>
-                                                                        );
-                                                                    });
-                                                                }
-
-                                                                if(plannedList.length > 0){
-                                                                    return <div className=" flex flex-col gap-6">
-                                                                        <div className="">
-                                                                            { plannedList }
-                                                                        </div>
-
-                                                                        {(() => {
-                                                                            let actionButton: any = [];
-                                                                            actionButton.push(
-                                                                                <Button
-                                                                                    key={ `planned_action-load_more` }
-                                                                                    variant={ `outline` }
-                                                                                    className={ `dark:border-white disabled:z-[-1]` }
-                                                                                    disabled={ !paginate_state }
-                                                                                    onClick={() => {
-                                                                                        switch(val){
-                                                                                            case 'overdue':
-                                                                                                setPlannedOverduePaginate(plannedOverduePaginate + paginate_item);
-                                                                                                break;
-                                                                                            case 'today':
-                                                                                                setPlannedTodayPaginate(plannedTodayPaginate + paginate_item);
-                                                                                                break;
-                                                                                            case 'upcoming':
-                                                                                                setPlannedUpcomingPaginate(plannedUpcomingPaginate + paginate_item);
-                                                                                                break;
-                                                                                        }
-                                                                                    }}
-                                                                                >Load more</Button>
                                                                             );
+                                                                        });
+                                                                    }
 
-                                                                            if(total > 0 && shown > 0){
+                                                                    if(plannedList.length > 0){
+                                                                        return <div className=" flex flex-col gap-6">
+                                                                            <div className="">
+                                                                                { plannedList }
+                                                                            </div>
+
+                                                                            {(() => {
+                                                                                let actionButton: any = [];
                                                                                 actionButton.push(
-                                                                                    <div className={ `` } key={ `planned_action-shown` }>
-                                                                                        <span className={ `text-sm` }>Showing {shown} of {total} entries</span>
-                                                                                    </div>
+                                                                                    <Button
+                                                                                        key={ `planned_action-load_more` }
+                                                                                        variant={ `outline` }
+                                                                                        className={ `dark:border-white disabled:z-[-1]` }
+                                                                                        disabled={ !paginate_state }
+                                                                                        onClick={() => {
+                                                                                            switch(val){
+                                                                                                case 'overdue':
+                                                                                                    setPlannedOverduePaginate(plannedOverduePaginate + paginate_item);
+                                                                                                    break;
+                                                                                                case 'today':
+                                                                                                    setPlannedTodayPaginate(plannedTodayPaginate + paginate_item);
+                                                                                                    break;
+                                                                                                case 'upcoming':
+                                                                                                    setPlannedUpcomingPaginate(plannedUpcomingPaginate + paginate_item);
+                                                                                                    break;
+                                                                                            }
+                                                                                        }}
+                                                                                    >Load more</Button>
                                                                                 );
-                                                                            }
-                                                                            
-                                                                            if(actionButton.length > 0){
-                                                                                return (
-                                                                                    <div className={ ` flex flex-row justify-between items-center` }>
-                                                                                        { actionButton }
-                                                                                    </div>
-                                                                                );
-                                                                            }
 
-                                                                            return <></>;
-                                                                        })()}
-                                                                    </div>
-                                                                }
+                                                                                if(total > 0 && shown > 0){
+                                                                                    actionButton.push(
+                                                                                        <div className={ `` } key={ `planned_action-shown` }>
+                                                                                            <span className={ `text-sm` }>Showing {shown} of {total} entries</span>
+                                                                                        </div>
+                                                                                    );
+                                                                                }
+                                                                                
+                                                                                if(actionButton.length > 0){
+                                                                                    return (
+                                                                                        <div className={ ` flex flex-row justify-between items-center` }>
+                                                                                            { actionButton }
+                                                                                        </div>
+                                                                                    );
+                                                                                }
 
-                                                                return <>
-                                                                    <TemplateNoData/>
-                                                                </>
-                                                            })()}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            });
+                                                                                return <></>;
+                                                                            })()}
+                                                                        </div>
+                                                                    }
 
-                                            return element;
-                                        })()}
-                                    </div>
-                                </TabsContent>
-
-                                {/* Notification */}
-                                <TabsContent value="notification">
-                                {(() => {
-                                    let notificationList: any[] = [];
-                                    let data: any[] | undefined = [];
-                                    let shown: number = 0;
-                                    let total: number = 0;
-                                    let paginate: number = 0;
-                                    let paginate_state: boolean = false;
-
-                                    data = notificationItem;
-                                    paginate = notificationPaginate;
-                                    paginate_state = notificationPaginateState;
-                                    if(notificationCountShown){
-                                        shown = notificationCountShown;
-                                    }
-                                    if(notificationCountTotal){
-                                        total = notificationCountTotal;
-                                    }
-
-                                    if(data){
-                                        data.forEach((notif, key) => {
-                                            notificationList.push(
-                                                <div key={ `notification_item-${key}` }>
-                                                    <TemplateList notification={ notif }/>
-                                                </div>
-                                            );
-                                        });
-                                    }
-
-                                    if(notificationList.length > 0){
-                                        return <div className=" flex flex-col gap-6">
-                                            <div className="">
-                                                { notificationList }
-                                            </div>
-
-                                            {(() => {
-                                                let actionButton: any = [];
-                                                actionButton.push(
-                                                    <Button
-                                                        key={ `planned_action-load_more` }
-                                                        variant={ `outline` }
-                                                        className={ `dark:border-white disabled:z-[-1]` }
-                                                        disabled={ !paginate_state }
-                                                        onClick={() => {
-                                                            setNotificationPaginate(notificationPaginate + paginate_item);
-                                                        }}
-                                                    >Load more</Button>
-                                                );
-
-                                                if(total > 0 && shown > 0){
-                                                    actionButton.push(
-                                                        <div className={ `` } key={ `planned_action-shown` }>
-                                                            <span className={ `text-sm` }>Showing {shown} of {total} entries</span>
+                                                                    return <>
+                                                                        <TemplateNoData/>
+                                                                    </>
+                                                                })()}
+                                                            </div>
                                                         </div>
                                                     );
-                                                }
-                                                
-                                                if(actionButton.length > 0){
-                                                    return (
-                                                        <div className={ ` flex flex-row justify-between items-center` }>
-                                                            { actionButton }
-                                                        </div>
-                                                    );
-                                                }
+                                                });
 
-                                                return <></>;
+                                                return element;
                                             })()}
                                         </div>
-                                    }
-
+                                    </>;
+                                } else if(notificationTab === 'notification'){
                                     return <>
-                                        <TemplateNoData/>
-                                    </>
-                                })()}
-                                </TabsContent>
-                            </Tabs>
+                                        <div className={ ` flex flex-col gap-2` }>
+                                            {(() => {
+                                                let notificationList: any[] = [];
+                                                let data: any[] | undefined = [];
+                                                let shown: number = 0;
+                                                let total: number = 0;
+                                                let paginate: number = 0;
+                                                let paginate_state: boolean = false;
+
+                                                data = notificationItem;
+                                                paginate = notificationPaginate;
+                                                paginate_state = notificationPaginateState;
+                                                if(notificationCountShown){
+                                                    shown = notificationCountShown;
+                                                }
+                                                if(notificationCountTotal){
+                                                    total = notificationCountTotal;
+                                                }
+
+                                                if(data){
+                                                    data.forEach((notif, key) => {
+                                                        notificationList.push(
+                                                            <div key={ `notification_item-${key}` }>
+                                                                <TemplateList notification={ notif }/>
+                                                            </div>
+                                                        );
+                                                    });
+                                                }
+
+                                                if(notificationList.length > 0){
+                                                    return <div className=" flex flex-col gap-6">
+                                                        <div className=" flex flex-col gap-4">
+                                                            { notificationList }
+                                                        </div>
+
+                                                        {(() => {
+                                                            let actionButton: any = [];
+                                                            actionButton.push(
+                                                                <Button
+                                                                    key={ `planned_action-load_more` }
+                                                                    variant={ `outline` }
+                                                                    className={ `dark:border-white disabled:z-[-1]` }
+                                                                    disabled={ !paginate_state }
+                                                                    onClick={() => {
+                                                                        setNotificationPaginate(notificationPaginate + paginate_item);
+                                                                    }}
+                                                                >Load more</Button>
+                                                            );
+
+                                                            if(total > 0 && shown > 0){
+                                                                actionButton.push(
+                                                                    <div className={ `` } key={ `planned_action-shown` }>
+                                                                        <span className={ `text-sm` }>Showing {shown} of {total} entries</span>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            
+                                                            if(actionButton.length > 0){
+                                                                return (
+                                                                    <div className={ ` flex flex-row justify-between items-center` }>
+                                                                        { actionButton }
+                                                                    </div>
+                                                                );
+                                                            }
+
+                                                            return <></>;
+                                                        })()}
+                                                    </div>
+                                                }
+
+                                                return <>
+                                                    <TemplateNoData/>
+                                                </>
+                                            })()}
+
+                                            <Link href={ route('sys.report.notification.index') } className={ ` w-full` }>
+                                                <Button variant={ `outline` } className={ ` w-full` }>Show all notification</Button>
+                                            </Link>
+                                        </div>
+                                    </>;
+                                }
+                                
+                                return <></>;
+                            })()}
                         </div>
                     </div>
                 </ScrollArea>

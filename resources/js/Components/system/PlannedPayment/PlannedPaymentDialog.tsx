@@ -19,12 +19,12 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { ScrollArea } from "@/Components/ui/scroll-area";
-import { useToast } from "@/Components/ui/use-toast";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Textarea } from "@/Components/ui/textarea";
 import { Calendar } from "@/Components/ui/calendar";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
+import { toast } from "sonner";
 
 type dialogProps = {
     openState: boolean;
@@ -33,7 +33,6 @@ type dialogProps = {
 
 export default function PlannedPaymentDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
-    const { toast } = useToast();
 
     // extend style component
     const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
@@ -567,8 +566,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                         resetFormDialog();
                     }
             
-                    toast({
-                        title: "Action: Success",
+                    toast("Action: Success", {
                         description: "Planned Payment data successfully saved",
                     });
                 }

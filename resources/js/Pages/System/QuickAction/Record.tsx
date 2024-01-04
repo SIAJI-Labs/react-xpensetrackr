@@ -15,7 +15,6 @@ import { ThemeToggle } from "@/Components/template/theme-toggle";
 import ErrorMessage from "@/Components/forms/ErrorMessage";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useToast } from "@/Components/ui/use-toast";
 import PublicLayout from '@/Layouts/PublicLayout';
 
 // Shadcn
@@ -27,13 +26,12 @@ import { Textarea } from "@/Components/ui/textarea";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Input } from "@/Components/ui/input";
+import { toast } from "sonner";
 
 type ContentProps = {
 }
 
 export default function Record({ auth }: PageProps<ContentProps>) {
-    const { toast } = useToast();
-
     // extend style component
     const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
         <Input
@@ -253,8 +251,7 @@ export default function Record({ auth }: PageProps<ContentProps>) {
             if (response.status === 200) {
                 const responseJson = response.data;
 
-                toast({
-                    title: "Action: Success",
+                toast("Action: Success", {
                     description: "Record data successfully saved",
                 });
                 // Update to next form

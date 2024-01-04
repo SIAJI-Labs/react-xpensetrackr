@@ -147,11 +147,7 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Planned Detail: { `${data?.name}` }</h2>}
         >
             <Head title={ `Planned Detail: ${data?.name}` } />
-
-            {/* Back button */}
-            <div className="flex flex-col gap-6">
-                <BackButton className={ `px-0` }/>
-            </div>
+            <BackButton className={ `px-0` }/>
 
             <div className={ ` flex flex-col gap-6` }>
                 {/* Main Content */}

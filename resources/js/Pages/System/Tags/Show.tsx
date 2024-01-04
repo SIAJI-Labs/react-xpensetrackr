@@ -52,10 +52,7 @@ export default function Show({ auth, data, related }: PageProps<ContentProps>) {
                 header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Tags Detail: { `${data?.name}` }</h2>}
             >
                 <Head title={ `Tags: ${data?.name}` } />
-
-                <div className="flex flex-col gap-6">
-                    <TemplateBackButton className={ `px-0` }/>
-                </div>
+                <TemplateBackButton className={ `px-0` }/>
 
                 <Card className={ ` w-full` }>
                     <CardHeader>

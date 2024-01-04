@@ -183,6 +183,7 @@ class Record extends Model
                 $related->note = $model->{'note'};
                 $related->timezone = $model->{'timezone'};
                 $related->is_pending = $model->{'is_pending'};
+                $related->is_hidden = $model->{'is_hidden'};
                 $related->saveQuietly();
             }
         });
@@ -216,6 +217,7 @@ class Record extends Model
                         $related->note = $model->{'note'};
                         $related->timezone = $model->{'timezone'};
                         $related->is_pending = $model->{'is_pending'};
+                        $related->is_hidden = $model->{'is_hidden'};
                         $related->saveQuietly();
                     } else {
                         // Type is changed from transfer to either expense or income, thus remove relaled

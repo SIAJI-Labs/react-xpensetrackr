@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { formatRupiah, momentFormated, ucwords } from "@/function";
 
 // Partials
-import TemplateBackButton from "@/Components/template/TemplateBackButton";
+import BackButton from "@/Components/template/TemplateBackButton";
 import ListTemplate from "@/Components/template/Category/TemplateList";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
@@ -58,10 +58,7 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
                 fabAction={ [`category`] }
             >
                 <Head title={ `Category: ${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` } />
-
-                <div className="flex flex-col gap-6">
-                    <TemplateBackButton className={ `px-0` }/>
-                </div>
+                <BackButton className={ `px-0` }/>
 
                 <Card className={ ` w-full` }>
                     <CardHeader>

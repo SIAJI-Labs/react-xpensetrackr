@@ -53,10 +53,7 @@ export default function Show({ auth, record, related }: PageProps<ContentProps>)
                 header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Record Detail</h2>}
             >
                 <Head title="Record Detail" />
-
-                <div className="flex flex-col gap-6">
-                    <BackButton className={ `px-0` }/>
-                </div>
+                <BackButton className={ `px-0` }/>
 
                 <Card className={ ` w-full` }>
                     <CardHeader>

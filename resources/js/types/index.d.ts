@@ -8,6 +8,23 @@ export interface User {
     username?: string
 }
 
+export interface BudgetItem {
+    // id: number,
+    uuid: string,
+    name: string,
+    description: string,
+    start: string,
+    end: string,
+    occurence: string,
+    interval: string,
+    amount: number,
+    used: number,
+    remaining: number,
+
+    budget_category?: CategoryItem[],
+    budget_wallet?: WalletItem[],
+    budget_tags?: TagsItem[],
+}
 export interface CategoryItem {
     // id: number,
     uuid: string,

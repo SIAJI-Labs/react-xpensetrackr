@@ -134,10 +134,7 @@ export default function Setting({ auth, server, preference, list }: PageProps<Co
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Timezone</h2>}
         >
             <Head title="Timezone" />
-
-            <div className="flex flex-col gap-6">
-                <BackButton className={ `px-0` }/>
-            </div>
+            <BackButton className={ `px-0` }/>
 
             <Card>
                 <CardContent className={ ` p-6` }>

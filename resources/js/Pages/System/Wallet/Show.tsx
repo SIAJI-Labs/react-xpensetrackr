@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 // Partials
-import TemplateBackButton from "@/Components/template/TemplateBackButton";
+import BackButton from "@/Components/template/TemplateBackButton";
 import WalletTemplate from "@/Components/template/Wallet/TemplateList";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
@@ -169,10 +169,7 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
                 fabAction={ [`wallet`] }
             >
                 <Head title={ `Wallet: ${data.parent ? `${data.parent.name} - ` : ''}${data?.name}` } />
-
-                <div className="flex flex-col gap-6">
-                    <TemplateBackButton className={ `px-0` }/>
-                </div>
+                <BackButton className={ `px-0` }/>
 
                 <div className={ ` flex flex-col gap-6` }>
                     <Card className={ ` w-full` }>

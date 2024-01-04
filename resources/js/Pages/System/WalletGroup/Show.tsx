@@ -6,7 +6,7 @@ import axios from "axios";
 
 // Partials
 import SystemLayout from "@/Layouts/SystemLayout";
-import TemplateBackButton from "@/Components/template/TemplateBackButton";
+import BackButton from "@/Components/template/TemplateBackButton";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import WalletTemplate from "@/Components/template/Wallet/TemplateList";
 import RecordTemplate from "@/Components/template/Record/TemplateList";
@@ -196,10 +196,7 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
                 header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Wallet Group Detail: { `${data?.name}` }</h2>}
             >
                 <Head title={ `Wallet Group: ${data?.name}` } />
-
-                <div className="flex flex-col gap-6">
-                    <TemplateBackButton className={ `px-0` }/>
-                </div>
+                <BackButton className={ `px-0` }/>
 
                 <div className={ ` flex flex-col gap-6` }>
                     <Card className={ ` w-full` }>

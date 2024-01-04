@@ -10,13 +10,13 @@ import '@/../plugins/nestable/js/nestable';
 import { v4 as uuidv4 } from 'uuid';
 
 // Partials
-import TemplateBackButton from "@/Components/template/TemplateBackButton";
+import BackButton from "@/Components/template/TemplateBackButton";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { useToast } from "@/Components/ui/use-toast";
+import { toast } from "sonner";
 
 // Props
 type ContentProps = {
@@ -25,7 +25,6 @@ type ContentProps = {
 
 export default function Index({ auth, listCategory }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
-    const { toast } = useToast();
 
     // Generate key to force update page render
     const [key, setKey] = useState<string>('');
@@ -52,8 +51,7 @@ export default function Index({ auth, listCategory }: PageProps<ContentProps>) {
                 // Generate key
                 setKey(generateKey());
 
-                toast({
-                    title: "Action: Failed",
+                toast.error("Action: Failed", {
                     description: "Something went wrong",
                 });
                 return;
@@ -71,8 +69,7 @@ export default function Index({ auth, listCategory }: PageProps<ContentProps>) {
                 // Generate key
                 setKey(generateKey());
 
-                toast({
-                    title: "Action: Failed",
+                toast.error("Action: Failed", {
                     description: "Parent data cannot be moved inside another parent data!",
                 });
                 return;
@@ -156,8 +153,7 @@ export default function Index({ auth, listCategory }: PageProps<ContentProps>) {
                 abortController.abort = c;
             })
         }).then((response) => {
-            toast({
-                title: "Action: Success",
+            toast("Action: Success", {
                 description: "Category order successfully updated",
             });
 
@@ -203,10 +199,7 @@ export default function Index({ auth, listCategory }: PageProps<ContentProps>) {
             key={ key }
         >
             <Head title="Category Re-Order" />
-
-            <div className="flex flex-col gap-6">
-                <TemplateBackButton className={ `px-0` }/>
-            </div>
+            <BackButton className={ `px-0` }/>
 
             <Card className={ ` w-full` }>
                 <CardHeader>

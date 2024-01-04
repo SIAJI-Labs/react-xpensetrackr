@@ -10,7 +10,6 @@ import { useMediaQuery } from 'usehooks-ts'
 
 // Shadcn
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { useToast } from "@/Components/ui/use-toast";
 import { Button } from "@/Components/ui/button";
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/Components/ui/drawer";
 import moment from "moment";
@@ -23,10 +22,9 @@ type dialogProps = {
 
 export default function NotificationDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
-    const { toast } = useToast();
-    const [notificationItem, setNotificationItem] = useState<NotificationItem | undefined>();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
-    const isDesktop = useMediaQuery("(min-width: 768px)")
+    const [notificationItem, setNotificationItem] = useState<NotificationItem | undefined>();
 
     // Dialog Action
     useEffect(() => {
@@ -131,15 +129,12 @@ export default function NotificationDialog({ openState, setOpenState }: dialogPr
 
                     {/* Action */}
                     {(() => {
-                        console.log(notificationItem);
                         if(notificationItem.action && 'actions' in notificationItem.action && notificationItem.action.actions.length > 0){
                             let items: any = [];
-                            (notificationItem.action.actions).forEach((value: any) => {
-                                console.log(value);
-
+                            (notificationItem.action.actions).forEach((value: any, index: any) => {
                                 if(value.url){
                                     items.push(
-                                        <Link href={ value.url }>
+                                        <Link href={ value.url } key={ `action_${index}` }>
                                             <Button type={ `button`} variant={ `secondary` }>{ value.title }</Button>
                                         </Link>
                                     );

@@ -11,10 +11,10 @@ import ErrorMessage from "@/Components/forms/ErrorMessage";
 
 // Shadcn
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { useToast } from "@/Components/ui/use-toast";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
+import { toast } from "sonner";
 
 type dialogProps = {
     openState: boolean;
@@ -23,7 +23,6 @@ type dialogProps = {
 
 export default function TagsDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
-    const { toast } = useToast();
 
     // Form
     const [formParent, setFormParent] = useState<string>("");
@@ -100,8 +99,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
                         resetFormDialog();
                     }
             
-                    toast({
-                        title: "Action: Success",
+                    toast("Action: Success", {
                         description: "Tags data successfully saved",
                     });
                 }

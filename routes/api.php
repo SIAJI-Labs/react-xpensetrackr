@@ -66,6 +66,31 @@ Route::group([
         });
     });
 
+    // Budget
+    Route::group([
+        'prefix' => 'budget',
+        'as' => 'budget.'
+    ], function(){
+        // v1
+        Route::group([
+            'prefix' => 'v1',
+            'as' => 'v1.'
+        ], function(){
+            // List
+            Route::get('list', [\App\Http\Controllers\Api\v1\BudgetController::class, 'index'])->name('list');
+
+            // Show
+            Route::get('{uuid}', [\App\Http\Controllers\Api\v1\BudgetController::class, 'show'])->name('show');
+            
+            // Store
+            Route::post('store', [\App\Http\Controllers\Api\v1\BudgetController::class, 'store'])->name('store');
+            // Update
+            Route::put('{uuid}', [\App\Http\Controllers\Api\v1\BudgetController::class, 'update'])->name('update');
+            // Delete
+            Route::delete('{uuid}', [\App\Http\Controllers\Api\v1\BudgetController::class, 'destroy'])->name('destroy');
+        });
+    });
+
     // Category
     Route::group([
         'prefix' => 'category',
@@ -78,6 +103,16 @@ Route::group([
         ], function(){
             // List
             Route::get('list', [\App\Http\Controllers\Api\v1\CategoryController::class, 'index'])->name('list');
+
+            // Show
+            Route::get('{uuid}', [\App\Http\Controllers\Api\v1\CategoryController::class, 'show'])->name('show');
+            
+            // Store
+            Route::post('store', [\App\Http\Controllers\Api\v1\CategoryController::class, 'store'])->name('store');
+            // Update
+            Route::put('{uuid}', [\App\Http\Controllers\Api\v1\CategoryController::class, 'update'])->name('update');
+            // Delete
+            Route::delete('{uuid}', [\App\Http\Controllers\Api\v1\CategoryController::class, 'destroy'])->name('destroy');
         });
     });
 

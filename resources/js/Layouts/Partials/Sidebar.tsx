@@ -34,10 +34,10 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
         }, {
             name: 'Budget',
             icon: 'fa-solid fa-money-bills',
-            route: null,
+            route: route('sys.budget.index'),
             sub: [],
             active: [],
-            is_disabled: true,
+            is_disabled: false,
             is_header: false
         }, {
             name: 'Debt',

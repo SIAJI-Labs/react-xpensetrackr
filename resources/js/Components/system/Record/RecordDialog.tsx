@@ -20,12 +20,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/Components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { ScrollArea } from '@/Components/ui/scroll-area';
-import { useToast } from "@/Components/ui/use-toast";
 import { Textarea } from '@/Components/ui/textarea';
 import { Calendar } from '@/Components/ui/calendar';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import { toast } from 'sonner';
 
 type dialogProps = {
     openState: boolean;
@@ -34,7 +34,6 @@ type dialogProps = {
 
 export default function RecordDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
-    const { toast } = useToast();
 
     // extend style component
     const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
@@ -604,8 +603,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                         resetFormDialog();
                     }
             
-                    toast({
-                        title: "Action: Success",
+                    toast("Action: Success", {
                         description: "Record data successfully saved",
                     });
                 }

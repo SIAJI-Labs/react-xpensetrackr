@@ -9,7 +9,6 @@ import ErrorMessage from "@/Components/forms/ErrorMessage";
 
 // Shadcn
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { useToast } from "@/Components/ui/use-toast";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
@@ -18,6 +17,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "
 import { ScrollArea } from "@/Components/ui/scroll-area";
 import { WalletGroupItem, WalletItem } from "@/types";
 import { Check } from "lucide-react";
+import { toast } from "sonner";
 
 type dialogProps = {
     openState: boolean;
@@ -26,7 +26,6 @@ type dialogProps = {
 
 export default function WalletGroupDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
-    const { toast } = useToast();
 
     // Form
     const [formUuid, setFormUuid] = useState<string>('');
@@ -192,8 +191,7 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
                         resetWalletDialog();
                     }
             
-                    toast({
-                        title: "Action: Success",
+                    toast("Action: Success", {
                         description: "Wallet Group data successfully saved",
                     });
                 }

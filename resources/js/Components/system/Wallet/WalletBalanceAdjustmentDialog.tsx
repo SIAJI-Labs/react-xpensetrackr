@@ -11,10 +11,10 @@ import ErrorMessage from "@/Components/forms/ErrorMessage";
 
 // Shadcn
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { useToast } from "@/Components/ui/use-toast";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Checkbox } from "@/Components/ui/checkbox";
+import { toast } from "sonner";
 
 type dialogProps = {
     openState: boolean;
@@ -23,7 +23,6 @@ type dialogProps = {
 
 export default function WalletBalanceAdjustmentDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
-    const { toast } = useToast();
 
     // extend style component
     const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
@@ -132,8 +131,7 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
                     // Close dialog
                     setOpenState(false);
             
-                    toast({
-                        title: "Action: Success",
+                    toast("Action: Success", {
                         description: "Wallet Balance data successfully updated",
                     });
                 }

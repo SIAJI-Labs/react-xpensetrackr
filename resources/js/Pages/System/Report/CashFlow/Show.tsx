@@ -13,7 +13,7 @@ import { formatRupiah, ucwords } from "@/function";
 import moment from "moment";
 
 // Partials
-import TemplateBackButton from "@/Components/template/TemplateBackButton";
+import BackButton from "@/Components/template/TemplateBackButton";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
@@ -202,10 +202,7 @@ export default function Index({ auth, period }: PageProps<ContentProps>) {
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Report: Cash Flow ({periodFormated})</h2>}
         >
             <Head title={ `Report: Cash Flow (${periodFormated})` } />
-
-            <div className="flex flex-col gap-6">
-                <TemplateBackButton className={ `px-0` }/>
-            </div>
+            <BackButton className={ `px-0` }/>
 
             <Card className={ ` w-full` }>
                 <CardHeader>

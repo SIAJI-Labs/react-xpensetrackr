@@ -12,9 +12,9 @@ const vapid_pubkey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 initSW();
 
 function initSW(){
-    console.log('Init SW');
+    // console.log('Init SW');
     // console.log(swBase);
-    console.log("serviceWorker" in navigator);
+    // console.log("serviceWorker" in navigator);
 
     if(!"serviceWorker" in navigator){
         // Service worker not supported
@@ -34,7 +34,6 @@ function initSW(){
                 if(app && app.dataset.page){
                     let parse = JSON.parse(app.dataset.page);
                     let props = parse.props;
-                    console.log(props);
 
                     // Check if auth props exists at inertia
                     if(props && props.auth && props.auth.user){
@@ -63,9 +62,7 @@ function initPush(){
     if ('permissions' in navigator) {
         navigator.permissions.query({ name: 'notifications' }).then(function (notificationPerm) {
             notificationPerm.onchange = () => {
-                console.log('Notification permission got changed');
-                // handleUserNotification(notificationPerm);
-
+                // console.log('Notification permission got changed');
                 if('state' in notificationPerm && notificationPerm.state === 'granted'){
                     subscribeUser();
                 }
@@ -75,7 +72,7 @@ function initPush(){
 }
 
 function subscribeUser() {
-    console.log('Subscribe User');
+    // console.log('Subscribe User');
 
     if(typeof vapid_pubkey !== 'undefined' && vapid_pubkey){
         navigator.serviceWorker.ready
@@ -139,7 +136,7 @@ function storePushSubscription(pushSubscription) {
         }
     }
 
-    console.log("Action to store user push notification");
+    // console.log("Action to store user push notification");
     axios.post(`${subscribeBase}`, formData)
         .then(function (response) {
             // console.log(response);

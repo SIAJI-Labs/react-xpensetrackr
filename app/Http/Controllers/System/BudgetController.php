@@ -45,27 +45,45 @@ class BudgetController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        // Previous Period
-        $prev_start = null;
-        $prev_end = null;
-        if($data->repetition === 'repeat' && in_array($data->interval, ['daily', 'weekly', 'monthly', 'yearly'])){
+        // Handle Period
+        $original['start'] = $data->start;
+        $original['end'] = $data->end;
+        $previous['start'] = $original['start'];
+        $previous['end'] = $original['end'];
+        $previous['range'] = 0;
+        if($request->has('previous') && !empty($request->previous) && is_numeric($request->previous) && $data->repetition === 'repeat'){
+            $previous['range'] = $request->previous;
             $interval = match($data->interval){
-                'daily' => 'days',
                 'weekly' => 'weeks',
                 'monthly' => 'months',
                 'yearly' => 'years',
-
                 default => 'days'
             };
 
-            $prev_start = date('Y-m-d H:i:s', strtotime($data->start.' -1 '.$interval));
-            $prev_end = date('Y-m-d H:i:s', strtotime($data->end.' -1 '.$interval));
+            $previous['start'] = date('Y-m-d H:i:s', strtotime($original['start'].' -'.$previous['range'].' '.$interval));
+            $previous['end'] = date('Y-m-d H:i:s', strtotime($original['end'].' -'.$previous['range'].' '.$interval));
         }
             
+        // Calculate usage based on period
+        $used = $data->getUsedAmount($previous['start'], $previous['end']);
+        $remaining = $data->getRemainingAmount($previous['start'], $previous['end']);
+        // Handle usage data
+        $usage['limit'] = $data->amount;
+        $usage['used'] = $used;
+        $usage['remaining'] = $remaining;
+
         return Inertia::render('System/Budget/Show', [
             'data' => new \App\Http\Resources\Budget\ShowResource($data),
-            'previous_start' => $prev_start,
-            'previous_end' => $prev_end,
+
+            'original_start' => $original['start'],
+            'original_end' => $original['end'],
+            'previous_start' => $previous['start'],
+            'previous_end' => $previous['end'],
+            'range' => $previous['range'],
+
+            'usage_limit' => $usage['limit'],
+            'usage_used' => $usage['used'],
+            'usage_remaining' => $usage['remaining'],
         ]);
     }
 

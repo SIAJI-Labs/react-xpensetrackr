@@ -23,12 +23,13 @@ class RecordController extends Controller
             ->with('category.parent', 'fromWallet.parent', 'toWallet.parent', 'recordTags')
             ->where('user_id', $user->id);
 
+        // Apply keyword search
+        if($request->has('keyword') && !empty($request->keyword)){
+            $data->where('note', 'like', '%'.$request->keyword.'%');
+        }
         // Apply Filter
         if($request->has('filter_status') && in_array($request->filter_status, ['pending', 'complete'])){
             $data->where('is_pending', $request->filter_status === 'pending');
-        }
-        if($request->has('keyword') && !empty($request->keyword)){
-            $data->where('note', 'like', '%'.$request->keyword.'%');
         }
         // Apply Filter - Wallet
         if($request->has('filter_wallet')){
@@ -124,6 +125,28 @@ class RecordController extends Controller
                 ->toArray();
 
             $data->whereIn('id', $tagsRecord);
+        }
+        // Apply Filter - Budget
+        if($request->has('filter_budget')){
+            $budget = \App\Models\Budget::where('user_id', $user->id)
+                ->where(DB::raw('BINARY `uuid`'), $request->filter_budget)
+                ->first();
+
+            if(!empty($budget)){
+                $start = $budget->start;
+                $end = $budget->end;
+
+                // Override default period
+                if($request->has('filter_start') && validateDateFormat($request->filter_start, 'Y-m-d H:i:s')){
+                    $start = $request->filter_start;
+                }
+                if($request->has('filter_end') && validateDateFormat($request->filter_end, 'Y-m-d H:i:s')){
+                    $end = $request->filter_end;
+                }
+
+                $record_id = $budget->getRecordId($start, $end);
+                $data->whereIn('id', $record_id);
+            }
         }
 
         // Apply ordering

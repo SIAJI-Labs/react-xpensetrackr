@@ -1,5 +1,5 @@
 import { Head, Link, router } from "@inertiajs/react";
-import { PageProps, BudgetItem } from "@/types"
+import { PageProps, BudgetItem, RecordItem } from "@/types"
 import { useIsFirstRender } from "@/lib/utils";
 import { ReactNode, useEffect, useState } from "react";
 
@@ -10,7 +10,8 @@ import { formatRupiah, momentFormated, ucwords } from "@/function";
 import BackButton from "@/Components/template/TemplateBackButton";
 import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
-
+import RecordTemplate from '@/Components/template/Record/TemplateList';
+import RecordSkeleton from '@/Components/template/Record/SkeletonList';
 
 // Shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
@@ -20,19 +21,168 @@ import { Badge } from "@/Components/ui/badge";
 import moment from "moment";
 import { Separator } from "@/Components/ui/separator";
 import { Input } from "@/Components/ui/input";
+import axios from "axios";
 
 // Props
 type ContentProps = {
-    data: BudgetItem
+    data: BudgetItem,
+
+    original_start: string,
+    original_end: string,
+    previous_start: string,
+    previous_end: string,
+    range: number,
+
+    usage_limit: number,
+    usage_used: number,
+    usage_remaining: number,
 }
 
-export default function Show({ auth, data }: PageProps<ContentProps>) {
+export default function Show({ 
+    auth,
+    data,
+
+    original_start,
+    original_end,
+    previous_start,
+    previous_end,
+    range,
+
+    usage_limit,
+    usage_used,
+    usage_remaining,
+}: PageProps<ContentProps>) {
+    const isFirstRender = useIsFirstRender();
+
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
-
-    const [currentStartPeriod, setCurrentStartPeriod] = useState<any>(data.start);
-    const [currentEndPeriod, setCurrentEndPeriod] = useState<any>(data.end);
     const navigatePeriod = (action: string = 'prev') => {
+        let target = null;
 
+        // Handle action
+        if(action === 'prev'){
+            target = Number(range) + 1;
+        } else if(action === 'next'){
+            target = Number(range) - 1;
+        }
+
+        // Handle target
+        let param: {uuid: string, previous?: number} = {
+            uuid: data.uuid
+        };
+        if (target && target > 0) {
+            param.previous = target;
+        }
+
+        let targetRoute = route('sys.budget.show', param);
+        router.visit(targetRoute, { preserveScroll: true });
+    }
+
+    const [recordFilterKeyword, setRecordFilterKeyword] = useState<string>('');
+    useEffect(() => {
+        handleReloadData();
+    }, [recordFilterKeyword]);
+    const handleReloadData = () => {
+        if(!isFirstRender){
+            const timer = setTimeout(() => {
+                setRecordPaginate(paginate_item);
+                fetchRecordList();
+            }, 500);
+    
+            // Clean up the timer if the component unmounts or when recordFilterKeyword changes.
+            return () => {
+                clearTimeout(timer);
+            };
+        }
+    }
+    // Record List - Template
+    const recordListTemplate = (obj:RecordItem) => {
+        return <RecordTemplate record={obj}></RecordTemplate>;
+    }
+    // Record List - Skeleton
+    let skeletonTemplate = <RecordSkeleton/>;
+    // Record List - Variable Init
+    let paginate_item = 5;
+    const [recordCountShown, setRalletCountShown] = useState<number>(0);
+    const [recordCountTotal, setRalletCountTotal] = useState<number>(0);
+    const [recordPaginate, setRecordPaginate] = useState<number>(paginate_item);
+    const [recordPaginateState, setRecordPaginateState] = useState<boolean>(false);
+    useEffect(() => {
+        fetchRecordList();
+    }, [recordPaginate]);
+
+    const [recordIsLoading, setRecordIsLoading] = useState<boolean>(true);
+    const [recordSkeletonCount, setRecordSkeletonCount] = useState<number>(5);
+    const [recordItem, setRecordItem] = useState([]);
+    const [recordItemAbortController, setRecordItemAbortController] = useState<AbortController | null>(null);
+    useEffect(() => {
+        // Update skeleton count to match loaded record item
+        setRecordSkeletonCount(recordItem.length > 0 ? recordItem.length : 3);
+    }, [recordItem]);
+    // Simulate API call
+    const fetchRecordList = async () => {
+        // setRefreshLoading(true);
+
+        // Cancel previous request
+        if(recordItemAbortController instanceof AbortController){
+            recordItemAbortController.abort();
+        }
+        
+        // Create a new AbortController
+        const abortController = new AbortController();
+        // Store the AbortController in state
+        setRecordItemAbortController(abortController);
+
+        // Show skeleton
+        setRecordIsLoading(true);
+
+        // Build parameter
+        const query = [];
+        const obj = {
+            limit: recordPaginate,
+            keyword: recordFilterKeyword,
+            filter_budget: data.uuid,
+            filter_start: previous_start,
+            filter_end: previous_end,
+        }
+        // } as { [key: string]: any };
+        for (const key in obj) {
+            query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
+        }
+
+        try {
+            const response = await axios.get(`${route('api.record.v1.list')}?${query.join('&')}`, {
+                cancelToken: new axios.CancelToken(function executor(c) {
+                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                    abortController.abort = c;
+                })
+            });
+        
+            // Use response.data instead of req.json() to get the JSON data
+            let jsonResponse = response.data;
+            // Apply to related property
+            setRecordItem(jsonResponse.result.data);
+            // Update load more state
+            setRecordPaginateState(jsonResponse.result.has_more);
+            // Update shown
+            setRalletCountShown((jsonResponse.result.data).length);
+            if('total' in jsonResponse.result){
+                setRalletCountTotal(jsonResponse.result.total);
+            }
+
+            // Remove loading state
+            setRecordIsLoading(false);
+
+            // Clear the AbortController from state
+            setRecordItemAbortController(null);
+        } catch (error) {
+            if (axios.isCancel(error)) {
+                // Handle the cancellation here if needed
+                console.log('Request was canceled', error);
+            } else {
+                // Handle other errors
+                console.error('Error:', error);
+            }
+        }
     }
 
     // Listen to Record Dialog event
@@ -41,6 +191,7 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
             if(event.detail?.action && event.detail?.action === 'delete'){
                 router.visit(route('sys.budget.index'))
             } else {
+                fetchRecordList();
                 router.reload();
             }
         }
@@ -283,13 +434,13 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
                                     {/* Used */}
                                     <div className={ ` flex flex-col` }>
                                         <small>Used</small>
-                                        <span>{ formatRupiah(data.used) }</span>
+                                        <span>{ formatRupiah(usage_used) }</span>
                                     </div>
 
                                     {/* Remaining */}
                                     <div className={ ` flex flex-col items-end` }>
                                         <small>Remaining</small>
-                                        <span>{ formatRupiah(data.remaining) }</span>
+                                        <span>{ formatRupiah(usage_remaining) }</span>
                                     </div>
                                 </div>
 
@@ -297,7 +448,7 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
                                 <div className={ ` h-3 w-full rounded-full relative bg-gray-100 dark:bg-gray-700 overflow-hidden` }>
                                     <div className={ ` h-full w-full absolute left-0 top-0 bg-primary` } style={
                                         {
-                                            width: `${(data && 'remaining' in data && 'amount' in data ? ((data.remaining / data.amount) * 100) : 100)}%`
+                                            width: `${(usage_remaining && usage_limit ? ((usage_remaining / usage_limit) * 100) : 100)}%`
                                         }
                                     }></div>
                                 </div>
@@ -305,7 +456,126 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
                                 {/* Summary */}
                                 <div className={ ` flex flex-row justify-between` }>
                                     <Badge variant={ `outline` }>Limit: { formatRupiah(data.amount) }</Badge>
-                                    <Badge variant={ `outline` }>Usage: { `${(100 - (data && 'remaining' in data && 'amount' in data ? ((data.remaining / data.amount) * 100) : 100)).toFixed(2)}%` }</Badge>
+                                    <Badge variant={ `outline` }>Usage: { `${(100 - (usage_remaining && usage_limit ? ((usage_remaining / usage_limit) * 100) : 100)).toFixed(2)}%` }</Badge>
+                                </div>
+                            </div>
+
+                            {/* Record Items */}
+                            <Separator/>
+                            <div className={ ` flex flex-col gap-4` }>
+                                <div className={ ` flex flex-col gap-1` }>
+                                    {/* Period Navigation */}
+                                    <div className={ ` flex flex-col gap-1` }>
+                                        <div className={ ` flex flex-row justify-between` }>
+                                            {/* Previous */}
+                                            <div className={ `` }>
+                                                <Button variant={ `ghost` } onClick={() => {
+                                                    navigatePeriod('prev');
+                                                }}>
+                                                    <span><i className={ `fa-solid fa-angle-left` }></i></span>
+                                                </Button>
+                                            </div>
+
+                                            {/* State */}
+                                            <div className={ `` }>
+                                                <Button variant={ `outline` } className={ `px-6` }>
+                                                    { moment(previous_start) < moment(original_start) ? `Archive` : `Current` }
+                                                </Button>
+                                            </div>
+
+                                            {/* Next */}
+                                            <div className={ `` }>
+                                                <Button variant={ `ghost` } onClick={() => {
+                                                    navigatePeriod('next');
+                                                }} className={ moment(previous_start) < moment(original_start) ? `` : ` !opacity-0` } disabled={ !(moment(previous_start) < moment(original_start)) }>
+                                                    <span><i className={ `fa-solid fa-angle-right` }></i></span>
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        {(() => {
+                                            if(moment(previous_start) < moment(original_start)){
+                                                return <div className={ ` flex flex-row justify-center` }>
+                                                    <Button variant={ `link` } className={ ` h-auto py-0` } onClick={() => {
+                                                        navigatePeriod('curr');
+                                                    }}>Back to current period</Button>
+                                                </div>
+                                            }
+
+                                            return <></>;
+                                        })()}
+                                    </div>
+                                    {/* Period Information */}
+                                    <div className={ ` flex flex-row justify-between` }>
+                                        <div className={ ` flex flex-col gap-1` }>
+                                            <span className={ ` text-sm leading-none` }>From</span>
+                                            <span className={ ` font-medium leading-tight` }>{ moment(previous_start).format('MMM Do, \'YY / HH:mm') }</span>
+                                        </div>
+                                        <div className={ ` flex flex-col gap-1 items-end` }>
+                                            <span className={ ` text-sm leading-none` }>Until</span>
+                                            <span className={ ` font-medium leading-tight` }>{ moment(previous_end).format('MMM Do, \'YY / HH:mm') }</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Record List */}
+                                <div className={ ` flex flex-col gap-2` }>
+                                    <Input placeholder={ `Search by record notes` } value={recordFilterKeyword} onChange={(event) => {
+                                        setRecordFilterKeyword(event.target.value);
+                                    }}/>
+                                    {/* Content */}
+                                    <div className={ ` flex flex-col gap-4` }>
+                                        {(() => {
+                                            if(recordIsLoading){
+                                                let element: any[] = [];
+                                                for(let i = 0; i < recordSkeletonCount; i++){
+                                                    element.push(
+                                                        <div key={ `skeleton-${i}` }>
+                                                            {skeletonTemplate}
+                                                        </div>
+                                                    );
+                                                }
+
+                                                return element;
+                                            } else {
+                                                let recordElement: any[] = [];
+                                                let defaultContent = <TemplateNoData></TemplateNoData>;
+                                                // Loop through response
+                                                if(recordItem.length > 0){
+                                                    recordItem.map((val, index) => {
+                                                        recordElement.push(
+                                                            <div key={ `record_item-${index}` }>
+                                                                {recordListTemplate(val)}
+                                                            </div>
+                                                        );
+                                                    });
+                                                }
+
+                                                return recordElement.length > 0 ? recordElement : defaultContent;
+                                            }
+                                        })()}
+                                    </div>
+                                    {/* Pagination */}
+                                    <div className={ `flex justify-between items-center` }>
+                                        <Button
+                                            variant={ `outline` }
+                                            className={ `` }
+                                            disabled={ !recordPaginateState }
+                                            onClick={() => {
+                                                setRecordPaginateState(false);
+                                                setRecordPaginate(recordPaginate + paginate_item);
+                                            }}
+                                        >Load more</Button>
+
+                                        {(() => {
+                                            if(recordCountShown > 0 && recordCountTotal > 0){
+                                                return <>
+                                                    <span className={ `text-sm` }>Showing {recordCountShown} of {recordCountTotal} entries</span>
+                                                </>;
+                                            }
+
+                                            return <></>
+                                        })()}
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>

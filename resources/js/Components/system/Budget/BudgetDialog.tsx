@@ -24,6 +24,7 @@ import { IMaskMixin } from "react-imask";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Textarea } from "@/Components/ui/textarea";
 import { toast } from "sonner";
+import { RemoveScroll } from "react-remove-scroll";
 
 type dialogProps = {
     openState: boolean;
@@ -1069,7 +1070,9 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                             <DrawerTitle>{ formUuid ? `Edit` : `Add new` } Budget</DrawerTitle>
                         </DrawerHeader>
 
-                        {mainForm}
+                        <RemoveScroll className={ `overflow-auto` }>
+                            {mainForm}
+                        </RemoveScroll>
 
                         <DrawerFooter className="pt-2">
                             <Button variant={ `ghost` } onClick={() => {

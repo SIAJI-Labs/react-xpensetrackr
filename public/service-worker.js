@@ -4537,7 +4537,7 @@ let Ai = !1;
 const zf = "https://laravel-shadcn.test", Gf = qf("api.notification.v1.subscribe"), Jf = "BHghdd8D_S28sRAgFQFGs8WxvFNi8iJx8N_CKmTxUdMGW6j4Xcyv-Q37o6jgmnXvjIlPfa-Ke5HkEgqqvUUX990";
 Kf();
 function Kf() {
-  if (!1 in navigator) {
+  if (console.log("Init SW"), console.log("serviceWorker" in navigator), !1 in navigator) {
     console.warn("Service worker not supported");
     return;
   }

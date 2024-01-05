@@ -12,9 +12,9 @@ const vapid_pubkey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 initSW();
 
 function initSW(){
-    // console.log('Init SW');
+    console.log('Init SW');
     // console.log(swBase);
-    // console.log("serviceWorker" in navigator);
+    console.log("serviceWorker" in navigator);
 
     if(!"serviceWorker" in navigator){
         // Service worker not supported

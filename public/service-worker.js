@@ -4546,7 +4546,7 @@ function Kf() {
     let e = document.getElementById("app");
     if (e && e.dataset.page) {
       let n = JSON.parse(e.dataset.page).props;
-      n && n.auth && n.auth.user && (Ai = !0);
+      console.log(n), n && n.auth && n.auth.user && (Ai = !0);
     }
     Ai && Qf();
   }).catch((t) => {
@@ -4560,12 +4560,12 @@ function Qf() {
   }
   "permissions" in navigator && navigator.permissions.query({ name: "notifications" }).then(function(t) {
     t.onchange = () => {
-      "state" in t && t.state === "granted" && Xf();
+      console.log("Notification permission got changed"), "state" in t && t.state === "granted" && Xf();
     };
   });
 }
 function Xf() {
-  navigator.serviceWorker.ready.then((t) => {
+  console.log("Subscribe User"), navigator.serviceWorker.ready.then((t) => {
     const e = {
       userVisibleOnly: !0,
       applicationServerKey: Zf(Jf)
@@ -4595,7 +4595,7 @@ function Yf(t) {
         e.append(i, a);
     } else
       typeof n[o] == "string" && e.append(o, n[o]);
-  Tr.post(`${Gf}`, e).then(function(o) {
+  console.log("Action to store user push notification"), Tr.post(`${Gf}`, e).then(function(o) {
   }).catch(function(o) {
   }).then(function(o) {
   });

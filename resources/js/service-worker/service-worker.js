@@ -34,7 +34,7 @@ function initSW(){
                 if(app && app.dataset.page){
                     let parse = JSON.parse(app.dataset.page);
                     let props = parse.props;
-                    // console.log(props);
+                    console.log(props);
 
                     // Check if auth props exists at inertia
                     if(props && props.auth && props.auth.user){
@@ -63,7 +63,7 @@ function initPush(){
     if ('permissions' in navigator) {
         navigator.permissions.query({ name: 'notifications' }).then(function (notificationPerm) {
             notificationPerm.onchange = () => {
-                // console.log('Notification permission got changed');
+                console.log('Notification permission got changed');
                 // handleUserNotification(notificationPerm);
 
                 if('state' in notificationPerm && notificationPerm.state === 'granted'){
@@ -72,26 +72,11 @@ function initPush(){
             }
         });
     }
-    // new Promise(function (resolve, reject) {
-    //     // Request Permission
-    //     const permissionResult = Notification.requestPermission(function (result) {
-    //         resolve(result);
-    //     });
-
-    //     if (permissionResult) {
-    //         permissionResult.then(resolve, reject);
-    //     }
-    // }).then((permissionResult) => {
-    //     if (permissionResult !== 'granted') {
-    //         // alert('We weren\'t granted permission.');
-    //         throw new Error('We weren\'t granted permission.');
-    //     }
-
-    //     subscribeUser();
-    // });
 }
 
 function subscribeUser() {
+    console.log('Subscribe User');
+
     if(typeof vapid_pubkey !== 'undefined' && vapid_pubkey){
         navigator.serviceWorker.ready
             .then((registration) => {
@@ -154,7 +139,7 @@ function storePushSubscription(pushSubscription) {
         }
     }
 
-    // console.log("Action to store user push notification");
+    console.log("Action to store user push notification");
     axios.post(`${subscribeBase}`, formData)
         .then(function (response) {
             // console.log(response);

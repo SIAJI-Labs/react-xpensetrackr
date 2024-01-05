@@ -357,7 +357,7 @@ export default function Show({
                                         let badge: ReactNode[] = [];
                                         (data.budget_category).forEach((value, index) => {
                                             badge.push(
-                                                <Link href={ route('sys.category.show', value.uuid) }>
+                                                <Link href={ route('sys.category.show', value.uuid) } key={ `category_badge_link-${index}` }>
                                                     <Badge>{ value.name }</Badge>
                                                 </Link>
                                             );
@@ -375,7 +375,7 @@ export default function Show({
                                         let badge: ReactNode[] = [];
                                         (data.budget_wallet).forEach((value, index) => {
                                             badge.push(
-                                                <Link href={ route('sys.wallet.show', value.uuid) }>
+                                                <Link href={ route('sys.wallet.show', value.uuid) } key={ `wallet_badge_link-${index}` }>
                                                     <Badge>{ value.name }</Badge>
                                                 </Link>
                                             );
@@ -393,7 +393,7 @@ export default function Show({
                                         let badge: ReactNode[] = [];
                                         (data.budget_tags).forEach((value, index) => {
                                             badge.push(
-                                                <Link href={ route('sys.tags.show', value.uuid) }>
+                                                <Link href={ route('sys.tags.show', value.uuid) } key={ `tags_badge_link-${index}` }>
                                                     <Badge>{ value.name }</Badge>
                                                 </Link>
                                             );

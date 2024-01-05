@@ -366,6 +366,34 @@ Route::group([
         ], function(){
             // Subscribe
             Route::post('subscribe', [\App\Http\Controllers\Api\v1\Notification\SubscribeController::class, 'store'])->name('subscribe');
+
+            // Sample
+            Route::post('sample-notification', function(Request $request){
+                $user =  $request->user();
+                $data = [
+                    'title' => 'Notification',
+                    'message' => 'You\'ve receive our sample notification, it\'s working perfectly fine!',
+                    'actions' => [
+                        [
+                            'title' => 'Go to Dashboard',
+                            'url' => route('sys.index')
+                        ], [
+                            'title' => 'Change Settings',
+                            'url' => route('sys.setting.index')
+                        ],
+                    ],
+                    'data' => [
+                        'id' => 'notification-setting',
+                        'url' => route('sys.setting.notification.index')
+                    ]
+                ];
+
+                // Send push Notification
+                $notification = new \App\Notifications\Push\WebPushNotification($data);
+                \Illuminate\Support\Facades\Notification::send($user, $notification);
+
+                return true;
+            })->name('sample-notification');
         });
     });
 });

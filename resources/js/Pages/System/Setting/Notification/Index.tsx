@@ -215,6 +215,35 @@ export default function NotificationSetting({
                                             })()}
                                         </div>
                                     </>;
+                                } else if(String(Notification.permission) === 'granted'){
+                                    return (
+                                        <>
+                                            <Separator/>
+                                            <Button variant={ `outline` } className={ ` mr-auto` } onClick={(e) => {
+                                                let el = e.target as HTMLElement;
+                                                let originalText = el.textContent;
+
+                                                // Set loading state
+                                                el.setAttribute('disabled', 'disabled');
+                                                el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+
+                                                // Make request
+                                                let formData = new FormData();
+                                                axios.post(route('api.notification.v1.sample-notification'), formData)
+                                                    .then((response) => {
+                                                        console.log(response);
+                                                    }).catch((response) => {
+                                                        const axiosError = response as AxiosError;
+                                                        console.log(axiosError);
+                                                    }).finally(() => {
+                                                        if(el && originalText){
+                                                            el.removeAttribute('disabled');
+                                                            el.innerHTML = originalText;
+                                                        }
+                                                    });
+                                            }}>Sent sample Notification</Button>
+                                        </>
+                                    );
                                 }
                             } else if(!("Notification" in window)) {
                                 return <>

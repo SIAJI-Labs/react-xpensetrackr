@@ -27,6 +27,9 @@ Route::group([
     });
 
     // Dashboard
+    Route::get('/', function(){
+        return to_route('sys.index');
+    });
     Route::get('dashboard', \App\Http\Controllers\System\DashboardController::class)->name('index');
 
     // Budget

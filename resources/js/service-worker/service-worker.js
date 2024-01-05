@@ -1,8 +1,9 @@
 // For Service Worker registration purpose
+import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import route from 'ziggy-js';
 
-const loggedIn = false;
+let loggedIn = false;
 const swBase = import.meta.env.VITE_APP_URL;
 const subscribeBase = route('api.notification.v1.subscribe');
 const vapid_pubkey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
@@ -28,6 +29,18 @@ function initSW(){
             .then((registration) => {
                 registration.update();
             
+                // Fetch Inertia Data
+                let app = document.getElementById('app');
+                if(app && app.dataset.page){
+                    let parse = JSON.parse(app.dataset.page);
+                    let props = parse.props;
+                    // console.log(props);
+
+                    // Check if auth props exists at inertia
+                    if(props && props.auth && props.auth.user){
+                        loggedIn = true;
+                    }
+                }
                 if(loggedIn){
                     // Call for Notification Permission
                     initPush();
@@ -39,13 +52,26 @@ function initSW(){
     }
 }
 
-// Ask for Notification Permission
+// Listen to Notification Permission
 function initPush(){
+    // console.log('Init Push at Service Worker');
     if (!navigator.serviceWorker.ready) {
         console.warn(`Service worker isn't ready`);
         return;
     }
 
+    if ('permissions' in navigator) {
+        navigator.permissions.query({ name: 'notifications' }).then(function (notificationPerm) {
+            notificationPerm.onchange = () => {
+                // console.log('Notification permission got changed');
+                // handleUserNotification(notificationPerm);
+
+                if('state' in notificationPerm && notificationPerm.state === 'granted'){
+                    subscribeUser();
+                }
+            }
+        });
+    }
     // new Promise(function (resolve, reject) {
     //     // Request Permission
     //     const permissionResult = Notification.requestPermission(function (result) {
@@ -102,9 +128,7 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 function storePushSubscription(pushSubscription) {
-    const token = document.querySelector('meta[name=csrf-token]').getAttribute('content');
     let formData = new FormData();
-    formData.append('_token', token);
 
     let pushString = JSON.stringify(pushSubscription);
     let data = JSON.parse(pushString);
@@ -130,14 +154,15 @@ function storePushSubscription(pushSubscription) {
         }
     }
 
-    // axios.post(`${subscribeBase}`, formData)
-    //     .then(function (response) {
-    //         // console.log(response);
-    //     })
-    //     .catch(function (error) {
-    //         // console.log(error);
-    //     })
-    //     .then(function (response) {
-    //         // console.log(response);
-    //     });
+    // console.log("Action to store user push notification");
+    axios.post(`${subscribeBase}`, formData)
+        .then(function (response) {
+            // console.log(response);
+        })
+        .catch(function (error) {
+            // console.log(error);
+        })
+        .then(function (response) {
+            // console.log(response);
+        });
 }

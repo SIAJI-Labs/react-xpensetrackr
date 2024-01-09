@@ -7,6 +7,9 @@ import axios, { AxiosError } from "axios";
 // Plugins
 import { RemoveScroll } from "react-remove-scroll";
 import { IMaskMixin } from "react-imask";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import moment from "moment";
 
 // Partials
 import ErrorMessage from "@/Components/forms/ErrorMessage";
@@ -19,14 +22,11 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { ScrollArea } from "@/Components/ui/scroll-area";
+import { Calendar } from "@/Components/ui/calendar";
 import { Textarea } from "@/Components/ui/textarea";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
-import { toast } from "sonner";
-import moment from "moment";
-import { Calendar } from "@/Components/ui/calendar";
-import { format } from "date-fns";
 
 type dialogProps = {
     openState: boolean;
@@ -1200,16 +1200,16 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                     { formContent }
 
                     <DialogFooter className={ ` p-6 pt-2` }>
-                        <Button variant={ `ghost` } onClick={() => {
-                            resetFormDialog();
-                        }}>
-                            <span>Reset</span>
-                        </Button>
                         <Button type='button' onClick={() => {
                             if(document.getElementById('budget-dialogForms')){
                                 (document.getElementById('budget-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
                             }
                         }} id='budget-dialogSubmit'>Submit</Button>
+                        <Button variant={ `ghost` } onClick={() => {
+                            resetFormDialog();
+                        }}>
+                            <span>Reset</span>
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

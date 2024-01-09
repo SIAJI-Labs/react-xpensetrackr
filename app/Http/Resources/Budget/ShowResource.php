@@ -28,6 +28,25 @@ class ShowResource extends JsonResource
             $interval = $days.' day(s)';
         }
 
+        // Override Start & End
+        if(!empty($this->user->getPreference('timezone'))){
+            $tz = $this->user->getPreference('timezone');
+            
+            // Get User Timezone
+            $tz_user = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $start, $tz);
+            $tz_user->setTimezone('UTC')->format('Y-m-d H:i:s');
+            // Get second different
+            $diff = strtotime($start) - strtotime(date('Y-m-d H:i:s', strtotime($tz_user)));
+            $start = date('Y-m-d H:i:s', strtotime($start.' '.($diff / 60).' minutes'));
+
+            // Get User Timezone
+            $tz_user = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $end, $tz);
+            $tz_user->setTimezone('UTC')->format('Y-m-d H:i:s');
+            // Get second different
+            $diff = strtotime($end) - strtotime(date('Y-m-d H:i:s', strtotime($tz_user)));
+            $end = date('Y-m-d H:i:s', strtotime($end.' '.($diff / 60).' minutes'));
+        }
+
         return [
             'uuid' => $this->uuid,
             'name' => $this->name,

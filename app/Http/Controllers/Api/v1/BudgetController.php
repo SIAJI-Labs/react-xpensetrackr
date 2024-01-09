@@ -80,7 +80,7 @@ class BudgetController extends Controller
             'name' => ['required', 'string'],
             'limit' => ['required', 'string', 'min:1'],
             'occurence' => ['required', 'string', 'in:recurring,once'],
-            'interval' => ['required', 'string', 'in:daily,weekly,monthly,yearly'],
+            'interval' => ['nullable', 'required_if:occurence,recurring', 'string', 'in:daily,weekly,monthly,yearly'],
             'from_period' => ['nullable', 'required_if:occurence,once', 'before_or_equal:until_period'],
             'until_period' => ['nullable', 'required_if:occurence,once', 'after_or_equal:from_period'],
             'notes' => ['nullable', 'string'],
@@ -88,6 +88,19 @@ class BudgetController extends Controller
             'wallet.*' => ['nullable', 'string', 'exists:'.(new \App\Models\Wallet())->getTable().',uuid'],
             'tags.*' => ['nullable', 'string', 'exists:'.(new \App\Models\Tags())->getTable().',uuid'],
         ]);
+
+        // Empty Condition
+        if(
+            (!$request->has('category') || count($request->category) < 1)
+            && (!$request->has('wallet') || count($request->wallet) < 1)
+            && (!$request->has('tags') || count($request->tags) < 1)
+        ){
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'category' => 'Please provide at least 1 condition (either category, wallet or tags)',
+                'wallet' => 'Please provide at least 1 condition (either category, wallet or tags)',
+                'tags' => 'Please provide at least 1 condition (either category, wallet or tags)',
+            ]);
+        }
 
         // Store to database
         DB::transaction(function () use ($request) {
@@ -178,7 +191,7 @@ class BudgetController extends Controller
             'name' => ['required', 'string'],
             'limit' => ['required', 'string', 'min:1'],
             'occurence' => ['required', 'string', 'in:recurring,once'],
-            'interval' => ['required', 'string', 'in:daily,weekly,monthly,yearly'],
+            'interval' => ['nullable', 'required_if:occurence,recurring', 'string', 'in:daily,weekly,monthly,yearly'],
             'from_period' => ['nullable', 'required_if:occurence,once', 'before_or_equal:until_period'],
             'until_period' => ['nullable', 'required_if:occurence,once', 'after_or_equal:from_period'],
             'notes' => ['nullable', 'string'],
@@ -186,6 +199,19 @@ class BudgetController extends Controller
             'wallet.*' => ['nullable', 'string', 'exists:'.(new \App\Models\Wallet())->getTable().',uuid'],
             'tags.*' => ['nullable', 'string', 'exists:'.(new \App\Models\Tags())->getTable().',uuid'],
         ]);
+
+        // Empty Condition
+        if(
+            (!$request->has('category') || count($request->category) < 1)
+            && (!$request->has('wallet') || count($request->wallet) < 1)
+            && (!$request->has('tags') || count($request->tags) < 1)
+        ){
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'category' => 'Please provide at least 1 condition (either category, wallet or tags)',
+                'wallet' => 'Please provide at least 1 condition (either category, wallet or tags)',
+                'tags' => 'Please provide at least 1 condition (either category, wallet or tags)',
+            ]);
+        }
 
         // Store to database
         DB::transaction(function () use ($request, $id) {

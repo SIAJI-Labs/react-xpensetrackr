@@ -314,11 +314,11 @@ export default function Show({
                                 <div className={ ` flex flex-row justify-between` }>
                                     <div className={ ` flex flex-col gap-1` }>
                                         <span>Occurence</span>
-                                        <Badge variant={ `outline` }>{ ucwords(data.occurence) }</Badge>
+                                        <Badge variant={ `outline` } className={ ` justify-center` }>{ ucwords(data.occurence) }</Badge>
                                     </div>
                                     <div className={ ` flex flex-col gap-1` }>
                                         <span>Interval</span>
-                                        <Badge variant={ `outline` }>{ data.occurence === 'once' ? data.interval : ucwords(data.interval) }</Badge>
+                                        <Badge variant={ `outline` } className={ ` justify-center` }>{ data.occurence === 'once' ? data.interval : ucwords(data.interval) }</Badge>
                                     </div>
                                 </div>
 
@@ -446,9 +446,9 @@ export default function Show({
 
                                 {/* Bar */}
                                 <div className={ ` h-3 w-full rounded-full relative bg-gray-100 dark:bg-gray-700 overflow-hidden` }>
-                                    <div className={ ` h-full w-full absolute left-0 top-0 bg-primary` } style={
+                                    <div className={ ` h-full absolute left-0 top-0 bg-primary` } style={
                                         {
-                                            width: `${(usage_remaining && usage_limit ? ((usage_remaining / usage_limit) * 100) : 100)}%`
+                                            width: `${(usage_remaining !== undefined && usage_limit !== undefined ? (((Math.max(usage_remaining, 1)) / (Math.max(usage_limit, 1))) * 100) : 100)}%`
                                         }
                                     }></div>
                                 </div>
@@ -456,7 +456,7 @@ export default function Show({
                                 {/* Summary */}
                                 <div className={ ` flex flex-row justify-between` }>
                                     <Badge variant={ `outline` }>Limit: { formatRupiah(data.amount) }</Badge>
-                                    <Badge variant={ `outline` }>Usage: { `${(100 - (usage_remaining && usage_limit ? ((usage_remaining / usage_limit) * 100) : 100)).toFixed(2)}%` }</Badge>
+                                    <Badge variant={ `outline` }>Usage: { `${(usage_remaining !== undefined && usage_limit !== undefined ? ((usage_used / usage_limit) * 100) : 100).toFixed(2)}%` }</Badge>
                                 </div>
                             </div>
 
@@ -466,32 +466,41 @@ export default function Show({
                                 <div className={ ` flex flex-col gap-1` }>
                                     {/* Period Navigation */}
                                     <div className={ ` flex flex-col gap-1` }>
-                                        <div className={ ` flex flex-row justify-between` }>
-                                            {/* Previous */}
-                                            <div className={ `` }>
-                                                <Button variant={ `ghost` } onClick={() => {
-                                                    navigatePeriod('prev');
-                                                }}>
-                                                    <span><i className={ `fa-solid fa-angle-left` }></i></span>
-                                                </Button>
-                                            </div>
+                                        {(() => {
+                                            if(data.occurence === 'recurring'){
+                                                return <>
+                                                    <div className={ ` flex flex-row justify-between` }>
+                                                        {/* Previous */}
+                                                        <div className={ `` }>
+                                                            <Button variant={ `ghost` } onClick={() => {
+                                                                navigatePeriod('prev');
+                                                            }}>
+                                                                <span><i className={ `fa-solid fa-angle-left` }></i></span>
+                                                            </Button>
+                                                        </div>
 
-                                            {/* State */}
-                                            <div className={ `` }>
-                                                <Button variant={ `outline` } className={ `px-6` }>
-                                                    { moment(previous_start) < moment(original_start) ? `Archive` : `Current` }
-                                                </Button>
-                                            </div>
+                                                        {/* State */}
+                                                        <div className={ `` }>
+                                                            <Button variant={ `outline` } className={ `px-6` }>
+                                                                { moment(previous_start) < moment(original_start) ? `Archive` : `Current` }
+                                                            </Button>
+                                                        </div>
 
-                                            {/* Next */}
-                                            <div className={ `` }>
-                                                <Button variant={ `ghost` } onClick={() => {
-                                                    navigatePeriod('next');
-                                                }} className={ moment(previous_start) < moment(original_start) ? `` : ` !opacity-0` } disabled={ !(moment(previous_start) < moment(original_start)) }>
-                                                    <span><i className={ `fa-solid fa-angle-right` }></i></span>
-                                                </Button>
-                                            </div>
-                                        </div>
+                                                        {/* Next */}
+                                                        <div className={ `` }>
+                                                            <Button variant={ `ghost` } onClick={() => {
+                                                                navigatePeriod('next');
+                                                            }} className={ moment(previous_start) < moment(original_start) ? `` : ` !opacity-0` } disabled={ !(moment(previous_start) < moment(original_start)) }>
+                                                                <span><i className={ `fa-solid fa-angle-right` }></i></span>
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </>;
+                                            }
+                                            
+                                            return <></>;
+                                        })()}
+
                                         {(() => {
                                             if(moment(previous_start) < moment(original_start)){
                                                 return <div className={ ` flex flex-row justify-center` }>
@@ -508,11 +517,11 @@ export default function Show({
                                     <div className={ ` flex flex-row justify-between` }>
                                         <div className={ ` flex flex-col gap-1` }>
                                             <span className={ ` text-sm leading-none` }>From</span>
-                                            <span className={ ` font-medium leading-tight` }>{ moment(previous_start).format('MMM Do, \'YY / HH:mm') }</span>
+                                            <span className={ ` font-medium leading-tight` }>{ momentFormated('MMM Do, \'YY / HH:mm', previous_start, auth.timezone ?? 'UTC') }</span>
                                         </div>
                                         <div className={ ` flex flex-col gap-1 items-end` }>
                                             <span className={ ` text-sm leading-none` }>Until</span>
-                                            <span className={ ` font-medium leading-tight` }>{ moment(previous_end).format('MMM Do, \'YY / HH:mm') }</span>
+                                            <span className={ ` font-medium leading-tight` }>{ momentFormated('MMM Do, \'YY / HH:mm', previous_end, auth.timezone ?? 'UTC') }</span>
                                         </div>
                                     </div>
                                 </div>

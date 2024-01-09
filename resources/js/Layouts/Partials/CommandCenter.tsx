@@ -50,8 +50,8 @@ export default function CommandCenter({ openState, setOpenState, className = '' 
 
     let r = (Math.random() + 1).toString(36).substring(7);
     const commandList = <>
-        <RemoveScroll className={ `overflow-auto` }>
-            <CommandList className={ `max-sm:h-auto max-sm:max-h-[75dvh] !overflow-hidden` } key={r}>
+        <RemoveScroll className={ `overflow-auto ${isDesktop ? `max-h-screen max-lg:max-h-[50vh] lg:max-h-[65vh] border-b border-t` : ` border-t`}` }>
+            <CommandList className={ ` h-auto max-h-full` } key={r}>
                 <CommandEmpty>No results found.</CommandEmpty>
 
                 {(() => {

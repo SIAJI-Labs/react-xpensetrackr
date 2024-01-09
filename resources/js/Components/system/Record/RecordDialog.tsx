@@ -881,7 +881,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         };
     });
 
-    let formContent = <>
+    const formContent = <>
         <RemoveScroll className={ `overflow-auto ${isDesktop ? `max-h-screen max-lg:max-h-[50vh] lg:max-h-[65vh] border-b border-t` : ` border-t`}` }>
             <form onSubmit={handleSubmitDialog} id={ `record-dialogForms` } className={ ` !overflow-hidden ${isDesktop ? `` : ``}` }>
                 <div className={ ` flex gap-0 lg:gap-6 flex-col lg:flex-row px-6` }>

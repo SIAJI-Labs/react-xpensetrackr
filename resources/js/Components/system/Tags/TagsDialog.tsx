@@ -2,8 +2,10 @@ import { FormEventHandler, useEffect, useState } from "react";
 import { useIsFirstRender } from "@/lib/utils";
 import axios, { AxiosError } from "axios";
 import { TagsItem } from "@/types";
+import { useMediaQuery } from "usehooks-ts";
 
 // Plugins
+import { RemoveScroll } from "react-remove-scroll";
 import { IMaskMixin } from "react-imask";
 
 // Partials
@@ -11,6 +13,7 @@ import ErrorMessage from "@/Components/forms/ErrorMessage";
 
 // Shadcn
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/Components/ui/drawer";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
@@ -23,6 +26,7 @@ type dialogProps = {
 
 export default function TagsDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
     // Form
     const [formParent, setFormParent] = useState<string>("");
@@ -225,6 +229,66 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
         };
     }, []);
 
+    const formContent = <>
+        <RemoveScroll className={ `overflow-auto border-t border-b ${isDesktop ? `max-h-screen md:max-h-[50vh]` : ``}` }>
+            <form onSubmit={handleFormSubmit} id={ `tags-dialogForms` } className={ ` overflow-hidden p-6` }>
+                {/* Name */}
+                <div className={ `form--group` }>
+                    <label className={ `form--label` }>Name</label>
+                    <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Tags Name` } id={ `form-tags_name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
+                        
+                    <ErrorMessage message={ errorFormDialog?.name }/>
+                </div>
+
+                {/* Keep open dialog? */}
+                <div className={ `form-group` }>
+                    <div className={ `flex items-center space-x-2` }>
+                        <Checkbox id="form-tags_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
+                            if(typeof value === 'boolean'){
+                                setKeepOpenTagsDialog(value);
+                            }
+                        }} />
+                        <label
+                            htmlFor="form-tags_keep_open"
+                            className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
+                        >
+                            Keep Open?
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </RemoveScroll>
+    </>;
+
+    if(!isDesktop){
+        return (
+            <section id={ `tags-dialogSection` }>
+                <Drawer open={openState} onOpenChange={setOpenState}>
+                    <DrawerContent className={ ` max-h-dvh` }>
+                        <DrawerHeader className="text-left">
+                            <DrawerTitle className={ ` text-center` }>{ formUuid ? `Edit` : `Add new` } Tags</DrawerTitle>
+                        </DrawerHeader>
+
+                        {formContent}
+
+                        <DrawerFooter className="pt-2">
+                            <Button type='button' onClick={() => {
+                                if(document.getElementById('tags-dialogForms')){
+                                    (document.getElementById('tags-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
+                                }
+                            }} id='tags-dialogSubmit'>Submit</Button>
+                            <Button variant={ `ghost` } onClick={() => {
+                                resetFormDialog();
+                            }}>
+                                <span>Reset</span>
+                            </Button>
+                        </DrawerFooter>
+                    </DrawerContent>
+                </Drawer>
+            </section>
+        );
+    }
+
     return (
         <section id={ `tags-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
@@ -233,32 +297,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Tags</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleFormSubmit} id={ `tags-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
-                        {/* Name */}
-                        <div className={ `form--group` }>
-                            <label className={ `form--label` }>Name</label>
-                            <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Tags Name` } id={ `form-tags_name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
-                                
-                            <ErrorMessage message={ errorFormDialog?.name }/>
-                        </div>
-
-                        {/* Keep open dialog? */}
-                        <div className={ `form-group` }>
-                            <div className={ `flex items-center space-x-2` }>
-                                <Checkbox id="form-tags_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
-                                    if(typeof value === 'boolean'){
-                                        setKeepOpenTagsDialog(value);
-                                    }
-                                }} />
-                                <label
-                                    htmlFor="form-tags_keep_open"
-                                    className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
-                                >
-                                    Keep Open?
-                                </label>
-                            </div>
-                        </div>
-                    </form>
+                    { formContent }
 
                     <DialogFooter className={ ` p-6 pt-2` }>
                         <Button variant={ `ghost` } onClick={() => {

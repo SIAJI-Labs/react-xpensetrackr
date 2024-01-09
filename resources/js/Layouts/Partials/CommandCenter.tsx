@@ -51,7 +51,7 @@ export default function CommandCenter({ openState, setOpenState, className = '' 
     let r = (Math.random() + 1).toString(36).substring(7);
     const commandList = <>
         <RemoveScroll className={ `overflow-auto` }>
-            <CommandList className={ `max-sm:h-auto max-sm:max-h-[75dvh]` } key={r}>
+            <CommandList className={ `max-sm:h-auto max-sm:max-h-[75dvh] !overflow-hidden` } key={r}>
                 <CommandEmpty>No results found.</CommandEmpty>
 
                 {(() => {
@@ -143,6 +143,7 @@ export default function CommandCenter({ openState, setOpenState, className = '' 
         </RemoveScroll>
     </>;
 
+    // Drawer
     if(!isDesktop){
         return (
             <Drawer open={openState} onOpenChange={setOpenState} closeThreshold={ 0.3 }>

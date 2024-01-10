@@ -46,7 +46,7 @@ export default function Guest({ children }: PropsWithChildren) {
             <div className="min-h-[100dvh] w-full bg-slate-50 dark:bg-background">
                 {children}
 
-                <Toaster />
+                <Toaster closeButton/>
             </div>
         </ThemeProvider>
     );

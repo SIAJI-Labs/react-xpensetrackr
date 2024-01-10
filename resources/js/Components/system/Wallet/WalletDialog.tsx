@@ -1,5 +1,6 @@
 import { FormEventHandler, useEffect, useState } from "react";
 import { useIsFirstRender } from "@/lib/utils";
+import { useMediaQuery } from "usehooks-ts";
 import axios, { AxiosError } from "axios";
 import { WalletItem } from "@/types";
 
@@ -19,6 +20,8 @@ import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { toast } from "sonner";
+import { RemoveScroll } from "react-remove-scroll";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/Components/ui/drawer";
 
 type dialogProps = {
     openState: boolean;
@@ -27,6 +30,7 @@ type dialogProps = {
 
 export default function WalletDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
     // extend style component
     const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
@@ -358,6 +362,144 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
         };
     }, []);
 
+    const formContent = <>
+        <RemoveScroll className={ `overflow-auto border-t border-b ${isDesktop ? `max-h-screen md:max-h-[50vh]` : ``}` }>
+            <form onSubmit={handleFormSubmit} id={ `wallet-dialogForms` } className={ ` flex-1 overflow-hidden p-6` }>
+                {/* Parent Wallet */}
+                <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `form-wallet_parent` }>
+                    <label className={ ` form--label` }>Parent</label>
+                    <div>
+                        <Popover open={openWalletParent} onOpenChange={setOpenWalletParent}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openWalletParent}
+                                    className={ `w-full justify-between ${errorFormDialog?.parent_id ? ` !border-red-500` : ''} dark:text-white` }
+                                >
+                                    <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxParentLabel}</span>
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                <Command shouldFilter={ false }>
+                                    <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxParentInput} onValueChange={setComboboxParentInput}/>
+                                    
+                                    <ScrollArea className="p-0">
+                                        <div className={ `max-h-[10rem]` }>
+                                            <CommandEmpty>{comboboxParentLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                            <CommandGroup>
+                                                {comboboxParentList.map((options: WalletItem) => (
+                                                    <CommandItem
+                                                        value={options?.uuid}
+                                                        key={options?.uuid}
+                                                        onSelect={(currentValue) => {
+                                                            setFormParent(currentValue === formParent ? "" : currentValue);
+                                                            setComboboxParentLabel(options.name);
+
+                                                            setOpenWalletParent(false);
+                                                        }}
+                                                    >
+                                                        <Check
+                                                            className={ `mr-2 h-4 w-4 ${formParent === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                        />
+                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </div>
+                                    </ScrollArea>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+
+                        <ErrorMessage message={ errorFormDialog?.parent_id }/>
+                    </div>
+                </div>
+                
+                {/* Name */}
+                <div className={ `form--group` }>
+                    <label className={ `form--label` }>Name</label>
+                    <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Wallet Name` } id={ `form-wallet_name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
+                        
+                    <ErrorMessage message={ errorFormDialog?.name }/>
+                </div>
+
+                {/* Starting Balance */}
+                <div className={ ` form--group  ${errorFormDialog?.starting_balance ? ` is--invalid` : ''}` } id={ `wallet_dialog-starting_balance` }>
+                    <label className={ `form--label` }>Starting Balance</label>
+                    <MaskedInput
+                        type={ `text` }
+                        id={ `form-wallet_starting_balance` }
+                        placeholder={ `Starting Balance` }
+                        inputMode={ `numeric` }
+                        value={ (formStartingBalance ?? 0).toString() }
+                        className={ `${errorFormDialog?.starting_balance ? ` !border-red-500` : ''}` }
+                        mask={ Number }
+                        unmask={ true }
+                        thousandsSeparator={ `,` }
+                        scale={ 2 }
+                        radix={ `.` }
+                        onBlur={ (element) => {
+                            let value = (element.target as HTMLInputElement).value;
+                            value = value.replaceAll(',', '');
+
+                            setFormStartingBalance(Number(value));
+                        } }
+                    />
+
+                    <ErrorMessage message={ errorFormDialog?.starting_balance }/>
+                </div>
+
+                {/* Keep open Wallet dialog? */}
+                <div className={ `form-group` }>
+                    <div className={ `flex items-center space-x-2` }>
+                        <Checkbox id="form-wallet_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
+                            if(typeof value === 'boolean'){
+                                setKeepOpenWalletDialog(value);
+                            }
+                        }} />
+                        <label
+                            htmlFor="form-wallet_keep_open"
+                            className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
+                        >
+                            Keep Open?
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </RemoveScroll>
+    </>;
+
+    if(!isDesktop){
+        return (
+            <section id={ `wallet-dialogSection` }>
+                <Drawer open={openState} onOpenChange={setOpenState}>
+                    <DrawerContent className={ ` max-h-dvh` }>
+                        <DrawerHeader className="text-left">
+                            <DrawerTitle className={ ` text-center` }>{ formUuid ? `Edit` : `Add new` } Wallet</DrawerTitle>
+                        </DrawerHeader>
+
+                        {formContent}
+
+                        <DrawerFooter className="pt-2">
+                            <Button type='button' onClick={() => {
+                                if(document.getElementById('wallet-dialogForms')){
+                                    (document.getElementById('wallet-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
+                                }
+                            }} id='wallet-dialogSubmit'>Submit</Button>
+                            <Button variant={ `ghost` } onClick={() => {
+                                resetFormDialog();
+                            }}>
+                                <span>Reset</span>
+                            </Button>
+                        </DrawerFooter>
+                    </DrawerContent>
+                </Drawer>
+            </section>
+        );
+    }
+
     return (
         <section id={ `wallet-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
@@ -366,110 +508,8 @@ export default function WalletDialog({ openState, setOpenState }: dialogProps){
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Wallet</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleFormSubmit} id={ `wallet-dialogForms` } className={ ` flex-1 overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
-                        {/* Parent Wallet */}
-                        <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `form-wallet_parent` }>
-                            <label className={ ` form--label` }>Parent</label>
-                            <div>
-                                <Popover open={openWalletParent} onOpenChange={setOpenWalletParent}>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            role="combobox"
-                                            aria-expanded={openWalletParent}
-                                            className={ `w-full justify-between ${errorFormDialog?.parent_id ? ` !border-red-500` : ''} dark:text-white` }
-                                        >
-                                            <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxParentLabel}</span>
-                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                        <Command shouldFilter={ false }>
-                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxParentInput} onValueChange={setComboboxParentInput}/>
-                                            
-                                            <ScrollArea className="p-0">
-                                                <div className={ `max-h-[10rem]` }>
-                                                    <CommandEmpty>{comboboxParentLoad ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                                    <CommandGroup>
-                                                        {comboboxParentList.map((options: WalletItem) => (
-                                                            <CommandItem
-                                                                value={options?.uuid}
-                                                                key={options?.uuid}
-                                                                onSelect={(currentValue) => {
-                                                                    setFormParent(currentValue === formParent ? "" : currentValue);
-                                                                    setComboboxParentLabel(options.name);
+                    { formContent }
 
-                                                                    setOpenWalletParent(false);
-                                                                }}
-                                                            >
-                                                                <Check
-                                                                    className={ `mr-2 h-4 w-4 ${formParent === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                />
-                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
-                                                            </CommandItem>
-                                                        ))}
-                                                    </CommandGroup>
-                                                </div>
-                                            </ScrollArea>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
-
-                                <ErrorMessage message={ errorFormDialog?.parent_id }/>
-                            </div>
-                        </div>
-                        
-                        {/* Name */}
-                        <div className={ `form--group` }>
-                            <label className={ `form--label` }>Name</label>
-                            <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Wallet Name` } id={ `form-wallet_name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
-                                
-                            <ErrorMessage message={ errorFormDialog?.name }/>
-                        </div>
-
-                        {/* Starting Balance */}
-                        <div className={ ` form--group  ${errorFormDialog?.starting_balance ? ` is--invalid` : ''}` } id={ `wallet_dialog-starting_balance` }>
-                            <label className={ `form--label` }>Starting Balance</label>
-                            <MaskedInput
-                                type={ `text` }
-                                id={ `form-wallet_starting_balance` }
-                                placeholder={ `Starting Balance` }
-                                inputMode={ `numeric` }
-                                value={ (formStartingBalance ?? 0).toString() }
-                                className={ `${errorFormDialog?.starting_balance ? ` !border-red-500` : ''}` }
-                                mask={ Number }
-                                unmask={ true }
-                                thousandsSeparator={ `,` }
-                                scale={ 2 }
-                                radix={ `.` }
-                                onBlur={ (element) => {
-                                    let value = (element.target as HTMLInputElement).value;
-                                    value = value.replaceAll(',', '');
-
-                                    setFormStartingBalance(Number(value));
-                                } }
-                            />
-
-                            <ErrorMessage message={ errorFormDialog?.starting_balance }/>
-                        </div>
-
-                        {/* Keep open Wallet dialog? */}
-                        <div className={ `form-group` }>
-                            <div className={ `flex items-center space-x-2` }>
-                                <Checkbox id="form-wallet_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
-                                    if(typeof value === 'boolean'){
-                                        setKeepOpenWalletDialog(value);
-                                    }
-                                }} />
-                                <label
-                                    htmlFor="form-wallet_keep_open"
-                                    className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
-                                >
-                                    Keep Open?
-                                </label>
-                            </div>
-                        </div>
-                    </form>
                     <DialogFooter className={ ` p-6 pt-2` }>
                         <Button variant={ `ghost` } onClick={() => {
                             resetFormDialog();

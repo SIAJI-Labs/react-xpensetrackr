@@ -15,7 +15,8 @@ import TemplateNoData from "@/Components/template/TemplateNoData";
 import SystemLayout from "@/Layouts/SystemLayout";
 
 // Shadcn
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
 import { toast } from "sonner";
 
 // Props
@@ -26,6 +27,17 @@ type ContentProps = {
 export default function Index({ auth, listWallet }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
 
+    // Handle Collapse/Expand action
+    const [collapsibleCount, setCollapsibleCount] = useState<number>(0);
+    const [collapsedCount, setCollapsedCount] = useState<number>(0);
+    const handleCollapsible = () => {
+        let items = document.querySelectorAll('li.nst-item > ol.nst-list');
+        let collapsed = document.querySelectorAll('li.nst-item.nst-collapsed > ol.nst-list');
+
+        setCollapsibleCount(items.length);
+        setCollapsedCount(collapsed.length);
+    };
+
     // Generate key to force update page render
     const [key, setKey] = useState<string>('');
     const generateKey = (): string => {
@@ -34,103 +46,17 @@ export default function Index({ auth, listWallet }: PageProps<ContentProps>) {
     
     // Initialize variable
     let exitFunct = false;
-    let nestableInstance: any = null;
+    const [nestableInstance, setNestableInstance] = useState<any>();
     const initNestable = () => {
         if(typeof nestableInstance !== 'undefined' && typeof nestableInstance === 'object' && nestableInstance !== null){
             nestableInstance.destroy();
         }
         
-        nestableInstance = new Nestable("#wallet-list", {
+        let instance = new Nestable("#wallet-list", {
             maxDepth: 1,
             animation: 150
         });
-
-        // Listen to event
-        nestableInstance.on("stop", (event: any) => {
-            if(typeof exitFunct !== 'undefined' && exitFunct){
-                // Generate key
-                setKey(generateKey());
-
-                toast.error("Action: Failed", {
-                    description: "Something went wrong",
-                });
-                return;
-            }
-
-            let activeEl = event.movedNode;
-            let parentEl = event.newParentItem;
-            // Check if moved node has child
-            activeEl.childNodes.forEach((el:any) => {
-                if(el.classList.contains('nst-list') && event.newParent && parentEl !== null){                    
-                    exitFunct = true;
-                }
-            }); 
-            if(typeof exitFunct !== 'undefined' && exitFunct){
-                // Generate key
-                setKey(generateKey());
-
-                toast.error("Action: Failed", {
-                    description: "Parent data cannot be moved inside another parent data!",
-                });
-                return;
-            }
-
-            if(parentEl === null || parentEl === undefined){
-                // ActiveEl is stand alone
-                if(event.newParent && event.originalParent !== event.newParent){
-                    if(activeEl.hasAttribute('data-parent_id')){
-                        // Check if activeEl has data-parent_id attribute
-                        activeEl.removeAttribute('data-parent_id');
-                    }
-
-                    if(activeEl.querySelector('.item_parent-name')){
-                        activeEl.querySelector('.item_parent-name').remove();
-                    }
-                }
-            } else {
-                // ActiveEl is moved to child position
-                if(!(activeEl.hasAttribute('data-parent_id'))){
-                    activeEl.dataset.parent_id = parentEl.dataset.wallet_id;
-                }
-
-                if(!activeEl.querySelector('.item_parent-name')){
-                    activeEl.querySelector('.item-name').insertAdjacentHTML('afterbegin', `
-                        <p class="item_parent-name" data-name="${parentEl.querySelector('.item-name').dataset.name}">${parentEl.querySelector('.item-name').dataset.name} - </p>
-                    `);
-                } else if(activeEl.dataset.parent_id !== parentEl.dataset.wallet_id){
-                    if(activeEl.querySelector('.item_parent-name')){
-                        activeEl.querySelector('.item_parent-name').innerHTML = `${parentEl.querySelector('.item-name').dataset.name} - `;
-                    }
-                }
-            }
-
-            let serialize: any[] = [];
-            (event.hierarchy).forEach((e: any) => {
-                let child: any[] = [];
-                // Check if active el has child
-                if(e.children !== undefined){
-                    (e.children).forEach((ec: any) => {
-                        child.push({
-                            'id': ec.node.dataset.wallet_id
-                        });
-                    });
-                }
-
-                if(child.length > 0){
-                    // Push child arr if exists
-                    serialize.push({
-                        'id': e.node.dataset.wallet_id,
-                        'child': child
-                    });
-                } else {
-                    serialize.push({
-                        'id': e.node.dataset.wallet_id
-                    });
-                }
-                
-            });
-            updateHierarchy(serialize);
-        });
+        setNestableInstance(instance);
     }
     // Handle update
     let updateHierarchyAbortController: AbortController | null = null;
@@ -156,6 +82,7 @@ export default function Index({ auth, listWallet }: PageProps<ContentProps>) {
             toast("Action: Success", {
                 description: "Wallet order successfully updated",
             });
+
         }).catch((response) => {
             const axiosError = response as AxiosError;
         }).finally(() => {
@@ -163,6 +90,106 @@ export default function Index({ auth, listWallet }: PageProps<ContentProps>) {
             updateHierarchyAbortController = null;
         });
     }
+    useEffect(() => {
+        if(nestableInstance){
+            // Listen to event
+            nestableInstance.on("stop", (event: any) => {
+                if(typeof exitFunct !== 'undefined' && exitFunct){
+                    // Generate key
+                    setKey(generateKey());
+    
+                    toast.error("Action: Failed", {
+                        description: "Something went wrong",
+                    });
+                    return;
+                }
+    
+                let activeEl = event.movedNode;
+                let parentEl = event.newParentItem;
+                // Check if moved node has child
+                activeEl.childNodes.forEach((el:any) => {
+                    if(el.classList.contains('nst-list') && event.newParent && parentEl !== null){                    
+                        exitFunct = true;
+                    }
+                }); 
+                if(typeof exitFunct !== 'undefined' && exitFunct){
+                    // Generate key
+                    setKey(generateKey());
+    
+                    toast.error("Action: Failed", {
+                        description: "Parent data cannot be moved inside another parent data!",
+                    });
+                    return;
+                }
+    
+                if(parentEl === null || parentEl === undefined){
+                    // ActiveEl is stand alone
+                    if(event.newParent && event.originalParent !== event.newParent){
+                        if(activeEl.hasAttribute('data-parent_id')){
+                            // Check if activeEl has data-parent_id attribute
+                            activeEl.removeAttribute('data-parent_id');
+                        }
+    
+                        if(activeEl.querySelector('.item_parent-name')){
+                            activeEl.querySelector('.item_parent-name').remove();
+                        }
+                    }
+                } else {
+                    // ActiveEl is moved to child position
+                    if(!(activeEl.hasAttribute('data-parent_id'))){
+                        activeEl.dataset.parent_id = parentEl.dataset.wallet_id;
+                    }
+    
+                    if(!activeEl.querySelector('.item_parent-name')){
+                        activeEl.querySelector('.item-name').insertAdjacentHTML('afterbegin', `
+                            <p class="item_parent-name" data-name="${parentEl.querySelector('.item-name').dataset.name}">${parentEl.querySelector('.item-name').dataset.name} - </p>
+                        `);
+                    } else if(activeEl.dataset.parent_id !== parentEl.dataset.wallet_id){
+                        if(activeEl.querySelector('.item_parent-name')){
+                            activeEl.querySelector('.item_parent-name').innerHTML = `${parentEl.querySelector('.item-name').dataset.name} - `;
+                        }
+                    }
+                }
+    
+                let serialize: any[] = [];
+                (event.hierarchy).forEach((e: any) => {
+                    let child: any[] = [];
+                    // Check if active el has child
+                    if(e.children !== undefined){
+                        (e.children).forEach((ec: any) => {
+                            child.push({
+                                'id': ec.node.dataset.wallet_id
+                            });
+                        });
+                    }
+    
+                    if(child.length > 0){
+                        // Push child arr if exists
+                        serialize.push({
+                            'id': e.node.dataset.wallet_id,
+                            'child': child
+                        });
+                    } else {
+                        serialize.push({
+                            'id': e.node.dataset.wallet_id
+                        });
+                    }
+                    
+                });
+                updateHierarchy(serialize);
+            });
+            nestableInstance.on("error.collapsed", () => {
+                toast.error("Action: Failed", {
+                    description: "Can't nest in collpased list!",
+                });
+            });
+            
+            nestableInstance.on('list.collapse', handleCollapsible);
+            nestableInstance.on('list.expand', handleCollapsible);
+
+            handleCollapsible();
+        }
+    }, [nestableInstance]);
 
     useEffect(() => {
         // Generate key
@@ -207,8 +234,34 @@ export default function Index({ auth, listWallet }: PageProps<ContentProps>) {
                             <CardTitle>
                                 <div>Wallet: Re-Order</div>
                             </CardTitle>
+                            <CardDescription>Manage wallet order</CardDescription>
+                        </div>
+                        <div className={ `flex items-center gap-2` }>
+                            {/* Action Button */}
+                            {(() => {
+                                if(collapsibleCount > 0){
+                                    return <>
+                                        <Button variant={ `outline` } className={ ` flex flex-row gap-2` } onClick={() => {
+                                            console.log(nestableInstance);
+                                            if(nestableInstance){
+                                                if(collapsibleCount === collapsedCount){
+                                                    nestableInstance.expandAll();
+                                                } else {
+                                                    nestableInstance.collapseAll();
+                                                }
+                                            }
+                                        }}>
+                                            <i className={ `fa-solid ${collapsibleCount === collapsedCount ? `fa-expand` : `fa-compress` }` }></i>
+                                            <span>{ collapsibleCount === collapsedCount ? 'Expand' : 'Collapse' }</span>
+                                        </Button>
+                                    </>
+                                }
+
+                                return <></>;
+                            })()}
                         </div>
                     </div>
+                    
                 </CardHeader>
                 <CardContent>
                     <div className={ `sa-sortable` }>

@@ -8,8 +8,10 @@ import axios, { AxiosError } from 'axios';
 import { camel2title, getDicebearAvatar, handleUserAvatar } from '@/function';
 import * as diceCollection from '@dicebear/collection';
 import { InputElement } from 'imask';
+import { toast } from "sonner";
 
 // Partials
+import ProfilePasswordDialog from '@/Components/system/Profile/PasswordDialog';
 import ErrorMessage from '@/Components/forms/ErrorMessage';
 import SystemLayout from '@/Layouts/SystemLayout';
 
@@ -26,6 +28,12 @@ type ContentProps = {
 
 export default function Profile({ auth }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
+
+    // Password Dialog
+    const [openPasswordDialog, setOpenPasswordDialog] = useState<boolean>(false);
+    const handleOpenPasswordDialog = (isOpen: boolean) => {
+        setOpenPasswordDialog(isOpen);
+    };
 
     // Handle Avatar
     let avatarType = 'template';
@@ -125,6 +133,10 @@ export default function Profile({ auth }: PageProps<ContentProps>) {
                 const responseJson = response.data;
                 let data = responseJson.result.data;
                 resetForm(data);
+
+                toast("Action: Success", {
+                    description: "Profile successfully updated",
+                });
             }
         }).catch((response) => {
             const axiosError = response as AxiosError;
@@ -185,6 +197,9 @@ export default function Profile({ auth }: PageProps<ContentProps>) {
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Profile</h2>}
         >
             <Head title="Profile" />
+
+            {/* Password Dialog */}
+            <ProfilePasswordDialog auth={ auth } openState={ openPasswordDialog } setOpenState={ handleOpenPasswordDialog }/>
 
             <form onSubmit={handleFormSubmit} id={ `profile-forms` } >
                 <Card className={ ` w-full` }>
@@ -358,14 +373,17 @@ export default function Profile({ auth }: PageProps<ContentProps>) {
                         </div>
 
                         {/* Username */}
-                        <div className={ `form--group` }>
+                        <div className={ `form--group !mb-0` }>
                             <label className={ `form--label` }>Username</label>
                             <Input value={ formUsername } onChange={(e) => setFormUsername(e.target.value)} placeholder={ `Username` } className={ `${errorBag?.username ? ` !border-red-500` : ''}` }/>
                             
                             <ErrorMessage message={ errorBag?.username }/>
                         </div>
                     </CardContent>
-                    <CardFooter className={ `justify-end` }>
+                    <CardFooter className={ ` flex flex-row justify-between gap-4` }>
+                        <Button type={ `button` } variant={ `link` } className={ ` px-0 text-red-500` } onClick={() => {
+                            setOpenPasswordDialog(true);
+                        }}>Change Password</Button>
                         <div className={ `flex flex-row gap-4` }>
                             <Button type={ `button` } variant={ `ghost` } onClick={() => {
                                 resetForm();

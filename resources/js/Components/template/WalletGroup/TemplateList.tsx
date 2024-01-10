@@ -1,4 +1,4 @@
-import { PropsWithChildren, useState } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
 import { WalletGroupItem, WalletItem } from "@/types";
 
 // Plugins
@@ -21,6 +21,20 @@ export default function TemplateList({ wallet, deleteAction = true, editAction =
 
     // State for Dropdown
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
+    useEffect(() => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
+            setTimeout(() => {
+                setOpenDropdown(false);
+            }, 100);
+        }
+
+        document.addEventListener('dialog.wallet-group.shown', handleDialogEvent);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.wallet-group.shown', handleDialogEvent);
+        };
+    });
 
     // Show wallet name
     const shownWallet = (wallet: WalletItem[] | any[]): string => {

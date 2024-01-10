@@ -1,22 +1,25 @@
 import { FormEventHandler, useEffect, useState } from "react";
+import { WalletGroupItem, WalletItem } from "@/types";
 import { useIsFirstRender } from "@/lib/utils";
+import { useMediaQuery } from "usehooks-ts";
 import axios, { AxiosError } from "axios";
 
 // Plugins
+import { Check } from "lucide-react";
+import { RemoveScroll } from "react-remove-scroll";
 
 // Partials
 import ErrorMessage from "@/Components/forms/ErrorMessage";
 
 // Shadcn
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/Components/ui/drawer";
+import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
+import { ScrollArea } from "@/Components/ui/scroll-area";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
-import { ScrollArea } from "@/Components/ui/scroll-area";
-import { WalletGroupItem, WalletItem } from "@/types";
-import { Check } from "lucide-react";
 import { toast } from "sonner";
 
 type dialogProps = {
@@ -26,6 +29,7 @@ type dialogProps = {
 
 export default function WalletGroupDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
     // Form
     const [formUuid, setFormUuid] = useState<string>('');
@@ -120,7 +124,7 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
     }, [comboboxWalletInput, comboboxWalletOpenState]);
 
     // Wallet Dialog - Forms
-    const resetWalletDialog = () => {
+    const resetFormDialog = () => {
         setFormUuid('');
         setFormName('');
         setFormWallet([]);
@@ -188,7 +192,7 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
                         setOpenState(false);
                     } else {
                         // Reset form
-                        resetWalletDialog();
+                        resetFormDialog();
                     }
             
                     toast("Action: Success", {
@@ -243,7 +247,7 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
         if(openState){
             document.dispatchEvent(new CustomEvent('dialog.wallet-group.shown', { bubbles: true }));
         } else {
-            resetWalletDialog();
+            resetFormDialog();
             setKeepOpenWalletDialog(false);
 
             // Announce Dialog Global Event
@@ -329,6 +333,171 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
         };
     }, []);
 
+    const formContent = <>
+        <RemoveScroll className={ `overflow-auto border-t border-b ${isDesktop ? `max-h-screen md:max-h-[50vh]` : ``}` }>
+            <form onSubmit={handleWalletDialogSubmit} id={ `walletGroup-dialogForms` } className={ ` flex-1 overflow-hidden p-6` }>
+                {/* Name */}
+                <div className={ `form--group` }>
+                    <label className={ `form--label` }>Name</label>
+                    <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Group Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
+                        
+                    <ErrorMessage message={ errorFormDialog?.name }/>
+                </div>
+
+                {/* Wallet */}
+                <div className={ ` form--group ${errorFormDialog?.wallet ? ` is--invalid` : ''}` } id={ `record_dialog-wallet` }>
+                    <label className={ ` form--label` }>Wallet</label>
+                    <div>
+                        <div className={ ` flex flex-row gap-2 flex-wrap` }>
+                            <Popover open={comboboxWalletOpenState} onOpenChange={setComboboxWalletOpenState}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
+                                    >
+                                        <i className={ `fa-solid fa-plus` }></i>
+                                        <span>Wallet</span>
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                    <Command shouldFilter={ false }>
+                                        <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxWalletInput} onValueChange={setComboboxWalletInput}/>
+                                        <ScrollArea className="p-0">
+                                            <div className={ `max-h-[10rem]` }>
+                                                <CommandEmpty>{comboboxWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                <CommandGroup>
+                                                    {comboboxWalletList.map((options: WalletItem) => (
+                                                        <CommandItem
+                                                            value={options?.uuid}
+                                                            key={options?.uuid}
+                                                            onSelect={(currentValue) => {
+                                                                if(formWallet.includes(currentValue)){
+                                                                    // Already exists, remove from array
+                                                                    let uuidIndex = formWallet.indexOf(currentValue);
+                                                                    if (uuidIndex !== -1) {
+                                                                        const updatedFormWallet = [...formWallet];
+                                                                        updatedFormWallet.splice(uuidIndex, 1);
+                                                                        setFormWallet(updatedFormWallet);
+                                                                    }
+
+                                                                    let nameIndex = comboboxWalletLabel.indexOf(options?.name);
+                                                                    if (nameIndex !== -1) {
+                                                                        const updatedLabelWallet = [...comboboxWalletLabel];
+                                                                        updatedLabelWallet.splice(nameIndex, 1);
+                                                                        setComboboxWalletLabel(updatedLabelWallet);
+                                                                    }
+                                                                } else {
+                                                                    // Not yet exists, add to array
+                                                                    setFormWallet([...formWallet, currentValue])
+                                                                    setComboboxWalletLabel([...comboboxWalletLabel, options?.name]);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Check
+                                                                className={ `mr-2 h-4 w-4 ${formWallet.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
+                                                            />
+                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </div>
+                                        </ScrollArea>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+
+                            {(() => {
+                                let selectedWallet: any = [];
+                                if(formWallet.length > 0){
+                                    formWallet.forEach((value, index) => {
+                                        let name = comboboxWalletLabel[index];
+                                        if(name){
+                                            selectedWallet.push(
+                                                <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_wallet-${value}` } onClick={() => {
+                                                    let uuidIndex = formWallet.indexOf(value);
+                                                    if (uuidIndex !== -1) {
+                                                        const updatedFormWallet = [...formWallet];
+                                                        updatedFormWallet.splice(uuidIndex, 1);
+                                                        setFormWallet(updatedFormWallet);
+                                                    }
+
+                                                    let nameIndex = comboboxWalletLabel.indexOf(name);
+                                                    if (nameIndex !== -1) {
+                                                        const updatedLabelWallet = [...comboboxWalletLabel];
+                                                        updatedLabelWallet.splice(nameIndex, 1);
+                                                        setComboboxWalletLabel(updatedLabelWallet);
+                                                    }
+                                                }}>
+                                                    <span>{ name }</span>
+                                                    <i className={ `fa-solid fa-xmark` }></i>
+                                                </Button>
+                                            );
+                                        }
+                                    });
+
+                                    if(selectedWallet.length > 0){
+                                        return selectedWallet;
+                                    }
+                                }
+
+                                return <></>;
+                            })()}
+                        </div>
+
+                        <ErrorMessage message={ errorFormDialog?.wallet }/>
+                    </div>
+                </div>
+
+                {/* Keep open Wallet dialog? */}
+                <div className={ `form-group` }>
+                    <div className={ `flex items-center space-x-2` }>
+                        <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
+                            if(typeof value === 'boolean'){
+                                setKeepOpenWalletDialog(value);
+                            }
+                        }} />
+                        <label
+                            htmlFor="record_dialog-keep_open"
+                            className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
+                        >
+                            Keep Open?
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </RemoveScroll>
+    </>;
+
+    if(!isDesktop){
+        return (
+            <section id={ `walletGroup-dialogSection` }>
+                <Drawer open={openState} onOpenChange={setOpenState}>
+                    <DrawerContent className={ ` max-h-dvh` }>
+                        <DrawerHeader className="text-left">
+                            <DrawerTitle className={ ` text-center` }>{ formUuid ? `Edit` : `Add new` } Wallet</DrawerTitle>
+                        </DrawerHeader>
+
+                        {formContent}
+
+                        <DrawerFooter className="pt-2">
+                            <Button type='button' onClick={() => {
+                                if(document.getElementById('walletGroup-dialogForms')){
+                                    (document.getElementById('walletGroup-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
+                                }
+                            }} id='walletGroup-dialogSubmit'>Submit</Button>
+                            <Button variant={ `ghost` } onClick={() => {
+                                resetFormDialog();
+                            }}>
+                                <span>Reset</span>
+                            </Button>
+                        </DrawerFooter>
+                    </DrawerContent>
+                </Drawer>
+            </section>
+        );
+    }
+
     return (
         <section id={ `walletGroup-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
@@ -337,141 +506,11 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Wallet Group</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleWalletDialogSubmit} id={ `walletGroup-dialogForms` } className={ ` flex-1 overflow-auto border-t border-b max-h-screen p-6` }>
-                        {/* Name */}
-                        <div className={ `form--group` }>
-                            <label className={ `form--label` }>Name</label>
-                            <Input value={ formName } onChange={(e) => setFormName(e.target.value)} placeholder={ `Group Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
-                                
-                            <ErrorMessage message={ errorFormDialog?.name }/>
-                        </div>
-
-                        {/* Wallet */}
-                        <div className={ ` form--group ${errorFormDialog?.wallet ? ` is--invalid` : ''}` } id={ `record_dialog-wallet` }>
-                            <label className={ ` form--label` }>Wallet</label>
-                            <div>
-                                <div className={ ` flex flex-row gap-2 flex-wrap` }>
-                                    <Popover open={comboboxWalletOpenState} onOpenChange={setComboboxWalletOpenState}>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                role="combobox"
-                                                className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
-                                            >
-                                                <i className={ `fa-solid fa-plus` }></i>
-                                                <span>Wallet</span>
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                            <Command shouldFilter={ false }>
-                                                <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxWalletInput} onValueChange={setComboboxWalletInput}/>
-                                                <ScrollArea className="p-0">
-                                                    <div className={ `max-h-[10rem]` }>
-                                                        <CommandEmpty>{comboboxWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {comboboxWalletList.map((options: WalletItem) => (
-                                                                <CommandItem
-                                                                    value={options?.uuid}
-                                                                    key={options?.uuid}
-                                                                    onSelect={(currentValue) => {
-                                                                        if(formWallet.includes(currentValue)){
-                                                                            // Already exists, remove from array
-                                                                            let uuidIndex = formWallet.indexOf(currentValue);
-                                                                            if (uuidIndex !== -1) {
-                                                                                const updatedFormWallet = [...formWallet];
-                                                                                updatedFormWallet.splice(uuidIndex, 1);
-                                                                                setFormWallet(updatedFormWallet);
-                                                                            }
-
-                                                                            let nameIndex = comboboxWalletLabel.indexOf(options?.name);
-                                                                            if (nameIndex !== -1) {
-                                                                                const updatedLabelWallet = [...comboboxWalletLabel];
-                                                                                updatedLabelWallet.splice(nameIndex, 1);
-                                                                                setComboboxWalletLabel(updatedLabelWallet);
-                                                                            }
-                                                                        } else {
-                                                                            // Not yet exists, add to array
-                                                                            setFormWallet([...formWallet, currentValue])
-                                                                            setComboboxWalletLabel([...comboboxWalletLabel, options?.name]);
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    <Check
-                                                                        className={ `mr-2 h-4 w-4 ${formWallet.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
-                                                                    />
-                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
-                                                    </div>
-                                                </ScrollArea>
-                                            </Command>
-                                        </PopoverContent>
-                                    </Popover>
-
-                                    {(() => {
-                                        let selectedWallet: any = [];
-                                        if(formWallet.length > 0){
-                                            formWallet.forEach((value, index) => {
-                                                let name = comboboxWalletLabel[index];
-                                                if(name){
-                                                    selectedWallet.push(
-                                                        <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_wallet-${value}` } onClick={() => {
-                                                            let uuidIndex = formWallet.indexOf(value);
-                                                            if (uuidIndex !== -1) {
-                                                                const updatedFormWallet = [...formWallet];
-                                                                updatedFormWallet.splice(uuidIndex, 1);
-                                                                setFormWallet(updatedFormWallet);
-                                                            }
-
-                                                            let nameIndex = comboboxWalletLabel.indexOf(name);
-                                                            if (nameIndex !== -1) {
-                                                                const updatedLabelWallet = [...comboboxWalletLabel];
-                                                                updatedLabelWallet.splice(nameIndex, 1);
-                                                                setComboboxWalletLabel(updatedLabelWallet);
-                                                            }
-                                                        }}>
-                                                            <span>{ name }</span>
-                                                            <i className={ `fa-solid fa-xmark` }></i>
-                                                        </Button>
-                                                    );
-                                                }
-                                            });
-
-                                            if(selectedWallet.length > 0){
-                                                return selectedWallet;
-                                            }
-                                        }
-
-                                        return <></>;
-                                    })()}
-                                </div>
-
-                                <ErrorMessage message={ errorFormDialog?.wallet }/>
-                            </div>
-                        </div>
-
-                        {/* Keep open Wallet dialog? */}
-                        <div className={ `form-group` }>
-                            <div className={ `flex items-center space-x-2` }>
-                                <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
-                                    if(typeof value === 'boolean'){
-                                        setKeepOpenWalletDialog(value);
-                                    }
-                                }} />
-                                <label
-                                    htmlFor="record_dialog-keep_open"
-                                    className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
-                                >
-                                    Keep Open?
-                                </label>
-                            </div>
-                        </div>
-                    </form>
+                    { formContent }
                     
                     <DialogFooter className={ ` p-6 pt-2` }>
                         <Button variant={ `ghost` } onClick={() => {
-                            resetWalletDialog();
+                            resetFormDialog();
                         }}>
                             <span>Reset</span>
                         </Button>

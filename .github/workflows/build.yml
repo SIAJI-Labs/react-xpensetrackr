@@ -37,8 +37,8 @@ jobs:
             git pull origin build
           else
             echo "Build branch does not exist. Fetching existing main branch from origin remote."
-            git fetch origin build:build
-            git checkout build
+            git checkout -b build
+            git pull origin build
           fi
           git merge --allow-unrelated-histories main
 

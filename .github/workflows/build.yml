@@ -23,9 +23,6 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install Dependencies
-        run: npm install
-
       - name: Check if Build Branch Exists
         run: |
           if git rev-parse --verify build >/dev/null 2>&1; then
@@ -42,6 +39,9 @@ jobs:
         run: |
           git fetch origin main:main
           git merge main
+
+      - name: Install Dependencies
+        run: npm install
       
       - name: Handle build that use environment value
         run: |

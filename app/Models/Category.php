@@ -64,12 +64,16 @@ class Category extends Model
     public function child()
     {
         return $this->hasMany(\App\Models\Category::class, 'parent_id')
-            ->orderBy('order_main', 'asc')
+            ->orderBy('order', 'asc')
             ->with('parent');
     }
     public function record()
     {
         return $this->hasMany(\App\Models\Record::class, 'category_id');
+    }
+    public function plannedPayment()
+    {
+        return $this->hasMany(\App\Models\PlannedPayment::class, 'category_id');
     }
 
     /**

@@ -14,5 +14,14 @@
             "@/*": ["./resources/js/*"]
         }
     },
-    "include": ["resources/js/**/*.ts", "resources/js/**/*.tsx", "resources/js/**/*.d.ts"]
+    "include": [
+        "resources/js/**/*.ts",
+        "resources/js/**/*.tsx",
+        "resources/js/**/*.d.ts",
+        
+        "node_modules/vite-plugin-pwa/client.d.ts",
+        "node_modules/vite-plugin-pwa/info.d.ts",
+
+        "node_modules/nestablejs"
+    ]
 }

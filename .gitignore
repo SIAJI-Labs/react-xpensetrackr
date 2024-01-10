@@ -4,6 +4,7 @@
 /public/hot
 /public/storage
 /storage/*.key
+/tests/Browser/console/*.log
 /vendor
 .env
 .env.backup

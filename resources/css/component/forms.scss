@@ -1,0 +1,19 @@
+/*
+* Forms
+*/
+.form--group {
+    @apply
+        mb-4;
+
+    input, textarea {
+        @apply
+            dark:text-white;
+    }
+}
+.form--label {
+    @apply 
+        font-normal
+        inline-block 
+        mb-1
+        dark:text-white;
+}

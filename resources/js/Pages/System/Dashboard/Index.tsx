@@ -1,106 +1,149 @@
 import SystemLayout from '@/Layouts/SystemLayout';
-import { Head, Link } from '@inertiajs/react';
 import { PageProps, RecordItem } from '@/types';
+import { useIsFirstRender } from '@/lib/utils';
+import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-// Shadcn
+// Partials
+import TemplateListRecord from '@/Components/template/Record/TemplateList';
+import SkeletonList from '@/Components/template/Record/SkeletonList';
+import TemplateNoData from '@/Components/template/TemplateNoData';
+
+// Shadcn Component
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
-import { Skeleton } from '@/Components/ui/skeleton';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/Components/ui/dropdown-menu';
 import { Badge } from '@/Components/ui/badge';
-import RecordTemplate from '@/Components/template/RecordTemplate';
-import { Loader2 } from 'lucide-react';
-import NoDataTemplate from '@/Components/template/NoDataTemplate';
 
-export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: string}>) {
-    // Global Variable
-    const [refreshLoading, setRefreshLoading] = useState<boolean>(false)
+type ContentProps = {
+    inspire: string,
+}
+
+export default function Dashboard({ auth, inspire = '' }: PageProps<ContentProps>) {
+    const isFirstRender = useIsFirstRender();
 
     // Record List - Variable Init
-    const [recordFilter, setRecordFilter] = useState<string>('complete');
+    const [recordFilterStatus, setRecordFilterStatus] = useState<string>('complete');
     const [recordIsLoading, setRecordIsLoading] = useState<boolean>(true);
     const [recordSkeletonCount, setRecordSkeletonCount] = useState<number>(5);
     const [recordItem, setRecordItem] = useState([]);
+    const [recordItemAbortController, setRecordItemAbortController] = useState<AbortController | null>(null);
     const [recordPendingCount, setRecordPendingCount] = useState<number>(0);
     
     // Record List - Skeleton
-    let skeletonTemplate = <>
-        <div className={ ` flex flex-col gap-2 border rounded p-4` }>
-            <div className={ ` flex flex-row justify-between` }>
-                <Skeleton className="w-[100px] h-[20px] rounded-full" />
-
-                <div className={ ` flex flex-row gap-2` }>
-                    <Skeleton className="w-[75px] h-[20px] rounded-full" />
-                    <Skeleton className="w-[10px] h-[20px] rounded-full" />
-                </div>
-            </div>
-
-            <div className={ ` flex flex-row gap-4 items-center` }>
-                <div className={ `` }>
-                    <Skeleton className="w-[50px] h-[50px] rounded-full" />
-                </div>
-                <div className={ ` flex flex-col gap-2` }>
-                    <Skeleton className="w-[150px] h-[15px] rounded-full" />
-                    <Skeleton className="w-[75px] h-[10px] rounded-full" />
-                </div>
-            </div>
-
-            <div className={ ` flex flex-row gap-4` }>
-                <Skeleton className="w-[50px] h-[20px] rounded-full" />
-                <Skeleton className="w-[50px] h-[20px] rounded-full" />
-                <Skeleton className="w-[50px] h-[20px] rounded-full" />
-            </div>
-        </div>
-    </>;
+    let skeletonTemplate = <SkeletonList/>;
     // Record List - Template
     const recordListTemplate = (obj:RecordItem) => {
-        return <RecordTemplate record={obj}></RecordTemplate>;
+        return <TemplateListRecord record={obj}></TemplateListRecord>;
     }
-    // Simulate API call
+    // Create API Call
     const fetchRecordList = async () => {
+        // Cancel previous request
+        if(recordItemAbortController instanceof AbortController){
+            recordItemAbortController.abort();
+        }
+        
+        // Create a new AbortController
+        const abortController = new AbortController();
+        // Store the AbortController in state
+        setRecordItemAbortController(abortController);
+
+        setRecordIsLoading(true);
         // Build parameter
         const query = [];
         const obj = {
-            limit: 5,
-            filter_status: recordFilter
+            limit: 10,
+            filter_status: recordFilterStatus
         }
         // } as { [key: string]: any };
         for (const key in obj) {
             query.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key as keyof typeof obj]));
         }
 
-        // Create request
-        const req = await fetch(`${route('api.record.v1.list')}?${query.join('&')}`);
-        const response = await req.json();
+        try {
+            const response = await axios.get(`${route('api.record.v1.list')}?${query.join('&')}`, {
+              cancelToken: new axios.CancelToken(function executor(c) {
+                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                abortController.abort = c;
+              })
+            });
+        
+            // Use response.data instead of req.json() to get the JSON data
+            let jsonResponse = response.data;
+                // Apply to related property
+            setRecordItem(jsonResponse.result.data);
 
-        // Apply to related property
-        setRecordItem(response.result.data);
+            // Remove loading state
+            setRecordIsLoading(false);
+            // Clear the AbortController from state
+            setRecordItemAbortController(null);
+          } catch (error) {
 
-        // Remove loading state
-        setRecordIsLoading(false);
+            if (axios.isCancel(error)) {
+              // Handle the cancellation here if needed
+              console.log('Request was canceled', error);
+            } else {
+              // Handle other errors
+              console.error('Error:', error);
+            }
+        }
     }
-    
-    useEffect(() => {
-        fetchRecordList();
-    }, [recordFilter]);
     useEffect(() => {
         // Update skeleton count to match loaded record item
         setRecordSkeletonCount(recordItem.length > 0 ? recordItem.length : 3);
     }, [recordItem]);
 
-    // Create Request
-    const fetchPending = async () => {
-        setRefreshLoading(true);
-        const req = await fetch(route('api.record.v1.count-pending'));
-        const response = await req.json();
+    // Create Request to check pending count
+    useEffect(() => {
+        if(!isFirstRender){
+            // Update record list
+            fetchPendingCount();
+        }
+    }, [recordFilterStatus]);
+    const fetchPendingCount = async () => {
+        try {
+            const response = await axios.get(route('api.record.v1.count-pending'));
+        
+            // Use response.data instead of req.json() to get the JSON data
+            let jsonResponse = response.data;
+            setRecordPendingCount(jsonResponse?.result?.data);
 
-        setRecordPendingCount(response?.result?.data);
-        setRefreshLoading(false);
+            // Fetch newest record-item
+            fetchRecordList();
+        } catch (error) {
+            if (axios.isCancel(error)) {
+                // Handle the cancellation here if needed
+                console.log('Request was canceled', error);
+            } else {
+                // Handle other errors
+                console.error('Error:', error);
+            }
+        }
     }
     useEffect(() => {
-        fetchPending();
+        // First fetch pending count
+        fetchPendingCount();
     }, []);
+    
+    useEffect(() => {
+        if(!isFirstRender){
+            // Listen to Record Dialog event
+            const handleDialogRecord = (event: any) => {
+                setTimeout(() => {
+                    // Update record list
+                    fetchPendingCount();
+                }, 100);
+            }
+            document.addEventListener('dialog.record.hidden', handleDialogRecord);
+            document.addEventListener('record.deleted-action', handleDialogRecord);
+
+            // Remove the event listener when the component unmounts
+            return () => {
+                document.removeEventListener('dialog.record.hidden', handleDialogRecord);
+                document.removeEventListener('record.deleted-action', handleDialogRecord);
+            };
+        }
+    });
 
     return (
         <SystemLayout
@@ -109,66 +152,70 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
         >
             <Head title="Dashboard" />
 
-            <div className="py-12 flex flex-col gap-4">
+            <div className="flex flex-col gap-6">
                 {/* Welcome page & Quotes */}
-                <Card className={ ` shadow-sm` }>
-                    <CardHeader>
-                        <CardTitle>Hi <span className={ ` font-semibold` }>{auth.user.name}</span>,</CardTitle>
-                        <CardDescription>how's doing? 👋</CardDescription>
+                <Card className={ `` }>
+                    <CardHeader className={ `` }>
+                        <div className={ `flex flex-col space-y-2 ` }>
+                            <CardTitle><span className={ ` font-light` }>Hi</span> <span className={ ` font-semibold` }>{auth.user.name}</span>,</CardTitle>
+                            <CardDescription>how's doing? 👋</CardDescription>
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div dangerouslySetInnerHTML={{ __html: inspire }} className={ ` p-4 rounded-lg bg-gray-100` }></div>
+                        <div dangerouslySetInnerHTML={{ __html: inspire }} className={ ` p-4 rounded-lg bg-gray-100 dark:bg-background dark:border` }></div>
                     </CardContent>
-                    <CardFooter>
-                        {(() => {
-                            if(refreshLoading){
-                                return <Button disabled>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Please wait
-                                </Button>
-                            }
-
-                            return <Button variant={ `outline` } onClick={() => {
-                                fetchPending();
-                            }}>Refresh</Button>;
-                        })()}
-                    </CardFooter>
                 </Card>
 
                 {/* Record List */}
-                <Card className={ ` shadow-sm` }>
+                <Card className={ ` w-full` }>
                     <CardHeader>
-                        <CardTitle>Record: List</CardTitle>
-                        <CardDescription>See your latest transaction</CardDescription>
+                        <div className={ ` flex flex-row justify-between items-center` }>
+                            <div>
+                                <CardTitle>
+                                    <div>Record: List</div>
+                                </CardTitle>
+                                <CardDescription>See your latest transaction</CardDescription>
+                            </div>
+                            <Button variant={ `outline` } className={ ` w-10 aspect-square` } onClick={($refs) => {
+                                // Cancel previous request
+                                if(recordItemAbortController instanceof AbortController){
+                                    recordItemAbortController.abort();
+                                }
+                                
+                                // Fetch Pending Count
+                                fetchPendingCount();
+                            }}><i className={ `fa-solid fa-rotate-right` }></i></Button>
+                        </div>
                     </CardHeader>
                     <CardContent className={ ` flex flex-col gap-6` }>
                         {/* Filter Button */}
                         <div className={ ` flex flex-row gap-4` } id={ `dashboard-recordList` }>
                             <Button
-                                variant={ recordFilter === 'complete' ? `default` : `outline` }
+                                variant={ recordFilterStatus === 'complete' ? `default` : `outline` }
                                 onClick={() => {
-                                    if(recordFilter !== 'complete'){
-                                        setRecordFilter('complete');
+                                    if(recordFilterStatus !== 'complete'){
+                                        setRecordFilterStatus('complete');
                                         setRecordIsLoading(!recordIsLoading);
                                     }
                                 }}
+                                className={ ` ` }
                             >Complete</Button>
 
                             <Button
-                                variant={ recordFilter === 'pending' ? `default` : `outline` }
+                                variant={ recordFilterStatus === 'pending' ? `default` : `outline` }
                                 onClick={() => {
-                                    if(recordFilter !== 'pending'){
-                                        setRecordFilter('pending');
+                                    if(recordFilterStatus !== 'pending'){
+                                        setRecordFilterStatus('pending');
                                         setRecordIsLoading(!recordIsLoading);
                                     }
                                 }}
-                                className={ ` flex flex-row gap-1` }
+                                className={ ` flex flex-row gap-1 ` }
                             >
                                 <span>Pending</span>
                                 {(() => {
                                     if(recordPendingCount > 0){
                                         return <>
-                                            <Badge className={ `${recordFilter === 'pending' ? ' bg-white text-primary' : null} leading-none p-0 h-4 w-4 flex items-center justify-center` }>{recordPendingCount}</Badge>
+                                            <Badge className={ `${recordFilterStatus === 'pending' ? ' bg-white text-primary' : null} leading-none p-0 h-4 w-4 flex items-center justify-center` }>{recordPendingCount}</Badge>
                                         </>;
                                     }
 
@@ -193,7 +240,7 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
                                     return element;
                                 } else {
                                     let recordElement: any[] = [];
-                                    let defaultContent = <NoDataTemplate></NoDataTemplate>;
+                                    let defaultContent = <TemplateNoData></TemplateNoData>;
                                     // Loop through response
                                     if(recordItem.length > 0){
                                         recordItem.map((val, index) => {
@@ -215,7 +262,9 @@ export default function Dashboard({ auth, inspire = '' }: PageProps<{ inspire: s
                         if(!recordIsLoading){
                             return <>
                                 <CardFooter>
-                                    <Button variant={ `outline` }>Load more</Button>
+                                    <Link href={ route('sys.record.index') }>
+                                        <Button variant={ `outline` } className={ `` } data-type={ `load_all-record` }>Load all</Button>
+                                    </Link>
                                 </CardFooter>
                             </>;
                         }

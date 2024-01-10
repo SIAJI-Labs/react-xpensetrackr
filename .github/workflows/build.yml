@@ -15,7 +15,7 @@ jobs:
 
     name: Build and Push Commit
     steps:
-      - name: Checkout `Build` Branch
+      - name: Checkout Branch
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -25,7 +25,6 @@ jobs:
 
       - name: Check if Build Branch Exists
         run: |
-          git fetch origin main:main
           if git rev-parse --verify build >/dev/null 2>&1; then
             echo "Build branch already exists."
             git checkout build

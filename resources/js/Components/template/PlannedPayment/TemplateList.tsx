@@ -1,4 +1,4 @@
-import { PropsWithChildren, useState } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
 import { Link } from "@inertiajs/react";
 import { PlannedItem } from "@/types";
 
@@ -25,6 +25,20 @@ export default function TemplateList({ plannedPayment, deleteAction = true, edit
 
     // State for Dropdown
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
+    useEffect(() => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
+            setTimeout(() => {
+                setOpenDropdown(false);
+            }, 100);
+        }
+
+        document.addEventListener('dialog.planned-payment.shown', handleDialogEvent);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.planned-payment.shown', handleDialogEvent);
+        };
+    });
 
     return (
         <section key={r} onClick={($refs) => {

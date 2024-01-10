@@ -22,6 +22,20 @@ type ContentProps = {
 
 export default function Show({ auth, data, related }: PageProps<ContentProps>) {
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
+    useEffect(() => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
+            setTimeout(() => {
+                setOpenDropdown(false);
+            }, 100);
+        }
+
+        document.addEventListener('dialog.tags.shown', handleDialogEvent);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.tags.shown', handleDialogEvent);
+        };
+    });
 
     // Listen to Dialog event
     useEffect(() => {

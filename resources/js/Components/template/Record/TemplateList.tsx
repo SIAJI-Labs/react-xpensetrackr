@@ -103,6 +103,21 @@ export default function TemplateList({ record, deleteAction = true, editAction =
         handleElSmallInformation;
     }, [record]);
 
+    useEffect(() => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
+            setTimeout(() => {
+                setOpenDropdown(false);
+            }, 100);
+        }
+
+        document.addEventListener('dialog.record.shown', handleDialogEvent);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.record.shown', handleDialogEvent);
+        };
+    });
+
     return (
         <section key={r}>
             {(() => {

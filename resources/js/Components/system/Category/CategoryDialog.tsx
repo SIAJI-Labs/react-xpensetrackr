@@ -1,9 +1,12 @@
 import { FormEventHandler, useEffect, useState } from "react";
 import { useIsFirstRender } from "@/lib/utils";
+import { useMediaQuery } from "usehooks-ts";
 import axios, { AxiosError } from "axios";
 import { CategoryItem } from "@/types";
 
 // Plugins
+import { RemoveScroll } from "react-remove-scroll";
+import { toast } from "sonner";
 
 // Partials
 import ErrorMessage from "@/Components/forms/ErrorMessage";
@@ -12,12 +15,12 @@ import { Check, ChevronsUpDown } from "lucide-react";
 // Shadcn
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/Components/ui/drawer";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { ScrollArea } from "@/Components/ui/scroll-area";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
-import { toast } from "sonner";
 
 type dialogProps = {
     openState: boolean;
@@ -26,6 +29,7 @@ type dialogProps = {
 
 export default function CategoryDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
     // Form
     const [formParent, setFormParent] = useState<string>("");
@@ -335,6 +339,118 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
         };
     }, []);
 
+    const formContent = <>
+        <RemoveScroll className={ `overflow-auto border-t border-b ${isDesktop ? `max-h-screen md:max-h-[50vh]` : ``}` }>
+            <form onSubmit={handleFormSubmit} id={ `category-dialogForms` } className={ ` flex-1 overflow-hidden p-6` }>
+                {/* Parent Category */}
+                <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `form-category_parent` }>
+                    <label className={ ` form--label` }>Parent</label>
+                    <div>
+                        <Popover open={openCategoryParent} onOpenChange={setOpenCategoryParent}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openCategoryParent}
+                                    className={ `w-full justify-between ${errorFormDialog?.parent_id ? ` !border-red-500` : ''} dark:text-white` }
+                                >
+                                    <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxParentLabel}</span>
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                <Command shouldFilter={ false }>
+                                    <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={comboboxParentInput} onValueChange={setComboboxParentInput}/>
+                                    
+                                    <ScrollArea className="p-0">
+                                        <div className={ `max-h-[10rem]` }>
+                                            <CommandEmpty>{comboboxParentLoad ? `Loading...` : `No category found.`}</CommandEmpty>
+                                            <CommandGroup>
+                                                {comboboxParentList.map((options: CategoryItem) => (
+                                                    <CommandItem
+                                                        value={options?.uuid}
+                                                        key={options?.uuid}
+                                                        onSelect={(currentValue) => {
+                                                            setFormParent(currentValue === formParent ? "" : currentValue);
+                                                            setComboboxParentLabel(options.name);
+                                                            
+                                                            setOpenCategoryParent(false);
+                                                        }}
+                                                    >
+                                                        <Check
+                                                            className={ `mr-2 h-4 w-4 ${formParent === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                        />
+                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </div>
+                                    </ScrollArea>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+
+                        <ErrorMessage message={ errorFormDialog?.parent_id }/>
+                    </div>
+                </div>
+                
+                {/* Name */}
+                <div className={ `form--group` }>
+                    <label className={ `form--label` }>Name</label>
+                    <Input value={ formName } id={ `form-category_name` } onChange={(e) => setFormName(e.target.value)} placeholder={ `Category Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
+                        
+                    <ErrorMessage message={ errorFormDialog?.name }/>
+                </div>
+
+                {/* Keep open dialog? */}
+                <div className={ `form-group` }>
+                    <div className={ `flex items-center space-x-2` }>
+                        <Checkbox id="form-category_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
+                            if(typeof value === 'boolean'){
+                                setKeepOpenCategoryDialog(value);
+                            }
+                        }} />
+                        <label
+                            htmlFor="form-category_keep_open"
+                            className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
+                        >
+                            Keep Open?
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </RemoveScroll>
+    </>;
+
+    if(!isDesktop){
+        return (
+            <section id={ `category-dialogSection` }>
+                <Drawer open={openState} onOpenChange={setOpenState}>
+                    <DrawerContent className={ ` max-h-dvh` }>
+                        <DrawerHeader className="text-left">
+                            <DrawerTitle className={ ` text-center` }>{ formUuid ? `Edit` : `Add new` } Category</DrawerTitle>
+                        </DrawerHeader>
+
+                        {formContent}
+
+                        <DrawerFooter className="pt-2">
+                            <Button type='button' onClick={() => {
+                                if(document.getElementById('category-dialogForms')){
+                                    (document.getElementById('category-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
+                                }
+                            }} id='category-dialogSubmit'>Submit</Button>
+                            <Button variant={ `ghost` } onClick={() => {
+                                resetFormDialog();
+                            }}>
+                                <span>Reset</span>
+                            </Button>
+                        </DrawerFooter>
+                    </DrawerContent>
+                </Drawer>
+            </section>
+        );
+    }
+
     return (
         <section id={ `category-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
@@ -343,84 +459,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Category</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleFormSubmit} id={ `category-dialogForms` } className={ ` flex-1 overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
-                        {/* Parent Category */}
-                        <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `form-category_parent` }>
-                            <label className={ ` form--label` }>Parent</label>
-                            <div>
-                                <Popover open={openCategoryParent} onOpenChange={setOpenCategoryParent}>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            role="combobox"
-                                            aria-expanded={openCategoryParent}
-                                            className={ `w-full justify-between ${errorFormDialog?.parent_id ? ` !border-red-500` : ''} dark:text-white` }
-                                        >
-                                            <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxParentLabel}</span>
-                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                        <Command shouldFilter={ false }>
-                                            <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={comboboxParentInput} onValueChange={setComboboxParentInput}/>
-                                            
-                                            <ScrollArea className="p-0">
-                                                <div className={ `max-h-[10rem]` }>
-                                                    <CommandEmpty>{comboboxParentLoad ? `Loading...` : `No category found.`}</CommandEmpty>
-                                                    <CommandGroup>
-                                                        {comboboxParentList.map((options: CategoryItem) => (
-                                                            <CommandItem
-                                                                value={options?.uuid}
-                                                                key={options?.uuid}
-                                                                onSelect={(currentValue) => {
-                                                                    setFormParent(currentValue === formParent ? "" : currentValue);
-                                                                    setComboboxParentLabel(options.name);
-                                                                    
-                                                                    setOpenCategoryParent(false);
-                                                                }}
-                                                            >
-                                                                <Check
-                                                                    className={ `mr-2 h-4 w-4 ${formParent === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                />
-                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.parent ? `${options.parent.name} - ` : ''}${options?.name}` }</span>
-                                                            </CommandItem>
-                                                        ))}
-                                                    </CommandGroup>
-                                                </div>
-                                            </ScrollArea>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
-
-                                <ErrorMessage message={ errorFormDialog?.parent_id }/>
-                            </div>
-                        </div>
-                        
-                        {/* Name */}
-                        <div className={ `form--group` }>
-                            <label className={ `form--label` }>Name</label>
-                            <Input value={ formName } id={ `form-category_name` } onChange={(e) => setFormName(e.target.value)} placeholder={ `Category Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
-                                
-                            <ErrorMessage message={ errorFormDialog?.name }/>
-                        </div>
-
-                        {/* Keep open dialog? */}
-                        <div className={ `form-group` }>
-                            <div className={ `flex items-center space-x-2` }>
-                                <Checkbox id="form-category_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
-                                    if(typeof value === 'boolean'){
-                                        setKeepOpenCategoryDialog(value);
-                                    }
-                                }} />
-                                <label
-                                    htmlFor="form-category_keep_open"
-                                    className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
-                                >
-                                    Keep Open?
-                                </label>
-                            </div>
-                        </div>
-                    </form>
+                    { formContent }
 
                     <DialogFooter className={ ` p-6 pt-2` }>
                         <Button variant={ `ghost` } onClick={() => {

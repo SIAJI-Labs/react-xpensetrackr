@@ -24,6 +24,20 @@ type ContentProps = {
 
 export default function Show({ auth, record, related }: PageProps<ContentProps>) {
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
+    useEffect(() => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
+            setTimeout(() => {
+                setOpenDropdown(false);
+            }, 100);
+        }
+
+        document.addEventListener('dialog.record.shown', handleDialogEvent);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.record.shown', handleDialogEvent);
+        };
+    });
 
     // Listen to Record Dialog event
     useEffect(() => {

@@ -213,7 +213,7 @@ class RecordController extends Controller
             'notes' => ['nullable', 'string'],
             'tags.*' => ['nullable', 'string', 'exists:'.(new \App\Models\Tags())->getTable().',uuid']
         ], [
-            'amount.min' => 'The :attribuet field must be greater than 0.'
+            'amount.min' => 'The :attribute field must be greater than 0.'
         ]);
 
         // Store to database

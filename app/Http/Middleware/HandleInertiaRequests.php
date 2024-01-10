@@ -34,6 +34,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'timezone' => $request->user() && $request->user()->getPreference('timezone') ? $request->user()->getPreference('timezone') : null
             ],
             'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),

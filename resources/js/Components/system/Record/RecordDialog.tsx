@@ -1,6 +1,7 @@
 import { CategoryItem, WalletItem, User, RecordItem, PlannedItem, TagsItem } from '@/types';
 import { FormEventHandler, useEffect, useMemo, useState } from 'react';
 import { useIsFirstRender } from '@/lib/utils';
+import { useMediaQuery } from 'usehooks-ts';
 import axios, { AxiosError } from 'axios';
 import { Link } from '@inertiajs/react';
 import { format } from "date-fns"
@@ -26,6 +27,8 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { toast } from 'sonner';
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/Components/ui/drawer';
+import { RemoveScroll } from 'react-remove-scroll';
 
 type dialogProps = {
     openState: boolean;
@@ -34,6 +37,7 @@ type dialogProps = {
 
 export default function RecordDialog({ openState, setOpenState }: dialogProps){
     const isFirstRender = useIsFirstRender();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
     // extend style component
     const MaskedInput = IMaskMixin(({ inputRef, ...props }) => (
@@ -877,6 +881,737 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         };
     });
 
+    const formContent = <>
+        <RemoveScroll className={ `overflow-auto ${isDesktop ? `max-h-screen max-lg:max-h-[50vh] lg:max-h-[65vh] border-b border-t` : ` border-t`}` }>
+            <form onSubmit={handleSubmitDialog} id={ `record-dialogForms` } className={ ` !overflow-hidden ${isDesktop ? `` : ``}` }>
+                <div className={ ` flex gap-0 lg:gap-6 flex-col lg:flex-row px-6` }>
+                    {/* Left */}
+                    <div className={ `py-6 w-full lg:w-3/5` }>
+                        {(() => {
+                            if(formPlannedPaymentUuid && formPlannedPaymentName){
+                                return (
+                                    <div className=" w-full p-4 mb-6 rounded-lg border-2 border-dashed">
+                                        <span className=" flex items-center gap-2 text-sm font-normal">
+                                            <i className="fa-solid fa-clock"></i>
+                                            <span className={ `font-normal` }>Planned Payment(s)</span>
+                                        </span>
+                                        <span className=" block mt-2">You'll create a record for related planned payment (<u><Link href={ route('sys.planned-payment.show', formPlannedPaymentUuid) }>{formPlannedPaymentName}</Link></u>)</span>
+                                    </div>
+                                );
+                            }
+
+                            return <></>;
+                        })()}
+                        
+                        {/* Record Type */}
+                        <div className={ `form-group mb-4 ${errorFormDialog?.type ? ` is--invalid` : ''}` }>
+                            <div className={ ` flex flex-row gap-1 w-full border p-1 rounded-md ${errorFormDialog?.type ? ` !border-red-500` : ''}` } id={ `record_dialog-type` }>
+                                {(() => {
+                                    let recordType: any[] = [];
+                                    ['income', 'transfer', 'expense'].map((value, index) => {
+                                        recordType.push(
+                                            <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ formType === value ? `bg-primary ` : ` dark:!text-white dark:hover:!text-black !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
+                                                setFormType(value);
+                                            }} key={ `record_type-${value}` }>
+                                                <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
+                                            </div>
+                                        );
+                                    });
+
+                                    if(recordType.length > 0){
+                                        return recordType;
+                                    }
+
+                                    return <></>;
+                                })()}
+                            </div>
+
+                            <ErrorMessage message={ errorFormDialog?.category_id }/>
+                        </div>
+
+                        {/* Category */}
+                        <div className={ ` form--group  ${errorFormDialog?.category ? ` is--invalid` : ''}` } id={ `record_dialog-category` }>
+                            <label className={ ` form--label` }>Category</label>
+                            <div>
+                                <Popover open={comboboxCategoryOpenState} onOpenChange={setComboboxCategoryOpenState}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={comboboxCategoryOpenState}
+                                            className={ `w-full justify-between ${errorFormDialog?.category ? ` !border-red-500` : ''} dark:text-white` }
+                                        >
+                                            <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxCategoryLabel}</span>
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                        <Command shouldFilter={ false }>
+                                            <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
+                                            <ScrollArea className="p-0">
+                                                <div className={ `max-h-[10rem]` }>
+                                                    <CommandEmpty>{comboboxCategoryLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
+                                                    <CommandGroup>
+                                                            {(() => {
+                                                                if(comboboxCategoryLoadState){
+                                                                    return <>
+                                                                        <CommandItem
+                                                                            value=''
+                                                                            key={ `category_loading-state` }
+                                                                            disabled={ true }
+                                                                        >
+                                                                            <Check
+                                                                                className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                            />
+                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                        </CommandItem>
+                                                                    </>;
+                                                                }
+
+                                                                return <></>;
+                                                            })()}
+                                                            {comboboxCategoryList.map((options: CategoryItem) => (
+                                                                <CommandItem
+                                                                    value={options?.uuid}
+                                                                    key={options?.uuid}
+                                                                    onSelect={(currentValue) => {
+                                                                        setComboboxCategoryLabel(options.name);
+                                                                        setFormCategory(currentValue === formCategory ? "" : currentValue);
+
+                                                                        setComboboxCategoryOpenState(false);
+                                                                    }}
+                                                                >
+                                                                    <Check
+                                                                        className={ `mr-2 h-4 w-4 ${formCategory === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                    />
+                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
+                                                                </CommandItem>
+                                                            ))}
+                                                    </CommandGroup>
+                                                </div>
+                                            </ScrollArea>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+
+                                <ErrorMessage message={ errorFormDialog?.category_id }/>
+                            </div>
+                        </div>
+
+                        {/* From Wallet */}
+                        <div className={ ` form--group  ${errorFormDialog?.from_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-from_wallet` }>
+                            <label className={ ` form--label` }>{ formType === 'income' ? 'To' : 'From' }</label>
+                            <div>
+                                <Popover open={comboboxFromWalletOpenState} onOpenChange={setComboboxFromWalletOpenState}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={comboboxFromWalletOpenState}
+                                            className={ `w-full justify-between ${errorFormDialog?.from_wallet ? ` !border-red-500` : ''} dark:text-white` }
+                                        >
+                                            <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxFromWalletLabel}</span>
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                        <Command shouldFilter={ false }>
+                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxFromWalletInput} onValueChange={setComboboxFromWalletInput}/>
+                                            <ScrollArea className="p-0">
+                                                <div className={ `max-h-[10rem]` }>
+                                                    <CommandEmpty>{comboboxFromWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                    <CommandGroup>
+                                                        {(() => {
+                                                            if(comboboxFromWalletLoadState){
+                                                                return <>
+                                                                    <CommandItem
+                                                                        value=''
+                                                                        key={ `from_wallet_loading-state` }
+                                                                        disabled={ true }
+                                                                    >
+                                                                        <Check
+                                                                            className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                        />
+                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                    </CommandItem>
+                                                                </>;
+                                                            }
+
+                                                            return <></>;
+                                                        })()}
+                                                        {comboboxFromWalletList.map((options: WalletItem) => (
+                                                            <CommandItem
+                                                                value={options?.uuid}
+                                                                key={options?.uuid}
+                                                                onSelect={(currentValue) => {
+                                                                    setComboboxFromWalletLabel(options.name);
+                                                                    setFormFromWallet(currentValue === formFromWallet ? "" : currentValue);
+
+                                                                    setComboboxFromWalletOpenState(false)
+                                                                }}
+                                                            >
+                                                                <Check
+                                                                    className={ `mr-2 h-4 w-4 ${formFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                />
+                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
+                                                            </CommandItem>
+                                                        ))}
+                                                    </CommandGroup>
+                                                </div>
+                                            </ScrollArea>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+
+                                <ErrorMessage message={ errorFormDialog?.from_wallet }/>
+                            </div>
+                        </div>
+
+                        {/* To Wallet */}
+                        {(() => {
+                            if(formType === 'transfer'){
+                                return (
+                                    <div className={ ` flex flex-col gap-4` }>
+                                        <Button variant={ `outline` } className={ ` inline-flex gap-1 w-max` } onClick={() => {
+                                            let temp = {
+                                                option: formToWallet,
+                                                label: comboboxToWalletLabel
+                                            };
+
+                                            setFormToWallet(formFromWallet);
+                                            setComboboxToWalletLabel(comboboxFromWalletLabel);
+
+                                            setFormFromWallet(temp.option);
+                                            setComboboxFromWalletLabel(temp.label);
+                                        }} type={ `button` }>
+                                            <i className={ ` fa-solid fa-right-left rotate-90` }></i>
+                                            <span>Switch</span>
+                                        </Button>
+
+                                        <div className={ ` form--group  ${errorFormDialog?.to_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-to_wallet` }>
+                                            <label className={ ` form--label` }>To</label>
+                                            <div>
+                                                <Popover open={comboboxToWalletOpenState} onOpenChange={setComboboxToWalletOpenState}>
+                                                    <PopoverTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            role="combobox"
+                                                            aria-expanded={comboboxToWalletOpenState}
+                                                            className={ ` w-full justify-between ${errorFormDialog?.to_wallet ? ` !border-red-500` : ''} dark:text-white` }
+                                                        >
+                                                            <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxToWalletLabel}</span>
+                                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                                        <Command shouldFilter={ false }>
+                                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
+                                                            <ScrollArea className="p-0">
+                                                                <div className={ `max-h-[10rem]` }>
+                                                                    <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                                    <CommandGroup>
+                                                                        {(() => {
+                                                                            if(comboboxToWalletLoadState){
+                                                                                return <>
+                                                                                    <CommandItem
+                                                                                        value=''
+                                                                                        key={ `to_wallet_loading-state` }
+                                                                                        disabled={ true }
+                                                                                    >
+                                                                                        <Check
+                                                                                            className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                                        />
+                                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                                    </CommandItem>
+                                                                                </>;
+                                                                            }
+
+                                                                            return <></>;
+                                                                        })()}
+                                                                        {/* {comboboxToWalletList.map((options: WalletItem) => ( */}
+                                                                        {comboboxFromWalletList.map((options: WalletItem) => (
+                                                                            <CommandItem
+                                                                                value={options?.uuid}
+                                                                                key={options?.uuid}
+                                                                                onSelect={(currentValue) => {
+                                                                                    setComboboxToWalletLabel(options.name);
+                                                                                    setFormToWallet(currentValue === formToWallet ? "" : currentValue);
+
+                                                                                    setComboboxToWalletOpenState(false);
+                                                                                }}
+                                                                            >
+                                                                                <Check
+                                                                                    className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                                />
+                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
+                                                                            </CommandItem>
+                                                                        ))}
+                                                                    </CommandGroup>
+                                                                </div>
+                                                            </ScrollArea>
+                                                        </Command>
+                                                    </PopoverContent>
+                                                </Popover>
+
+                                                <ErrorMessage message={ errorFormDialog?.to_wallet }/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            return <></>;
+                        })()}
+
+                        {/* Amount */}
+                        <div className={ ` form--group  ${errorFormDialog?.amount ? ` is--invalid` : ''}` } id={ `record_dialog-amount` }>
+                            <label className={ `form--label` }>Amount</label>
+                            <MaskedInput
+                                type={ `text` }
+                                placeholder={ `Amount` }
+                                inputMode={ `numeric` }
+                                value={ (formAmount ?? 0).toString() }
+                                className={ `${errorFormDialog?.amount ? ` !border-red-500` : ''}` }
+                                mask={ Number }
+                                unmask={ true }
+                                thousandsSeparator={ `,` }
+                                scale={ 2 }
+                                radix={ `.` }
+                                onBlur={ (element) => {
+                                    let value = (element.target as HTMLInputElement).value;
+                                    value = value.replaceAll(',', '');
+
+                                    setFormAmount(Number(value));
+                                } }
+                            />
+
+                            <ErrorMessage message={ errorFormDialog?.amount }/>
+                        </div>
+
+                        {/* Extra & Final Amount */}
+                        <div className={ ` flex flex-row gap-4 w-full` }>
+                            {/* Extra Amount */}
+                            <div className={ ` form--group !mb-0 w-1/2  ${errorFormDialog?.extra_amount ? ` is--invalid` : ''}` } id={ `record_dialog-extra_amount` }>
+                                <div className={ ` flex flex-col gap-1` }>
+                                    {/* Extra Amount */}
+                                    <div id={ `record_dialog-extra_amount` }>
+                                        <label className={ ` form--label` }>Extra</label>
+                                        <MaskedInput
+                                            type={ `text` }
+                                            placeholder={ `Extra Amount` }
+                                            inputMode={ `numeric` }
+                                            value={ (formExtraAmount ?? 0).toString() }
+                                            className={ `${errorFormDialog?.extra_amount ? ` !border-red-500` : ''}` }
+                                            mask={ Number }
+                                            unmask={ true }
+                                            thousandsSeparator={ `,` }
+                                            scale={ 2 }
+                                            radix={ `.` }
+                                            onBlur={ (element) => {
+                                                let value = (element.target as HTMLInputElement).value;
+                                                value = value.replaceAll(',', '');
+
+                                                setFormExtraAmount(Number(value));
+                                            } }
+                                        />
+
+                                        <ErrorMessage message={ errorFormDialog?.extra_amount }/>
+                                    </div>
+                                    {/* Extra Type */}
+                                    <div id={ `record_dialog-extra_type` }>
+                                        <span className={ ` text-sm flex flex-row gap-1` }>
+                                            <span className={ ` cursor-pointer ${formExtraType === 'amount' ? ` font-semibold dark:text-white dark:underline` : ' dark:text-white'}` } onClick={() => {
+                                                if(formExtraType !== 'amount'){
+                                                    setFormExtraType('amount');
+                                                }
+                                            }}>Amount</span>
+                                            <span className={ `dark:text-white` }>/</span>
+                                            <span className={ ` cursor-pointer ${formExtraType === 'percentage' ? ` font-semibold dark:text-white dark:underline` : ' dark:text-white'}` } onClick={() => {
+                                                if(formExtraType !== 'percentage'){
+                                                    setFormExtraType('percentage');
+                                                }
+                                            }}>Percentage</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Final Amount */}
+                            <div className={ ` form--group !mb-0 w-1/2  ${errorFormDialog?.final_amount ? ` is--invalid` : ''}` } id={ `record_dialog-final_amount` }>
+                                <label className={ ` form--label` }>Final</label>
+                                <MaskedInput
+                                    type={ `text` }
+                                    placeholder={ `Final Amount` }
+                                    inputMode={ `numeric` }
+                                    value={ (formCalculateFinalAmount ?? 0).toString() }
+                                    className={ `${errorFormDialog?.final_amount ? ` !border-red-500` : ''}` }
+                                    mask={ Number }
+                                    unmask={ true }
+                                    thousandsSeparator={ `,` }
+                                    scale={ 2 }
+                                    radix={ `.` }
+                                    disabled={ true }
+                                />
+
+                                <ErrorMessage message={ errorFormDialog?.final_amount }/>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Right */}
+                    <div className={ ` py-6 lg:p-6 lg:pr-0 w-full lg:w-2/5 lg:border-l lg:border-t-0 border-t` }>
+                        {/* Timestamp */}
+                        <div className={ ` form--group` }>
+                            <div id={ `record_dialog-date` } className={ ` form--group !mb-0 ${errorFormDialog?.date ? ` is--invalid` : ''}` }>
+                                <label className={ ` form--label` }>Timestamp</label>
+                                <Popover open={ calendarOpenState } onOpenChange={ setCalendarOpenState }>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={ ` w-full justify-start text-left font-normal ${!formDate && "text-muted-foreground"} ${errorFormDialog?.date ? ` !border-red-500` : ''} dark:text-white`}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {formDate ? format(formDate, "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                            mode="single"
+                                            selected={formDate}
+                                            onSelect={(val) => {
+                                                setFormDate(val);
+                                                setCalendarOpenState(false);
+                                            }}
+                                            defaultMonth={formDate}
+                                            disabled={(date) =>
+                                                moment(moment(date).format('YYYY-MM-DD')) > moment(moment().format('YYYY-MM-DD'))
+                                            }
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+
+                                <ErrorMessage message={ errorFormDialog?.date }/>
+                            </div>
+
+                            {/* Timepickr */}
+                            <div className={ ` flex flex-row gap-4 mt-2 items-center` }>
+                                <div className={ `w-full form--group !mb-0 ${errorFormDialog?.hours ? ` is--invalid` : ''}` } id={ `record_dialog-hours` }>
+                                    <Popover open={ formHoursState } onOpenChange={ setFormHoursState }>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                className={ `w-full justify-between ${errorFormDialog?.hours ? ` !border-red-500` : ''} dark:text-white` }
+                                            >
+                                                <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{ formHours ? formHours.padStart(2, '0') : '' }</span>
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className=" w-[175px] lg:w-[400px] p-0" align={ `start` }>
+                                            <Command>
+                                                <CommandInput placeholder="Search hours" className={ ` border-none focus:ring-0` }/>
+                                                <ScrollArea className="p-0">
+                                                    <div className={ `max-h-[10rem]` }>
+                                                        <CommandEmpty>No hours found</CommandEmpty>
+                                                        <CommandGroup>
+                                                            {(() => {
+                                                                let hours: any[] = [];
+                                                                for(let i = 0; i < 24; i++){
+                                                                    hours.push(
+                                                                        <CommandItem
+                                                                            key={ i.toString().padStart(2, '0') }
+                                                                            value={ i.toString().padStart(2, '0') }
+                                                                            onSelect={(currentValue) => {
+                                                                                setFormHours(currentValue);
+                                                                                setFormHoursState(false);
+                                                                            }}
+                                                                        >
+                                                                            <Check
+                                                                                className={ `mr-2 h-4 w-4 ${formHours?.toString().padStart(2, '0') === i.toString().padStart(2, '0') ? "opacity-100" : "opacity-0"}`}
+                                                                            />
+                                                                            {/* <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ i.toString().padStart(2, '0') }</span> */}
+                                                                            { i.toString().padStart(2, '0') }
+                                                                        </CommandItem>
+                                                                    );
+                                                                }
+
+                                                                if(hours.length > 0){
+                                                                    return hours;
+                                                                }
+
+                                                                return <></>;
+                                                            })()}
+                                                        </CommandGroup>
+                                                    </div>
+                                                </ScrollArea>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+
+                                    <ErrorMessage message={ errorFormDialog?.hours }/>
+                                </div>
+                                <span>:</span>
+                                <div className={ `w-full form--group !mb-0  ${errorFormDialog?.minutes ? ` is--invalid` : ''}` } id={ `record_dialog-minutes` }>
+                                    <Popover open={ formMinutesState } onOpenChange={ setFormMinutesState }>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                className={ `w-full justify-between ${errorFormDialog?.minutes ? ` !border-red-500` : ''} dark:text-white` }
+                                            >
+                                                <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{ formMinutes ? formMinutes.padStart(2, '0') : '' }</span>
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className=" w-[175px] lg:w-[400px] p-0" align={ `start` }>
+                                            <Command>
+                                                <CommandInput placeholder="Search minutes" className={ ` border-none focus:ring-0` }/>
+                                                <ScrollArea className="p-0">
+                                                    <div className={ `max-h-[10rem]` }>
+                                                        <CommandEmpty>No minutes found</CommandEmpty>
+                                                        <CommandGroup>
+                                                            {(() => {
+                                                                let minutes: any[] = [];
+                                                                for(let i = 0; i <= 59; i++){
+                                                                    minutes.push(
+                                                                        <CommandItem
+                                                                            key={ i.toString().padStart(2, '0') }
+                                                                            value={ i.toString().padStart(2, '0') }
+                                                                            onSelect={(currentValue) => {
+                                                                                setFormMinutes(currentValue);
+                                                                                setFormMinutesState(false);
+                                                                            }}
+                                                                        >
+                                                                            <Check
+                                                                                className={ `mr-2 h-4 w-4 ${formMinutes?.toString().padStart(2, '0') === i.toString().padStart(2, '0') ? "opacity-100" : "opacity-0"}`}
+                                                                            />
+                                                                            { i.toString().padStart(2, '0') }
+                                                                        </CommandItem>
+                                                                    );
+                                                                }
+
+                                                                if(minutes.length > 0){
+                                                                    return minutes;
+                                                                }
+
+                                                                return <></>;
+                                                            })()}
+                                                        </CommandGroup>
+                                                    </div>
+                                                </ScrollArea>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+
+                                    <ErrorMessage message={ errorFormDialog?.minutes }/>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Note */}
+                        <div className={ ` form--group  ${errorFormDialog?.notes ? ` is--invalid` : ''}` } id={ `record_dialog-note` }>
+                            <label className={ ` form--label` }>Note</label>
+                            <Textarea className={ ` w-full ${errorFormDialog?.notes ? ` !border-red-500` : ''}` } placeholder="Type your message here." value={ formNotes } onChange={(e) => {
+                                setFormNotes(e.target.value);
+                            }}/>
+                        
+                            <ErrorMessage message={ errorFormDialog?.notes }/>
+                        </div>
+
+                        {/* Tags */}
+                        <div className={ ` form--group ${errorFormDialog?.tags ? ` is--invalid` : ''}` } id={ `record_dialog-tags` }>
+                            <label className={ ` form--label` }>Tags</label>
+                            <div>
+                                <div className={ ` flex flex-row gap-2 flex-wrap` }>
+                                    <Popover open={comboboxTagsOpenState} onOpenChange={setComboboxTagsOpenState}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
+                                            >
+                                                <i className={ `fa-solid fa-plus` }></i>
+                                                <span>Tags</span>
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                            <Command shouldFilter={ false }>
+                                                <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
+                                                <ScrollArea className="p-0">
+                                                    <div className={ `max-h-[10rem]` }>
+                                                        <CommandEmpty>{comboboxTagsLoadState ? `Loading...` : `No tags found.`}</CommandEmpty>
+                                                        <CommandGroup>
+                                                            {(() => {
+                                                                if(comboboxTagsLoadState){
+                                                                    return <>
+                                                                        <CommandItem
+                                                                            value=''
+                                                                            key={ `tags_loading-state` }
+                                                                            disabled={ true }
+                                                                        >
+                                                                            <Check
+                                                                                className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                            />
+                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                        </CommandItem>
+                                                                    </>;
+                                                                }
+
+                                                                return <></>;
+                                                            })()}
+                                                            {comboboxTagsList.map((options: TagsItem) => (
+                                                                <CommandItem
+                                                                    value={options?.uuid}
+                                                                    key={options?.uuid}
+                                                                    onSelect={(currentValue) => {
+                                                                        if(formTags.includes(currentValue)){
+                                                                            // Already exists, remove from array
+                                                                            let uuidIndex = formTags.indexOf(currentValue);
+                                                                            if (uuidIndex !== -1) {
+                                                                                const updatedFormTags = [...formTags];
+                                                                                updatedFormTags.splice(uuidIndex, 1);
+                                                                                setFormTags(updatedFormTags);
+                                                                            }
+
+                                                                            let nameIndex = comboboxTagsLabel.indexOf(options?.name);
+                                                                            if (nameIndex !== -1) {
+                                                                                const updatedLabelTags = [...comboboxTagsLabel];
+                                                                                updatedLabelTags.splice(nameIndex, 1);
+                                                                                setComboboxTagsLabel(updatedLabelTags);
+                                                                            }
+                                                                        } else {
+                                                                            // Not yet exists, add to array
+                                                                            setFormTags([...formTags, currentValue])
+                                                                            setComboboxTagsLabel([...comboboxTagsLabel, options?.name]);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <Check
+                                                                        className={ `mr-2 h-4 w-4 ${formTags.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
+                                                                    />
+                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.name}` }</span>
+                                                                </CommandItem>
+                                                            ))}
+                                                        </CommandGroup>
+                                                    </div>
+                                                </ScrollArea>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+
+                                    {(() => {
+                                        let selectedTags: any = [];
+                                        if(formTags.length > 0){
+                                            formTags.forEach((value, index) => {
+                                                let name = comboboxTagsLabel[index];
+                                                if(name){
+                                                    selectedTags.push(
+                                                        <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_tags-${value}` } onClick={() => {
+                                                            let uuidIndex = formTags.indexOf(value);
+                                                            if (uuidIndex !== -1) {
+                                                                const updatedFormTags = [...formTags];
+                                                                updatedFormTags.splice(uuidIndex, 1);
+                                                                setFormTags(updatedFormTags);
+                                                            }
+
+                                                            let nameIndex = comboboxTagsLabel.indexOf(name);
+                                                            if (nameIndex !== -1) {
+                                                                const updatedLabelTags = [...comboboxTagsLabel];
+                                                                updatedLabelTags.splice(nameIndex, 1);
+                                                                setComboboxTagsLabel(updatedLabelTags);
+                                                            }
+                                                        }}>
+                                                            <span>{ name }</span>
+                                                            <i className={ `fa-solid fa-xmark` }></i>
+                                                        </Button>
+                                                    );
+                                                }
+                                            });
+
+                                            if(selectedTags.length > 0){
+                                                return selectedTags;
+                                            }
+                                        }
+
+                                        return <></>;
+                                    })()}
+                                </div>
+
+                                <ErrorMessage message={ errorFormDialog?.tags }/>
+                            </div>
+                        </div>
+
+                        <div className={ ` flex flex-col gap-2` }>
+                            {/* Hide record */}
+                            <div className={ `form-group` }>
+                                <div className={ `flex items-center space-x-2` }>
+                                    <Checkbox id="record_dialog-hide_record" checked={ formHideRecord } onCheckedChange={(value) => {
+                                        if(typeof value === 'boolean'){
+                                            setFormHideRecord(value);
+                                        }
+                                    }} />
+                                    <label
+                                        htmlFor="record_dialog-hide_record"
+                                        className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
+                                    >
+                                        Hide Record
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            {/* Keep open record dialog? */}
+                            <div className={ `form-group` }>
+                                <div className={ `flex items-center space-x-2` }>
+                                <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
+                                    if(typeof value === 'boolean'){
+                                        setKeepOpenDialog(value);
+                                    }
+                                }} />
+                                    <label
+                                        htmlFor="record_dialog-keep_open"
+                                        className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
+                                    >
+                                        Keep Open?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </RemoveScroll>
+    </>;
+
+    // Drawer
+    if(!isDesktop){
+        return (
+            <section id={ `record-dialogSection` }>
+                <Drawer open={openState} onOpenChange={setOpenState} closeThreshold={ 0.3 }>
+                    <DrawerContent className={ ` max-h-dvh` }>
+                        <DrawerHeader className="text-left">
+                            <DrawerTitle className={ ` text-center` }>{ formPlannedPaymentUuid ? `Planned Payment: Confirmation` : (formUuid ? `Edit` : `Add new`) } Record</DrawerTitle>
+                        </DrawerHeader>
+                        
+                        { formContent }
+
+                        <DrawerFooter className={ ` border-t` }>
+                            <Button type='button' onClick={() => {
+                                if(document.getElementById('record-dialogForms')){
+                                    (document.getElementById('record-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
+                                }
+                            }} id='record-dialogSubmit'>Submit</Button>
+                            <Button variant={ `ghost` } onClick={() => {
+                                resetFormDialog();
+                            }}>
+                                <span>Reset</span>
+                            </Button>
+                        </DrawerFooter>
+                    </DrawerContent>
+                </Drawer>
+            </section>
+        );
+    }
+
     return (
         <section id={ `record-dialogSection` }>
             <Dialog open={openState} onOpenChange={setOpenState}>
@@ -885,702 +1620,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                         <DialogTitle className={ ` dark:text-white` }>{ formPlannedPaymentUuid ? `Planned Payment: Confirmation` : (formUuid ? `Edit` : `Add new`) } Record</DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleSubmitDialog} id={ `record-dialogForms` } className={ ` overflow-auto border-t border-b max-h-screen max-lg:max-h-[50vh] lg:max-h-[65vh]` }>
-                        <div className={ ` flex gap-0 lg:gap-6 flex-col lg:flex-row px-6` }>
-                            {/* Left */}
-                            <div className={ `py-6 w-full lg:w-3/5` }>
-                                {(() => {
-                                    if(formPlannedPaymentUuid && formPlannedPaymentName){
-                                        return (
-                                            <div className=" w-full p-4 mb-6 rounded-lg border-2 border-dashed">
-                                                <span className=" flex items-center gap-2 text-sm font-normal">
-                                                    <i className="fa-solid fa-clock"></i>
-                                                    <span className={ `font-normal` }>Planned Payment(s)</span>
-                                                </span>
-                                                <span className=" block mt-2">You'll create a record for related planned payment (<u><Link href={ route('sys.planned-payment.show', formPlannedPaymentUuid) }>{formPlannedPaymentName}</Link></u>)</span>
-                                            </div>
-                                        );
-                                    }
-
-                                    return <></>;
-                                })()}
-                                
-                                {/* Record Type */}
-                                <div className={ `form-group mb-4 ${errorFormDialog?.type ? ` is--invalid` : ''}` }>
-                                    <div className={ ` flex flex-row gap-1 w-full border p-1 rounded-md ${errorFormDialog?.type ? ` !border-red-500` : ''}` } id={ `record_dialog-type` }>
-                                        {(() => {
-                                            let recordType: any[] = [];
-                                            ['income', 'transfer', 'expense'].map((value, index) => {
-                                                recordType.push(
-                                                    <div className={ ` w-full text-center py-1 rounded-sm cursor-pointer ${ formType === value ? `bg-primary ` : ` dark:!text-white dark:hover:!text-black !text-black hover:!text-primary-foreground`} text-primary-foreground hover:bg-primary/90 transition` } onClick={() => {
-                                                        setFormType(value);
-                                                    }} key={ `record_type-${value}` }>
-                                                        <span className={ ` text-sm font-semibold` }>{ ucwords(value) }</span>
-                                                    </div>
-                                                );
-                                            });
-
-                                            if(recordType.length > 0){
-                                                return recordType;
-                                            }
-
-                                            return <></>;
-                                        })()}
-                                    </div>
-
-                                    <ErrorMessage message={ errorFormDialog?.category_id }/>
-                                </div>
-
-                                {/* Category */}
-                                <div className={ ` form--group  ${errorFormDialog?.category ? ` is--invalid` : ''}` } id={ `record_dialog-category` }>
-                                    <label className={ ` form--label` }>Category</label>
-                                    <div>
-                                        <Popover open={comboboxCategoryOpenState} onOpenChange={setComboboxCategoryOpenState}>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    role="combobox"
-                                                    aria-expanded={comboboxCategoryOpenState}
-                                                    className={ `w-full justify-between ${errorFormDialog?.category ? ` !border-red-500` : ''} dark:text-white` }
-                                                >
-                                                    <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxCategoryLabel}</span>
-                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                                <Command shouldFilter={ false }>
-                                                    <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
-                                                    <ScrollArea className="p-0">
-                                                        <div className={ `max-h-[10rem]` }>
-                                                            <CommandEmpty>{comboboxCategoryLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
-                                                            <CommandGroup>
-                                                                    {(() => {
-                                                                        if(comboboxCategoryLoadState){
-                                                                            return <>
-                                                                                <CommandItem
-                                                                                    value=''
-                                                                                    key={ `category_loading-state` }
-                                                                                    disabled={ true }
-                                                                                >
-                                                                                    <Check
-                                                                                        className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                                    />
-                                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                                </CommandItem>
-                                                                            </>;
-                                                                        }
-
-                                                                        return <></>;
-                                                                    })()}
-                                                                    {comboboxCategoryList.map((options: CategoryItem) => (
-                                                                        <CommandItem
-                                                                            value={options?.uuid}
-                                                                            key={options?.uuid}
-                                                                            onSelect={(currentValue) => {
-                                                                                setComboboxCategoryLabel(options.name);
-                                                                                setFormCategory(currentValue === formCategory ? "" : currentValue);
-
-                                                                                setComboboxCategoryOpenState(false);
-                                                                            }}
-                                                                        >
-                                                                            <Check
-                                                                                className={ `mr-2 h-4 w-4 ${formCategory === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                            />
-                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
-                                                                        </CommandItem>
-                                                                    ))}
-                                                            </CommandGroup>
-                                                        </div>
-                                                    </ScrollArea>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-
-                                        <ErrorMessage message={ errorFormDialog?.category_id }/>
-                                    </div>
-                                </div>
-
-                                {/* From Wallet */}
-                                <div className={ ` form--group  ${errorFormDialog?.from_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-from_wallet` }>
-                                    <label className={ ` form--label` }>{ formType === 'income' ? 'To' : 'From' }</label>
-                                    <div>
-                                        <Popover open={comboboxFromWalletOpenState} onOpenChange={setComboboxFromWalletOpenState}>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    role="combobox"
-                                                    aria-expanded={comboboxFromWalletOpenState}
-                                                    className={ `w-full justify-between ${errorFormDialog?.from_wallet ? ` !border-red-500` : ''} dark:text-white` }
-                                                >
-                                                    <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxFromWalletLabel}</span>
-                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                                <Command shouldFilter={ false }>
-                                                    <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxFromWalletInput} onValueChange={setComboboxFromWalletInput}/>
-                                                    <ScrollArea className="p-0">
-                                                        <div className={ `max-h-[10rem]` }>
-                                                            <CommandEmpty>{comboboxFromWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                                            <CommandGroup>
-                                                                {(() => {
-                                                                    if(comboboxFromWalletLoadState){
-                                                                        return <>
-                                                                            <CommandItem
-                                                                                value=''
-                                                                                key={ `from_wallet_loading-state` }
-                                                                                disabled={ true }
-                                                                            >
-                                                                                <Check
-                                                                                    className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                                />
-                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                            </CommandItem>
-                                                                        </>;
-                                                                    }
-
-                                                                    return <></>;
-                                                                })()}
-                                                                {comboboxFromWalletList.map((options: WalletItem) => (
-                                                                    <CommandItem
-                                                                        value={options?.uuid}
-                                                                        key={options?.uuid}
-                                                                        onSelect={(currentValue) => {
-                                                                            setComboboxFromWalletLabel(options.name);
-                                                                            setFormFromWallet(currentValue === formFromWallet ? "" : currentValue);
-
-                                                                            setComboboxFromWalletOpenState(false)
-                                                                        }}
-                                                                    >
-                                                                        <Check
-                                                                            className={ `mr-2 h-4 w-4 ${formFromWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                        />
-                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
-                                                                    </CommandItem>
-                                                                ))}
-                                                            </CommandGroup>
-                                                        </div>
-                                                    </ScrollArea>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-
-                                        <ErrorMessage message={ errorFormDialog?.from_wallet }/>
-                                    </div>
-                                </div>
-
-                                {/* To Wallet */}
-                                {(() => {
-                                    if(formType === 'transfer'){
-                                        return (
-                                            <div className={ ` flex flex-col gap-4` }>
-                                                <Button variant={ `outline` } className={ ` inline-flex gap-1 w-max` } onClick={() => {
-                                                    let temp = {
-                                                        option: formToWallet,
-                                                        label: comboboxToWalletLabel
-                                                    };
-
-                                                    setFormToWallet(formFromWallet);
-                                                    setComboboxToWalletLabel(comboboxFromWalletLabel);
-
-                                                    setFormFromWallet(temp.option);
-                                                    setComboboxFromWalletLabel(temp.label);
-                                                }} type={ `button` }>
-                                                    <i className={ ` fa-solid fa-right-left rotate-90` }></i>
-                                                    <span>Switch</span>
-                                                </Button>
-
-                                                <div className={ ` form--group  ${errorFormDialog?.to_wallet ? ` is--invalid` : ''}` } id={ `record_dialog-to_wallet` }>
-                                                    <label className={ ` form--label` }>To</label>
-                                                    <div>
-                                                        <Popover open={comboboxToWalletOpenState} onOpenChange={setComboboxToWalletOpenState}>
-                                                            <PopoverTrigger asChild>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    role="combobox"
-                                                                    aria-expanded={comboboxToWalletOpenState}
-                                                                    className={ ` w-full justify-between ${errorFormDialog?.to_wallet ? ` !border-red-500` : ''} dark:text-white` }
-                                                                >
-                                                                    <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxToWalletLabel}</span>
-                                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                                </Button>
-                                                            </PopoverTrigger>
-                                                            <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                                                <Command shouldFilter={ false }>
-                                                                    <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
-                                                                    <ScrollArea className="p-0">
-                                                                        <div className={ `max-h-[10rem]` }>
-                                                                            <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                                                            <CommandGroup>
-                                                                                {(() => {
-                                                                                    if(comboboxToWalletLoadState){
-                                                                                        return <>
-                                                                                            <CommandItem
-                                                                                                value=''
-                                                                                                key={ `to_wallet_loading-state` }
-                                                                                                disabled={ true }
-                                                                                            >
-                                                                                                <Check
-                                                                                                    className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                                                />
-                                                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                                            </CommandItem>
-                                                                                        </>;
-                                                                                    }
-
-                                                                                    return <></>;
-                                                                                })()}
-                                                                                {/* {comboboxToWalletList.map((options: WalletItem) => ( */}
-                                                                                {comboboxFromWalletList.map((options: WalletItem) => (
-                                                                                    <CommandItem
-                                                                                        value={options?.uuid}
-                                                                                        key={options?.uuid}
-                                                                                        onSelect={(currentValue) => {
-                                                                                            setComboboxToWalletLabel(options.name);
-                                                                                            setFormToWallet(currentValue === formToWallet ? "" : currentValue);
-
-                                                                                            setComboboxToWalletOpenState(false);
-                                                                                        }}
-                                                                                    >
-                                                                                        <Check
-                                                                                            className={ `mr-2 h-4 w-4 ${formToWallet === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                                        />
-                                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
-                                                                                    </CommandItem>
-                                                                                ))}
-                                                                            </CommandGroup>
-                                                                        </div>
-                                                                    </ScrollArea>
-                                                                </Command>
-                                                            </PopoverContent>
-                                                        </Popover>
-
-                                                        <ErrorMessage message={ errorFormDialog?.to_wallet }/>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-
-                                    return <></>;
-                                })()}
-
-                                {/* Amount */}
-                                <div className={ ` form--group  ${errorFormDialog?.amount ? ` is--invalid` : ''}` } id={ `record_dialog-amount` }>
-                                    <label className={ `form--label` }>Amount</label>
-                                    <MaskedInput
-                                        type={ `text` }
-                                        placeholder={ `Amount` }
-                                        inputMode={ `numeric` }
-                                        value={ (formAmount ?? 0).toString() }
-                                        className={ `${errorFormDialog?.amount ? ` !border-red-500` : ''}` }
-                                        mask={ Number }
-                                        unmask={ true }
-                                        thousandsSeparator={ `,` }
-                                        scale={ 2 }
-                                        radix={ `.` }
-                                        onBlur={ (element) => {
-                                            let value = (element.target as HTMLInputElement).value;
-                                            value = value.replaceAll(',', '');
-
-                                            setFormAmount(Number(value));
-                                        } }
-                                    />
-
-                                    <ErrorMessage message={ errorFormDialog?.amount }/>
-                                </div>
-
-                                {/* Extra & Final Amount */}
-                                <div className={ ` flex flex-row gap-4 w-full` }>
-                                    {/* Extra Amount */}
-                                    <div className={ ` form--group !mb-0 w-1/2  ${errorFormDialog?.extra_amount ? ` is--invalid` : ''}` } id={ `record_dialog-extra_amount` }>
-                                        <div className={ ` flex flex-col gap-1` }>
-                                            {/* Extra Amount */}
-                                            <div id={ `record_dialog-extra_amount` }>
-                                                <label className={ ` form--label` }>Extra</label>
-                                                <MaskedInput
-                                                    type={ `text` }
-                                                    placeholder={ `Extra Amount` }
-                                                    inputMode={ `numeric` }
-                                                    value={ (formExtraAmount ?? 0).toString() }
-                                                    className={ `${errorFormDialog?.extra_amount ? ` !border-red-500` : ''}` }
-                                                    mask={ Number }
-                                                    unmask={ true }
-                                                    thousandsSeparator={ `,` }
-                                                    scale={ 2 }
-                                                    radix={ `.` }
-                                                    onBlur={ (element) => {
-                                                        let value = (element.target as HTMLInputElement).value;
-                                                        value = value.replaceAll(',', '');
-
-                                                        setFormExtraAmount(Number(value));
-                                                    } }
-                                                />
-
-                                                <ErrorMessage message={ errorFormDialog?.extra_amount }/>
-                                            </div>
-                                            {/* Extra Type */}
-                                            <div id={ `record_dialog-extra_type` }>
-                                                <span className={ ` text-sm flex flex-row gap-1` }>
-                                                    <span className={ ` cursor-pointer ${formExtraType === 'amount' ? ` font-semibold dark:text-white dark:underline` : ' dark:text-white'}` } onClick={() => {
-                                                        if(formExtraType !== 'amount'){
-                                                            setFormExtraType('amount');
-                                                        }
-                                                    }}>Amount</span>
-                                                    <span className={ `dark:text-white` }>/</span>
-                                                    <span className={ ` cursor-pointer ${formExtraType === 'percentage' ? ` font-semibold dark:text-white dark:underline` : ' dark:text-white'}` } onClick={() => {
-                                                        if(formExtraType !== 'percentage'){
-                                                            setFormExtraType('percentage');
-                                                        }
-                                                    }}>Percentage</span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Final Amount */}
-                                    <div className={ ` form--group !mb-0 w-1/2  ${errorFormDialog?.final_amount ? ` is--invalid` : ''}` } id={ `record_dialog-final_amount` }>
-                                        <label className={ ` form--label` }>Final</label>
-                                        <MaskedInput
-                                            type={ `text` }
-                                            placeholder={ `Final Amount` }
-                                            inputMode={ `numeric` }
-                                            value={ (formCalculateFinalAmount ?? 0).toString() }
-                                            className={ `${errorFormDialog?.final_amount ? ` !border-red-500` : ''}` }
-                                            mask={ Number }
-                                            unmask={ true }
-                                            thousandsSeparator={ `,` }
-                                            scale={ 2 }
-                                            radix={ `.` }
-                                            disabled={ true }
-                                        />
-
-                                        <ErrorMessage message={ errorFormDialog?.final_amount }/>
-                                    </div>
-                                </div>
-                            </div>
-                            {/* Right */}
-                            <div className={ ` py-6 lg:p-6 lg:pr-0 w-full lg:w-2/5 lg:border-l lg:border-t-0 border-t` }>
-                                {/* Timestamp */}
-                                <div className={ ` form--group` }>
-                                    <div id={ `record_dialog-date` } className={ ` form--group !mb-0 ${errorFormDialog?.date ? ` is--invalid` : ''}` }>
-                                        <label className={ ` form--label` }>Timestamp</label>
-                                        <Popover open={ calendarOpenState } onOpenChange={ setCalendarOpenState }>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant={"outline"}
-                                                    className={ ` w-full justify-start text-left font-normal ${!formDate && "text-muted-foreground"} ${errorFormDialog?.date ? ` !border-red-500` : ''} dark:text-white`}
-                                                >
-                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {formDate ? format(formDate, "PPP") : <span>Pick a date</span>}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={formDate}
-                                                    onSelect={(val) => {
-                                                        setFormDate(val);
-                                                        setCalendarOpenState(false);
-                                                    }}
-                                                    defaultMonth={formDate}
-                                                    disabled={(date) =>
-                                                        moment(moment(date).format('YYYY-MM-DD')) > moment(moment().format('YYYY-MM-DD'))
-                                                    }
-                                                    initialFocus
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-
-                                        <ErrorMessage message={ errorFormDialog?.date }/>
-                                    </div>
-
-                                    {/* Timepickr */}
-                                    <div className={ ` flex flex-row gap-4 mt-2 items-center` }>
-                                        <div className={ `w-full form--group !mb-0 ${errorFormDialog?.hours ? ` is--invalid` : ''}` } id={ `record_dialog-hours` }>
-                                            <Popover open={ formHoursState } onOpenChange={ setFormHoursState }>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        role="combobox"
-                                                        className={ `w-full justify-between ${errorFormDialog?.hours ? ` !border-red-500` : ''} dark:text-white` }
-                                                    >
-                                                        <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{ formHours ? formHours.padStart(2, '0') : '' }</span>
-                                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className=" w-[175px] lg:w-[400px] p-0" align={ `start` }>
-                                                    <Command>
-                                                        <CommandInput placeholder="Search hours" className={ ` border-none focus:ring-0` }/>
-                                                        <ScrollArea className="p-0">
-                                                            <div className={ `max-h-[10rem]` }>
-                                                                <CommandEmpty>No hours found</CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {(() => {
-                                                                        let hours: any[] = [];
-                                                                        for(let i = 0; i < 24; i++){
-                                                                            hours.push(
-                                                                                <CommandItem
-                                                                                    key={ i.toString().padStart(2, '0') }
-                                                                                    value={ i.toString().padStart(2, '0') }
-                                                                                    onSelect={(currentValue) => {
-                                                                                        setFormHours(currentValue);
-                                                                                        setFormHoursState(false);
-                                                                                    }}
-                                                                                >
-                                                                                    <Check
-                                                                                        className={ `mr-2 h-4 w-4 ${formHours?.toString().padStart(2, '0') === i.toString().padStart(2, '0') ? "opacity-100" : "opacity-0"}`}
-                                                                                    />
-                                                                                    {/* <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ i.toString().padStart(2, '0') }</span> */}
-                                                                                    { i.toString().padStart(2, '0') }
-                                                                                </CommandItem>
-                                                                            );
-                                                                        }
-
-                                                                        if(hours.length > 0){
-                                                                            return hours;
-                                                                        }
-
-                                                                        return <></>;
-                                                                    })()}
-                                                                </CommandGroup>
-                                                            </div>
-                                                        </ScrollArea>
-                                                    </Command>
-                                                </PopoverContent>
-                                            </Popover>
-
-                                            <ErrorMessage message={ errorFormDialog?.hours }/>
-                                        </div>
-                                        <span>:</span>
-                                        <div className={ `w-full form--group !mb-0  ${errorFormDialog?.minutes ? ` is--invalid` : ''}` } id={ `record_dialog-minutes` }>
-                                            <Popover open={ formMinutesState } onOpenChange={ setFormMinutesState }>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        role="combobox"
-                                                        className={ `w-full justify-between ${errorFormDialog?.minutes ? ` !border-red-500` : ''} dark:text-white` }
-                                                    >
-                                                        <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{ formMinutes ? formMinutes.padStart(2, '0') : '' }</span>
-                                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className=" w-[175px] lg:w-[400px] p-0" align={ `start` }>
-                                                    <Command>
-                                                        <CommandInput placeholder="Search minutes" className={ ` border-none focus:ring-0` }/>
-                                                        <ScrollArea className="p-0">
-                                                            <div className={ `max-h-[10rem]` }>
-                                                                <CommandEmpty>No minutes found</CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {(() => {
-                                                                        let minutes: any[] = [];
-                                                                        for(let i = 0; i <= 59; i++){
-                                                                            minutes.push(
-                                                                                <CommandItem
-                                                                                    key={ i.toString().padStart(2, '0') }
-                                                                                    value={ i.toString().padStart(2, '0') }
-                                                                                    onSelect={(currentValue) => {
-                                                                                        setFormMinutes(currentValue);
-                                                                                        setFormMinutesState(false);
-                                                                                    }}
-                                                                                >
-                                                                                    <Check
-                                                                                        className={ `mr-2 h-4 w-4 ${formMinutes?.toString().padStart(2, '0') === i.toString().padStart(2, '0') ? "opacity-100" : "opacity-0"}`}
-                                                                                    />
-                                                                                    { i.toString().padStart(2, '0') }
-                                                                                </CommandItem>
-                                                                            );
-                                                                        }
-
-                                                                        if(minutes.length > 0){
-                                                                            return minutes;
-                                                                        }
-
-                                                                        return <></>;
-                                                                    })()}
-                                                                </CommandGroup>
-                                                            </div>
-                                                        </ScrollArea>
-                                                    </Command>
-                                                </PopoverContent>
-                                            </Popover>
-
-                                            <ErrorMessage message={ errorFormDialog?.minutes }/>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Note */}
-                                <div className={ ` form--group  ${errorFormDialog?.notes ? ` is--invalid` : ''}` } id={ `record_dialog-note` }>
-                                    <label className={ ` form--label` }>Note</label>
-                                    <Textarea className={ ` w-full ${errorFormDialog?.notes ? ` !border-red-500` : ''}` } placeholder="Type your message here." value={ formNotes } onChange={(e) => {
-                                        setFormNotes(e.target.value);
-                                    }}/>
-                                
-                                    <ErrorMessage message={ errorFormDialog?.notes }/>
-                                </div>
-
-                                {/* Tags */}
-                                <div className={ ` form--group ${errorFormDialog?.tags ? ` is--invalid` : ''}` } id={ `record_dialog-tags` }>
-                                    <label className={ ` form--label` }>Tags</label>
-                                    <div>
-                                        <div className={ ` flex flex-row gap-2 flex-wrap` }>
-                                            <Popover open={comboboxTagsOpenState} onOpenChange={setComboboxTagsOpenState}>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        role="combobox"
-                                                        className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
-                                                    >
-                                                        <i className={ `fa-solid fa-plus` }></i>
-                                                        <span>Tags</span>
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                                    <Command shouldFilter={ false }>
-                                                        <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
-                                                        <ScrollArea className="p-0">
-                                                            <div className={ `max-h-[10rem]` }>
-                                                                <CommandEmpty>{comboboxTagsLoadState ? `Loading...` : `No tags found.`}</CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {(() => {
-                                                                        if(comboboxTagsLoadState){
-                                                                            return <>
-                                                                                <CommandItem
-                                                                                    value=''
-                                                                                    key={ `tags_loading-state` }
-                                                                                    disabled={ true }
-                                                                                >
-                                                                                    <Check
-                                                                                        className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                                    />
-                                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                                </CommandItem>
-                                                                            </>;
-                                                                        }
-
-                                                                        return <></>;
-                                                                    })()}
-                                                                    {comboboxTagsList.map((options: TagsItem) => (
-                                                                        <CommandItem
-                                                                            value={options?.uuid}
-                                                                            key={options?.uuid}
-                                                                            onSelect={(currentValue) => {
-                                                                                if(formTags.includes(currentValue)){
-                                                                                    // Already exists, remove from array
-                                                                                    let uuidIndex = formTags.indexOf(currentValue);
-                                                                                    if (uuidIndex !== -1) {
-                                                                                        const updatedFormTags = [...formTags];
-                                                                                        updatedFormTags.splice(uuidIndex, 1);
-                                                                                        setFormTags(updatedFormTags);
-                                                                                    }
-
-                                                                                    let nameIndex = comboboxTagsLabel.indexOf(options?.name);
-                                                                                    if (nameIndex !== -1) {
-                                                                                        const updatedLabelTags = [...comboboxTagsLabel];
-                                                                                        updatedLabelTags.splice(nameIndex, 1);
-                                                                                        setComboboxTagsLabel(updatedLabelTags);
-                                                                                    }
-                                                                                } else {
-                                                                                    // Not yet exists, add to array
-                                                                                    setFormTags([...formTags, currentValue])
-                                                                                    setComboboxTagsLabel([...comboboxTagsLabel, options?.name]);
-                                                                                }
-                                                                            }}
-                                                                        >
-                                                                            <Check
-                                                                                className={ `mr-2 h-4 w-4 ${formTags.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
-                                                                            />
-                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.name}` }</span>
-                                                                        </CommandItem>
-                                                                    ))}
-                                                                </CommandGroup>
-                                                            </div>
-                                                        </ScrollArea>
-                                                    </Command>
-                                                </PopoverContent>
-                                            </Popover>
-
-                                            {(() => {
-                                                let selectedTags: any = [];
-                                                if(formTags.length > 0){
-                                                    formTags.forEach((value, index) => {
-                                                        let name = comboboxTagsLabel[index];
-                                                        if(name){
-                                                            selectedTags.push(
-                                                                <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_tags-${value}` } onClick={() => {
-                                                                    let uuidIndex = formTags.indexOf(value);
-                                                                    if (uuidIndex !== -1) {
-                                                                        const updatedFormTags = [...formTags];
-                                                                        updatedFormTags.splice(uuidIndex, 1);
-                                                                        setFormTags(updatedFormTags);
-                                                                    }
-
-                                                                    let nameIndex = comboboxTagsLabel.indexOf(name);
-                                                                    if (nameIndex !== -1) {
-                                                                        const updatedLabelTags = [...comboboxTagsLabel];
-                                                                        updatedLabelTags.splice(nameIndex, 1);
-                                                                        setComboboxTagsLabel(updatedLabelTags);
-                                                                    }
-                                                                }}>
-                                                                    <span>{ name }</span>
-                                                                    <i className={ `fa-solid fa-xmark` }></i>
-                                                                </Button>
-                                                            );
-                                                        }
-                                                    });
-
-                                                    if(selectedTags.length > 0){
-                                                        return selectedTags;
-                                                    }
-                                                }
-
-                                                return <></>;
-                                            })()}
-                                        </div>
-
-                                        <ErrorMessage message={ errorFormDialog?.tags }/>
-                                    </div>
-                                </div>
-
-                                <div className={ ` flex flex-col gap-2` }>
-                                    {/* Hide record */}
-                                    <div className={ `form-group` }>
-                                        <div className={ `flex items-center space-x-2` }>
-                                            <Checkbox id="record_dialog-hide_record" checked={ formHideRecord } onCheckedChange={(value) => {
-                                                if(typeof value === 'boolean'){
-                                                    setFormHideRecord(value);
-                                                }
-                                            }} />
-                                            <label
-                                                htmlFor="record_dialog-hide_record"
-                                                className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
-                                            >
-                                                Hide Record
-                                            </label>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Keep open record dialog? */}
-                                    <div className={ `form-group` }>
-                                        <div className={ `flex items-center space-x-2` }>
-                                        <Checkbox id="record_dialog-keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
-                                            if(typeof value === 'boolean'){
-                                                setKeepOpenDialog(value);
-                                            }
-                                        }} />
-                                            <label
-                                                htmlFor="record_dialog-keep_open"
-                                                className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
-                                            >
-                                                Keep Open?
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+                    { formContent }
                     
                     <DialogFooter className={ ` p-6 pt-2` }>
                         <Button variant={ `ghost` } onClick={() => {

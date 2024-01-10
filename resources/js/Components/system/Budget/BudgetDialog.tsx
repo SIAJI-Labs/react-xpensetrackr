@@ -1,30 +1,32 @@
+import { BudgetItem, CategoryItem, TagsItem, WalletItem } from "@/types";
 import { FormEventHandler, useEffect, useState } from "react";
 import { useIsFirstRender } from "@/lib/utils";
+import { useMediaQuery } from "usehooks-ts";
 import axios, { AxiosError } from "axios";
-import { BudgetItem, CategoryItem, TagsItem, WalletItem } from "@/types";
 
 // Plugins
+import { RemoveScroll } from "react-remove-scroll";
+import { IMaskMixin } from "react-imask";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import moment from "moment";
 
 // Partials
 import ErrorMessage from "@/Components/forms/ErrorMessage";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 
 // Shadcn
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/Components/ui/drawer";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { ScrollArea } from "@/Components/ui/scroll-area";
-// import { useToast } from "@/Components/ui/use-toast";
+import { Calendar } from "@/Components/ui/calendar";
+import { Textarea } from "@/Components/ui/textarea";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
-import { useMediaQuery } from "usehooks-ts";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/Components/ui/drawer";
-import { IMaskMixin } from "react-imask";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Textarea } from "@/Components/ui/textarea";
-import { toast } from "sonner";
-import { RemoveScroll } from "react-remove-scroll";
 
 type dialogProps = {
     openState: boolean;
@@ -49,6 +51,8 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
     const [formName, setFormName] = useState<string>('');
     const [formLimit, setFormLimit] = useState<number>();
     const [formOccurence, setFormOccurence] = useState<string>('recurring');
+    const [formDateStart, setFormDateStart] = useState<Date>();
+    const [formDateEnd, setFormDateEnd] = useState<Date>();
     const [formInterval, setFormInterval] = useState<string>('');
     const [formNotes, setFormNotes] = useState<string>('');
     const [formCategory, setFormCategory] = useState<string[]>([]);
@@ -63,6 +67,8 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
         setFormName('');
         setFormLimit(undefined);
         setFormOccurence('recurring');
+        setFormDateStart(undefined);
+        setFormDateEnd(undefined);
         setFormInterval('');
         setFormNotes('');
         setFormCategory([]);
@@ -104,6 +110,10 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
         formData.append('limit', String(formLimit));
         formData.append('occurence', formOccurence);
         formData.append('interval', formInterval);
+        if(formOccurence === 'once'){
+            formData.append('from_period', String(formDateStart ? moment(formDateStart).format('YYYY-MM-DD HH:mm:ss') : ''));
+            formData.append('until_period', String(formDateEnd ? moment(formDateEnd).format('YYYY-MM-DD HH:mm:ss') : ''));
+        }
         formData.append('notes', formNotes);
         if(formCategory.length > 0){
             formCategory.forEach((value, index) => {
@@ -197,6 +207,10 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
             }
         });
     };
+
+    // Calendar
+    const [calendarStartOpenState, setCalendarStartOpenState] = useState<boolean>(false);
+    const [calendarEndOpenState, setCalendarEndOpenState] = useState<boolean>(false);
 
     // Combobox - Category
     let comboboxCategoryTimeout: any;
@@ -528,8 +542,13 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                     setFormName(data.name);
                     setFormLimit(data.amount);
                     setFormOccurence(data.occurence);
-                    setFormInterval(data.interval);
-                    setFormNotes(data.description);
+                    if(data.occurence === 'once'){
+                        setFormDateStart(moment(data.start).toDate());
+                        setFormDateEnd(moment(data.end).toDate());
+                    } else {
+                        setFormInterval(data.interval);
+                    }
+                    setFormNotes(data.description ?? '');
 
                     // Handle category
                     if(data.budget_category && data.budget_category.length > 0){
@@ -583,482 +602,562 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
         };
     }, []);
 
-    const mainForm = <>
-        <form onSubmit={handleFormSubmit} id={ `budget-dialogForms` } className={ ` flex-1 overflow-auto border-t border-b max-h-screen md:max-h-[50vh] p-6` }>
-            {/* Name */}
-            <div className={ `form--group` }>
-                <label className={ `form--label` }>Name</label>
-                <Input value={ formName } id={ `form-budget_name` } onChange={(e) => setFormName(e.target.value)} placeholder={ `Budget Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
-                    
-                <ErrorMessage message={ errorFormDialog?.name }/>
-            </div>
-
-            {/* Limit */}
-            <div className={ ` form--group  ${errorFormDialog?.limit ? ` is--invalid` : ''}` } id={ `form-budget_dialog_limit` }>
-                <label className={ `form--label` }>Limit</label>
-                <MaskedInput
-                    type={ `text` }
-                    placeholder={ `Limit` }
-                    inputMode={ `numeric` }
-                    value={ (formLimit ?? 0).toString() }
-                    className={ `${errorFormDialog?.limit ? ` !border-red-500` : ''}` }
-                    mask={ Number }
-                    unmask={ true }
-                    thousandsSeparator={ `,` }
-                    scale={ 2 }
-                    radix={ `.` }
-                    onBlur={ (element) => {
-                        let value = (element.target as HTMLInputElement).value;
-                        value = value.replaceAll(',', '');
-
-                        setFormLimit(Number(value));
-                    } }
-                />
-
-                <ErrorMessage message={ errorFormDialog?.limit }/>
-            </div>
-
-            {/* Occurence & Interval */}
-            <div className={ ` flex flex-row gap-4` }>
-                {/* Occurence */}
-                <div className={ `form--group w-full` } id={ `form-budget_dialog_occurence` }>
-                    <label className={ `form--label` }>Occurence</label>
-
-                    <Select onValueChange={(value) => {
-                        setFormOccurence(value);
-                    }} value={formOccurence}>
-                        <SelectTrigger className={ `dark:text-white ${errorFormDialog?.occurence ? ` !border-red-500` : ''}` }>
-                            <SelectValue placeholder="Select an option" className={ `dark:text-white` }/>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Select Occurence type</SelectLabel>
-                                <SelectItem value="recurring">Recurring</SelectItem>
-                                <SelectItem value="once">Once</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-
-                    <ErrorMessage message={ errorFormDialog?.occurence }/>
+    const formContent = <>
+        <RemoveScroll className={ `overflow-auto border-t border-b ${isDesktop ? `max-h-screen md:max-h-[50vh]` : ``}` }>
+            <form onSubmit={handleFormSubmit} id={ `budget-dialogForms` } className={ ` flex-1 overflow-hidden p-6` }>
+                {/* Name */}
+                <div className={ `form--group` }>
+                    <label className={ `form--label` }>Name</label>
+                    <Input value={ formName } id={ `form-budget_name` } onChange={(e) => setFormName(e.target.value)} placeholder={ `Budget Name` } className={ `${errorFormDialog?.name ? ` !border-red-500` : ''}` }/>
+                        
+                    <ErrorMessage message={ errorFormDialog?.name }/>
                 </div>
 
-                {/* Interval */}
-                <div className={ `form--group !mb-0 w-full` } id={ `form-budget_dialog_interval` }>
-                    <label className={ `form--label` }>Interval</label>
-                    <Select onValueChange={(value) => {
-                            setFormInterval(value);
-                        }} value={formInterval}>
-                            <SelectTrigger className={ `dark:text-white ${errorFormDialog?.interval ? ` !border-red-500` : ''}` }>
-                                <SelectValue placeholder="Select an option" className={ `dark:text-white` }/>
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectLabel>Select Interval type</SelectLabel>
-                                    <SelectItem value="daily">Daily</SelectItem>
-                                    <SelectItem value="weekly">Weekly</SelectItem>
-                                    <SelectItem value="monthly">Monthly</SelectItem>
-                                    <SelectItem value="yearly">Yearly</SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                    <ErrorMessage message={ errorFormDialog?.interval }/>
+                {/* Limit */}
+                <div className={ ` form--group  ${errorFormDialog?.limit ? ` is--invalid` : ''}` } id={ `form-budget_dialog_limit` }>
+                    <label className={ `form--label` }>Limit</label>
+                    <MaskedInput
+                        type={ `text` }
+                        placeholder={ `Limit` }
+                        inputMode={ `numeric` }
+                        value={ (formLimit ?? 0).toString() }
+                        className={ `${errorFormDialog?.limit ? ` !border-red-500` : ''}` }
+                        mask={ Number }
+                        unmask={ true }
+                        thousandsSeparator={ `,` }
+                        scale={ 2 }
+                        radix={ `.` }
+                        onBlur={ (element) => {
+                            let value = (element.target as HTMLInputElement).value;
+                            value = value.replaceAll(',', '');
+
+                            setFormLimit(Number(value));
+                        } }
+                    />
+
+                    <ErrorMessage message={ errorFormDialog?.limit }/>
                 </div>
-            </div>
 
-            {/* Name */}
-            <div className={ `form--group` }>
-                <label className={ `form--label` }>Notes</label>
-                <Textarea className={ `${errorFormDialog?.notes ? ` !border-red-500` : ''}` } placeholder={ `Add brief explanation` } value={ formNotes } id={ `form-budget_notes` } onChange={(e) => setFormNotes(e.target.value)} />
-                    
-                <ErrorMessage message={ errorFormDialog?.notes }/>
-            </div>
+                {/* Occurence & Interval */}
+                <div className={ ` flex flex-col gap-2 mb-4` }>
+                    <div className={ ` flex flex-row gap-4` }>
+                        {/* Occurence */}
+                        <div className={ `form--group !mb-0 w-3/12` } id={ `form-budget_dialog_occurence` }>
+                            <label className={ `form--label` }>Occurence</label>
 
-            {/* Category */}
-            <div className={ ` form--group ${errorFormDialog?.category ? ` is--invalid` : ''}` } id={ `form-budget_dialog_category` }>
-                <label className={ ` form--label` }>Category</label>
-                <div>
-                    <div className={ ` flex flex-row gap-2 flex-wrap` }>
-                        <Popover open={comboboxCategoryOpenState} onOpenChange={setComboboxCategoryOpenState}>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
-                                >
-                                    <i className={ `fa-solid fa-plus` }></i>
-                                    <span>Category</span>
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                <Command shouldFilter={ false }>
-                                    <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
-                                    <ScrollArea className="p-0">
-                                        <div className={ `max-h-[10rem]` }>
-                                            <CommandEmpty>{comboboxCategoryLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
-                                            <CommandGroup>
-                                                {(() => {
-                                                    if(comboboxCategoryLoadState){
-                                                        return <>
-                                                            <CommandItem
-                                                                value=''
-                                                                key={ `category_loading-state` }
-                                                                disabled={ true }
-                                                            >
-                                                                <Check
-                                                                    className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                />
-                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                            </CommandItem>
-                                                        </>;
-                                                    }
+                            <Select onValueChange={(value) => {
+                                setFormOccurence(value);
+                            }} value={formOccurence}>
+                                <SelectTrigger className={ `dark:text-white ${errorFormDialog?.occurence ? ` !border-red-500` : ''}` }>
+                                    <SelectValue placeholder="Select an option" className={ `dark:text-white` }/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectLabel>Select Occurence</SelectLabel>
+                                        <SelectItem value="recurring">Recurring</SelectItem>
+                                        <SelectItem value="once">Once</SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                                                    return <></>;
-                                                })()}
-                                                {comboboxCategoryList.map((options: CategoryItem) => (
-                                                    <CommandItem
-                                                        value={options?.uuid}
-                                                        key={options?.uuid}
-                                                        onSelect={(currentValue) => {
-                                                            if(formCategory.includes(currentValue)){
-                                                                // Already exists, remove from array
-                                                                let uuidIndex = formCategory.indexOf(currentValue);
-                                                                if (uuidIndex !== -1) {
-                                                                    const updatedFormCategory = [...formCategory];
-                                                                    updatedFormCategory.splice(uuidIndex, 1);
-                                                                    setFormCategory(updatedFormCategory);
-                                                                }
-
-                                                                let nameIndex = comboboxCategoryLabel.indexOf(options?.name);
-                                                                if (nameIndex !== -1) {
-                                                                    const updatedLabelCategory = [...comboboxCategoryLabel];
-                                                                    updatedLabelCategory.splice(nameIndex, 1);
-                                                                    setComboboxCategoryLabel(updatedLabelCategory);
-                                                                }
-                                                            } else {
-                                                                // Not yet exists, add to array
-                                                                setFormCategory([...formCategory, currentValue])
-                                                                setComboboxCategoryLabel([...comboboxCategoryLabel, options?.name]);
+                        {/* Interval */}
+                        <div className={ ` w-9/12` }>
+                            {(() => {
+                                if(formOccurence === 'once'){
+                                    return <>
+                                        <div className={ `flex flex-row gap-4 w-full` }>
+                                            <div className={ `form--group !mb-0 w-full ${errorFormDialog?.start ? ` is--invalid` : ''}` }>
+                                                <label className={ `form--label` }>Start</label>
+                                                <Popover open={ calendarStartOpenState } onOpenChange={ setCalendarStartOpenState }>
+                                                    <PopoverTrigger asChild>
+                                                        <Button
+                                                            variant={"outline"}
+                                                            className={ ` w-full justify-start text-left font-normal ${!formDateStart && "text-muted-foreground"} ${errorFormDialog?.start ? ` !border-red-500` : ''} dark:text-white`}
+                                                        >
+                                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                                            {formDateStart ? moment(formDateStart).format('MMM Do, YYYY') : <span>Pick a date</span>}
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0">
+                                                        <Calendar
+                                                            mode="single"
+                                                            selected={formDateStart}
+                                                            onSelect={(val) => {
+                                                                setFormDateStart(val);
+                                                                setCalendarStartOpenState(false);
+                                                            }}
+                                                            defaultMonth={formDateStart}
+                                                            disabled={(date) =>
+                                                                formDateEnd ? moment(moment(date).format('YYYY-MM-DD')) >= moment(moment(formDateEnd).format('YYYY-MM-DD')) : false
                                                             }
-                                                        }}
-                                                    >
-                                                        <Check
-                                                            className={ `mr-2 h-4 w-4 ${formCategory.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
+                                                            initialFocus
                                                         />
-                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.name}` }</span>
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
+                                                    </PopoverContent>
+                                                </Popover>
+                                            </div>
+                                            <div className={ `form--group !mb-0 w-full ${errorFormDialog?.end ? ` is--invalid` : ''}` }>
+                                                <label className={ `form--label` }>End</label>
+
+                                                <Popover open={ calendarEndOpenState } onOpenChange={ setCalendarEndOpenState }>
+                                                    <PopoverTrigger asChild>
+                                                        <Button
+                                                            variant={"outline"}
+                                                            className={ ` w-full justify-start text-left font-normal ${!formDateEnd && "text-muted-foreground"} ${errorFormDialog?.end ? ` !border-red-500` : ''} dark:text-white`}
+                                                        >
+                                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                                            {formDateEnd ? moment(formDateEnd).format('MMM Do, YYYY') : <span>Pick a date</span>}
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0">
+                                                        <Calendar
+                                                            mode="single"
+                                                            selected={formDateEnd}
+                                                            onSelect={(val) => {
+                                                                setFormDateEnd(val);
+                                                                setCalendarEndOpenState(false);
+                                                            }}
+                                                            defaultMonth={formDateEnd}
+                                                            disabled={(date) =>
+                                                                formDateStart ? moment(moment(date).format('YYYY-MM-DD')) <= moment(moment(formDateStart).format('YYYY-MM-DD')) : false
+                                                            }
+                                                            initialFocus
+                                                        />
+                                                    </PopoverContent>
+                                                </Popover>
+                                            </div>
                                         </div>
-                                    </ScrollArea>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
-
-                        {(() => {
-                            let selectedCategory: any = [];
-                            if(formCategory.length > 0){
-                                formCategory.forEach((value, index) => {
-                                    let name = comboboxCategoryLabel[index];
-                                    if(name){
-                                        selectedCategory.push(
-                                            <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_category-${value}` } onClick={() => {
-                                                let uuidIndex = formCategory.indexOf(value);
-                                                if (uuidIndex !== -1) {
-                                                    const updatedFormCategory = [...formCategory];
-                                                    updatedFormCategory.splice(uuidIndex, 1);
-                                                    setFormCategory(updatedFormCategory);
-                                                }
-
-                                                let nameIndex = comboboxCategoryLabel.indexOf(name);
-                                                if (nameIndex !== -1) {
-                                                    const updatedLabelCategory = [...comboboxCategoryLabel];
-                                                    updatedLabelCategory.splice(nameIndex, 1);
-                                                    setComboboxCategoryLabel(updatedLabelCategory);
-                                                }
-                                            }}>
-                                                <span>{ name }</span>
-                                                <i className={ `fa-solid fa-xmark` }></i>
-                                            </Button>
-                                        );
-                                    }
-                                });
-
-                                if(selectedCategory.length > 0){
-                                    return selectedCategory;
+                                    </>;
                                 }
-                            }
 
-                            return <></>;
-                        })()}
+                                return <>
+                                    <div className={ `form--group !mb-0 w-full` } id={ `form-budget_dialog_interval` }>
+                                        <label className={ `form--label` }>Interval</label>
+                                        <Select onValueChange={(value) => {
+                                            setFormInterval(value);
+                                        }} value={formInterval}>
+                                            <SelectTrigger className={ `dark:text-white ${errorFormDialog?.interval ? ` !border-red-500` : ''}` }>
+                                                <SelectValue placeholder="Select an option" className={ `dark:text-white` }/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectLabel>Select Interval type</SelectLabel>
+                                                    <SelectItem value="daily">Daily</SelectItem>
+                                                    <SelectItem value="weekly">Weekly</SelectItem>
+                                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                                    <SelectItem value="yearly">Yearly</SelectItem>
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </>;
+                            })()}
+                        </div>
                     </div>
 
-                    <ErrorMessage message={ errorFormDialog?.category }/>
+                    <div className={ ` flex flex-col` }>
+                        <ErrorMessage message={ errorFormDialog?.occurence }/>
+                        <ErrorMessage message={ errorFormDialog?.start }/>
+                        <ErrorMessage message={ errorFormDialog?.end }/>
+                        <ErrorMessage message={ errorFormDialog?.interval }/>
+                    </div>
                 </div>
-            </div>
 
-            {/* Wallet */}
-            <div className={ ` form--group ${errorFormDialog?.wallet ? ` is--invalid` : ''}` } id={ `form-budget_dialog_wallet` }>
-                <label className={ ` form--label` }>Wallet</label>
-                <div>
-                    <div className={ ` flex flex-row gap-2 flex-wrap` }>
-                        <Popover open={comboboxWalletOpenState} onOpenChange={setComboboxWalletOpenState}>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
-                                >
-                                    <i className={ `fa-solid fa-plus` }></i>
-                                    <span>Wallet</span>
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                <Command shouldFilter={ false }>
-                                    <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxWalletInput} onValueChange={setComboboxWalletInput}/>
-                                    <ScrollArea className="p-0">
-                                        <div className={ `max-h-[10rem]` }>
-                                            <CommandEmpty>{comboboxWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
-                                            <CommandGroup>
-                                                {(() => {
-                                                    if(comboboxWalletLoadState){
-                                                        return <>
-                                                            <CommandItem
-                                                                value=''
-                                                                key={ `wallet_loading-state` }
-                                                                disabled={ true }
-                                                            >
-                                                                <Check
-                                                                    className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                />
-                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                            </CommandItem>
-                                                        </>;
+                {/* Name */}
+                <div className={ `form--group` }>
+                    <label className={ `form--label` }>Notes</label>
+                    <Textarea className={ `${errorFormDialog?.notes ? ` !border-red-500` : ''}` } placeholder={ `Add brief explanation` } value={ formNotes } id={ `form-budget_notes` } onChange={(e) => setFormNotes(e.target.value)} />
+                        
+                    <ErrorMessage message={ errorFormDialog?.notes }/>
+                </div>
+
+                {/* Category */}
+                <div className={ ` form--group ${errorFormDialog?.category ? ` is--invalid` : ''}` } id={ `form-budget_dialog_category` }>
+                    <label className={ ` form--label` }>Category</label>
+                    <div>
+                        <div className={ ` flex flex-row gap-2 flex-wrap` }>
+                            <Popover open={comboboxCategoryOpenState} onOpenChange={setComboboxCategoryOpenState}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
+                                    >
+                                        <i className={ `fa-solid fa-plus` }></i>
+                                        <span>Category</span>
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                    <Command shouldFilter={ false }>
+                                        <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
+                                        <ScrollArea className="p-0">
+                                            <div className={ `max-h-[10rem]` }>
+                                                <CommandEmpty>{comboboxCategoryLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
+                                                <CommandGroup>
+                                                    {(() => {
+                                                        if(comboboxCategoryLoadState){
+                                                            return <>
+                                                                <CommandItem
+                                                                    value=''
+                                                                    key={ `category_loading-state` }
+                                                                    disabled={ true }
+                                                                >
+                                                                    <Check
+                                                                        className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                    />
+                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                </CommandItem>
+                                                            </>;
+                                                        }
+
+                                                        return <></>;
+                                                    })()}
+                                                    {comboboxCategoryList.map((options: CategoryItem) => (
+                                                        <CommandItem
+                                                            value={options?.uuid}
+                                                            key={options?.uuid}
+                                                            onSelect={(currentValue) => {
+                                                                if(formCategory.includes(currentValue)){
+                                                                    // Already exists, remove from array
+                                                                    let uuidIndex = formCategory.indexOf(currentValue);
+                                                                    if (uuidIndex !== -1) {
+                                                                        const updatedFormCategory = [...formCategory];
+                                                                        updatedFormCategory.splice(uuidIndex, 1);
+                                                                        setFormCategory(updatedFormCategory);
+                                                                    }
+
+                                                                    let nameIndex = comboboxCategoryLabel.indexOf(options?.name);
+                                                                    if (nameIndex !== -1) {
+                                                                        const updatedLabelCategory = [...comboboxCategoryLabel];
+                                                                        updatedLabelCategory.splice(nameIndex, 1);
+                                                                        setComboboxCategoryLabel(updatedLabelCategory);
+                                                                    }
+                                                                } else {
+                                                                    // Not yet exists, add to array
+                                                                    setFormCategory([...formCategory, currentValue])
+                                                                    setComboboxCategoryLabel([...comboboxCategoryLabel, options?.name]);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Check
+                                                                className={ `mr-2 h-4 w-4 ${formCategory.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
+                                                            />
+                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.name}` }</span>
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </div>
+                                        </ScrollArea>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+
+                            {(() => {
+                                let selectedCategory: any = [];
+                                if(formCategory.length > 0){
+                                    formCategory.forEach((value, index) => {
+                                        let name = comboboxCategoryLabel[index];
+                                        if(name){
+                                            selectedCategory.push(
+                                                <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_category-${value}` } onClick={() => {
+                                                    let uuidIndex = formCategory.indexOf(value);
+                                                    if (uuidIndex !== -1) {
+                                                        const updatedFormCategory = [...formCategory];
+                                                        updatedFormCategory.splice(uuidIndex, 1);
+                                                        setFormCategory(updatedFormCategory);
                                                     }
 
-                                                    return <></>;
-                                                })()}
-                                                {comboboxWalletList.map((options: WalletItem) => (
-                                                    <CommandItem
-                                                        value={options?.uuid}
-                                                        key={options?.uuid}
-                                                        onSelect={(currentValue) => {
-                                                            if(formWallet.includes(currentValue)){
-                                                                // Already exists, remove from array
-                                                                let uuidIndex = formWallet.indexOf(currentValue);
-                                                                if (uuidIndex !== -1) {
-                                                                    const updatedFormWallet = [...formWallet];
-                                                                    updatedFormWallet.splice(uuidIndex, 1);
-                                                                    setFormWallet(updatedFormWallet);
-                                                                }
+                                                    let nameIndex = comboboxCategoryLabel.indexOf(name);
+                                                    if (nameIndex !== -1) {
+                                                        const updatedLabelCategory = [...comboboxCategoryLabel];
+                                                        updatedLabelCategory.splice(nameIndex, 1);
+                                                        setComboboxCategoryLabel(updatedLabelCategory);
+                                                    }
+                                                }}>
+                                                    <span>{ name }</span>
+                                                    <i className={ `fa-solid fa-xmark` }></i>
+                                                </Button>
+                                            );
+                                        }
+                                    });
 
-                                                                let nameIndex = comboboxWalletLabel.indexOf(options?.name);
-                                                                if (nameIndex !== -1) {
-                                                                    const updatedLabelWallet = [...comboboxWalletLabel];
-                                                                    updatedLabelWallet.splice(nameIndex, 1);
-                                                                    setComboboxWalletLabel(updatedLabelWallet);
-                                                                }
-                                                            } else {
-                                                                // Not yet exists, add to array
-                                                                setFormWallet([...formWallet, currentValue])
-                                                                setComboboxWalletLabel([...comboboxWalletLabel, options?.name]);
-                                                            }
-                                                        }}
-                                                    >
-                                                        <Check
-                                                            className={ `mr-2 h-4 w-4 ${formWallet.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
-                                                        />
-                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.name}` }</span>
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </div>
-                                    </ScrollArea>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
-
-                        {(() => {
-                            let selectedWallet: any = [];
-                            if(formWallet.length > 0){
-                                formWallet.forEach((value, index) => {
-                                    let name = comboboxWalletLabel[index];
-                                    if(name){
-                                        selectedWallet.push(
-                                            <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_wallet-${value}` } onClick={() => {
-                                                let uuidIndex = formWallet.indexOf(value);
-                                                if (uuidIndex !== -1) {
-                                                    const updatedFormWallet = [...formWallet];
-                                                    updatedFormWallet.splice(uuidIndex, 1);
-                                                    setFormWallet(updatedFormWallet);
-                                                }
-
-                                                let nameIndex = comboboxWalletLabel.indexOf(name);
-                                                if (nameIndex !== -1) {
-                                                    const updatedLabelWallet = [...comboboxWalletLabel];
-                                                    updatedLabelWallet.splice(nameIndex, 1);
-                                                    setComboboxWalletLabel(updatedLabelWallet);
-                                                }
-                                            }}>
-                                                <span>{ name }</span>
-                                                <i className={ `fa-solid fa-xmark` }></i>
-                                            </Button>
-                                        );
+                                    if(selectedCategory.length > 0){
+                                        return selectedCategory;
                                     }
-                                });
-
-                                if(selectedWallet.length > 0){
-                                    return selectedWallet;
                                 }
-                            }
 
-                            return <></>;
-                        })()}
+                                return <></>;
+                            })()}
+                        </div>
+
+                        <ErrorMessage message={ errorFormDialog?.category }/>
                     </div>
-
-                    <ErrorMessage message={ errorFormDialog?.wallet }/>
                 </div>
-            </div>
 
-            {/* Tags */}
-            <div className={ ` form--group ${errorFormDialog?.tags ? ` is--invalid` : ''}` } id={ `form-budget_dialog_tags` }>
-                <label className={ ` form--label` }>Tags</label>
-                <div>
-                    <div className={ ` flex flex-row gap-2 flex-wrap` }>
-                        <Popover open={comboboxTagsOpenState} onOpenChange={setComboboxTagsOpenState}>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
-                                >
-                                    <i className={ `fa-solid fa-plus` }></i>
-                                    <span>Tags</span>
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                <Command shouldFilter={ false }>
-                                    <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
-                                    <ScrollArea className="p-0">
-                                        <div className={ `max-h-[10rem]` }>
-                                            <CommandEmpty>{comboboxTagsLoadState ? `Loading...` : `No tags found.`}</CommandEmpty>
-                                            <CommandGroup>
-                                                {(() => {
-                                                    if(comboboxTagsLoadState){
-                                                        return <>
-                                                            <CommandItem
-                                                                value=''
-                                                                key={ `tags_loading-state` }
-                                                                disabled={ true }
-                                                            >
-                                                                <Check
-                                                                    className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                />
-                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                            </CommandItem>
-                                                        </>;
+                {/* Wallet */}
+                <div className={ ` form--group ${errorFormDialog?.wallet ? ` is--invalid` : ''}` } id={ `form-budget_dialog_wallet` }>
+                    <label className={ ` form--label` }>Wallet</label>
+                    <div>
+                        <div className={ ` flex flex-row gap-2 flex-wrap` }>
+                            <Popover open={comboboxWalletOpenState} onOpenChange={setComboboxWalletOpenState}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
+                                    >
+                                        <i className={ `fa-solid fa-plus` }></i>
+                                        <span>Wallet</span>
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                    <Command shouldFilter={ false }>
+                                        <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxWalletInput} onValueChange={setComboboxWalletInput}/>
+                                        <ScrollArea className="p-0">
+                                            <div className={ `max-h-[10rem]` }>
+                                                <CommandEmpty>{comboboxWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
+                                                <CommandGroup>
+                                                    {(() => {
+                                                        if(comboboxWalletLoadState){
+                                                            return <>
+                                                                <CommandItem
+                                                                    value=''
+                                                                    key={ `wallet_loading-state` }
+                                                                    disabled={ true }
+                                                                >
+                                                                    <Check
+                                                                        className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                    />
+                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                </CommandItem>
+                                                            </>;
+                                                        }
+
+                                                        return <></>;
+                                                    })()}
+                                                    {comboboxWalletList.map((options: WalletItem) => (
+                                                        <CommandItem
+                                                            value={options?.uuid}
+                                                            key={options?.uuid}
+                                                            onSelect={(currentValue) => {
+                                                                if(formWallet.includes(currentValue)){
+                                                                    // Already exists, remove from array
+                                                                    let uuidIndex = formWallet.indexOf(currentValue);
+                                                                    if (uuidIndex !== -1) {
+                                                                        const updatedFormWallet = [...formWallet];
+                                                                        updatedFormWallet.splice(uuidIndex, 1);
+                                                                        setFormWallet(updatedFormWallet);
+                                                                    }
+
+                                                                    let nameIndex = comboboxWalletLabel.indexOf(options?.name);
+                                                                    if (nameIndex !== -1) {
+                                                                        const updatedLabelWallet = [...comboboxWalletLabel];
+                                                                        updatedLabelWallet.splice(nameIndex, 1);
+                                                                        setComboboxWalletLabel(updatedLabelWallet);
+                                                                    }
+                                                                } else {
+                                                                    // Not yet exists, add to array
+                                                                    setFormWallet([...formWallet, currentValue])
+                                                                    setComboboxWalletLabel([...comboboxWalletLabel, options?.name]);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Check
+                                                                className={ `mr-2 h-4 w-4 ${formWallet.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
+                                                            />
+                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.name}` }</span>
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </div>
+                                        </ScrollArea>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+
+                            {(() => {
+                                let selectedWallet: any = [];
+                                if(formWallet.length > 0){
+                                    formWallet.forEach((value, index) => {
+                                        let name = comboboxWalletLabel[index];
+                                        if(name){
+                                            selectedWallet.push(
+                                                <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_wallet-${value}` } onClick={() => {
+                                                    let uuidIndex = formWallet.indexOf(value);
+                                                    if (uuidIndex !== -1) {
+                                                        const updatedFormWallet = [...formWallet];
+                                                        updatedFormWallet.splice(uuidIndex, 1);
+                                                        setFormWallet(updatedFormWallet);
                                                     }
 
-                                                    return <></>;
-                                                })()}
-                                                {comboboxTagsList.map((options: TagsItem) => (
-                                                    <CommandItem
-                                                        value={options?.uuid}
-                                                        key={options?.uuid}
-                                                        onSelect={(currentValue) => {
-                                                            if(formTags.includes(currentValue)){
-                                                                // Already exists, remove from array
-                                                                let uuidIndex = formTags.indexOf(currentValue);
-                                                                if (uuidIndex !== -1) {
-                                                                    const updatedFormTags = [...formTags];
-                                                                    updatedFormTags.splice(uuidIndex, 1);
-                                                                    setFormTags(updatedFormTags);
-                                                                }
+                                                    let nameIndex = comboboxWalletLabel.indexOf(name);
+                                                    if (nameIndex !== -1) {
+                                                        const updatedLabelWallet = [...comboboxWalletLabel];
+                                                        updatedLabelWallet.splice(nameIndex, 1);
+                                                        setComboboxWalletLabel(updatedLabelWallet);
+                                                    }
+                                                }}>
+                                                    <span>{ name }</span>
+                                                    <i className={ `fa-solid fa-xmark` }></i>
+                                                </Button>
+                                            );
+                                        }
+                                    });
 
-                                                                let nameIndex = comboboxTagsLabel.indexOf(options?.name);
-                                                                if (nameIndex !== -1) {
-                                                                    const updatedLabelTags = [...comboboxTagsLabel];
-                                                                    updatedLabelTags.splice(nameIndex, 1);
-                                                                    setComboboxTagsLabel(updatedLabelTags);
-                                                                }
-                                                            } else {
-                                                                // Not yet exists, add to array
-                                                                setFormTags([...formTags, currentValue])
-                                                                setComboboxTagsLabel([...comboboxTagsLabel, options?.name]);
-                                                            }
-                                                        }}
-                                                    >
-                                                        <Check
-                                                            className={ `mr-2 h-4 w-4 ${formTags.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
-                                                        />
-                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.name}` }</span>
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </div>
-                                    </ScrollArea>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
-
-                        {(() => {
-                            let selectedTags: any = [];
-                            if(formTags.length > 0){
-                                formTags.forEach((value, index) => {
-                                    let name = comboboxTagsLabel[index];
-                                    if(name){
-                                        selectedTags.push(
-                                            <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_tags-${value}` } onClick={() => {
-                                                let uuidIndex = formTags.indexOf(value);
-                                                if (uuidIndex !== -1) {
-                                                    const updatedFormTags = [...formTags];
-                                                    updatedFormTags.splice(uuidIndex, 1);
-                                                    setFormTags(updatedFormTags);
-                                                }
-
-                                                let nameIndex = comboboxTagsLabel.indexOf(name);
-                                                if (nameIndex !== -1) {
-                                                    const updatedLabelTags = [...comboboxTagsLabel];
-                                                    updatedLabelTags.splice(nameIndex, 1);
-                                                    setComboboxTagsLabel(updatedLabelTags);
-                                                }
-                                            }}>
-                                                <span>{ name }</span>
-                                                <i className={ `fa-solid fa-xmark` }></i>
-                                            </Button>
-                                        );
+                                    if(selectedWallet.length > 0){
+                                        return selectedWallet;
                                     }
-                                });
-
-                                if(selectedTags.length > 0){
-                                    return selectedTags;
                                 }
-                            }
 
-                            return <></>;
-                        })()}
+                                return <></>;
+                            })()}
+                        </div>
+
+                        <ErrorMessage message={ errorFormDialog?.wallet }/>
                     </div>
-
-                    <ErrorMessage message={ errorFormDialog?.tags }/>
                 </div>
-            </div>
 
-            {/* Keep open dialog? */}
-            <div className={ `form-group` }>
-                <div className={ `flex items-center space-x-2` }>
-                    <Checkbox id="form-budget_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
-                        if(typeof value === 'boolean'){
-                            setKeepOpenBudgetDialog(value);
-                        }
-                    }} />
-                    <label
-                        htmlFor="form-budget_keep_open"
-                        className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
-                    >
-                        Keep Open?
-                    </label>
+                {/* Tags */}
+                <div className={ ` form--group ${errorFormDialog?.tags ? ` is--invalid` : ''}` } id={ `form-budget_dialog_tags` }>
+                    <label className={ ` form--label` }>Tags</label>
+                    <div>
+                        <div className={ ` flex flex-row gap-2 flex-wrap` }>
+                            <Popover open={comboboxTagsOpenState} onOpenChange={setComboboxTagsOpenState}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className={ ` flex flex-row gap-1 leading-none p-2 h-auto text-xs` }
+                                    >
+                                        <i className={ `fa-solid fa-plus` }></i>
+                                        <span>Tags</span>
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
+                                    <Command shouldFilter={ false }>
+                                        <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
+                                        <ScrollArea className="p-0">
+                                            <div className={ `max-h-[10rem]` }>
+                                                <CommandEmpty>{comboboxTagsLoadState ? `Loading...` : `No tags found.`}</CommandEmpty>
+                                                <CommandGroup>
+                                                    {(() => {
+                                                        if(comboboxTagsLoadState){
+                                                            return <>
+                                                                <CommandItem
+                                                                    value=''
+                                                                    key={ `tags_loading-state` }
+                                                                    disabled={ true }
+                                                                >
+                                                                    <Check
+                                                                        className={ `mr-2 h-4 w-4 opacity-0`}
+                                                                    />
+                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
+                                                                </CommandItem>
+                                                            </>;
+                                                        }
+
+                                                        return <></>;
+                                                    })()}
+                                                    {comboboxTagsList.map((options: TagsItem) => (
+                                                        <CommandItem
+                                                            value={options?.uuid}
+                                                            key={options?.uuid}
+                                                            onSelect={(currentValue) => {
+                                                                if(formTags.includes(currentValue)){
+                                                                    // Already exists, remove from array
+                                                                    let uuidIndex = formTags.indexOf(currentValue);
+                                                                    if (uuidIndex !== -1) {
+                                                                        const updatedFormTags = [...formTags];
+                                                                        updatedFormTags.splice(uuidIndex, 1);
+                                                                        setFormTags(updatedFormTags);
+                                                                    }
+
+                                                                    let nameIndex = comboboxTagsLabel.indexOf(options?.name);
+                                                                    if (nameIndex !== -1) {
+                                                                        const updatedLabelTags = [...comboboxTagsLabel];
+                                                                        updatedLabelTags.splice(nameIndex, 1);
+                                                                        setComboboxTagsLabel(updatedLabelTags);
+                                                                    }
+                                                                } else {
+                                                                    // Not yet exists, add to array
+                                                                    setFormTags([...formTags, currentValue])
+                                                                    setComboboxTagsLabel([...comboboxTagsLabel, options?.name]);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Check
+                                                                className={ `mr-2 h-4 w-4 ${formTags.includes(options?.uuid) ? "opacity-100" : "opacity-0"}`}
+                                                            />
+                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ `${options?.name}` }</span>
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </div>
+                                        </ScrollArea>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+
+                            {(() => {
+                                let selectedTags: any = [];
+                                if(formTags.length > 0){
+                                    formTags.forEach((value, index) => {
+                                        let name = comboboxTagsLabel[index];
+                                        if(name){
+                                            selectedTags.push(
+                                                <Button variant={ `secondary` } className={ ` flex flex-row gap-2 items-center text-xs leading-none p-2 h-auto` } key={ `selected_tags-${value}` } onClick={() => {
+                                                    let uuidIndex = formTags.indexOf(value);
+                                                    if (uuidIndex !== -1) {
+                                                        const updatedFormTags = [...formTags];
+                                                        updatedFormTags.splice(uuidIndex, 1);
+                                                        setFormTags(updatedFormTags);
+                                                    }
+
+                                                    let nameIndex = comboboxTagsLabel.indexOf(name);
+                                                    if (nameIndex !== -1) {
+                                                        const updatedLabelTags = [...comboboxTagsLabel];
+                                                        updatedLabelTags.splice(nameIndex, 1);
+                                                        setComboboxTagsLabel(updatedLabelTags);
+                                                    }
+                                                }}>
+                                                    <span>{ name }</span>
+                                                    <i className={ `fa-solid fa-xmark` }></i>
+                                                </Button>
+                                            );
+                                        }
+                                    });
+
+                                    if(selectedTags.length > 0){
+                                        return selectedTags;
+                                    }
+                                }
+
+                                return <></>;
+                            })()}
+                        </div>
+
+                        <ErrorMessage message={ errorFormDialog?.tags }/>
+                    </div>
                 </div>
-            </div>
-        </form>
+
+                {/* Keep open dialog? */}
+                <div className={ `form-group` }>
+                    <div className={ `flex items-center space-x-2` }>
+                        <Checkbox id="form-budget_keep_open" checked={ keepOpenDialog } onCheckedChange={(value) => {
+                            if(typeof value === 'boolean'){
+                                setKeepOpenBudgetDialog(value);
+                            }
+                        }} />
+                        <label
+                            htmlFor="form-budget_keep_open"
+                            className={ `text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white` }
+                        >
+                            Keep Open?
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </RemoveScroll>
     </>;
 
     if(!isDesktop){
@@ -1067,12 +1166,10 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                 <Drawer open={openState} onOpenChange={setOpenState}>
                     <DrawerContent className={ ` max-h-dvh` }>
                         <DrawerHeader className="text-left">
-                            <DrawerTitle>{ formUuid ? `Edit` : `Add new` } Budget</DrawerTitle>
+                            <DrawerTitle className={ ` text-center` }>{ formUuid ? `Edit` : `Add new` } Budget</DrawerTitle>
                         </DrawerHeader>
 
-                        <RemoveScroll className={ `overflow-auto` }>
-                            {mainForm}
-                        </RemoveScroll>
+                        {formContent}
 
                         <DrawerFooter className="pt-2">
                             <Button variant={ `ghost` } onClick={() => {
@@ -1100,19 +1197,19 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                         <DialogTitle className={ ` dark:text-white` }>{ formUuid ? `Edit` : `Add new` } Budget</DialogTitle>
                     </DialogHeader>
 
-                    { mainForm }
+                    { formContent }
 
                     <DialogFooter className={ ` p-6 pt-2` }>
-                        <Button variant={ `ghost` } onClick={() => {
-                            resetFormDialog();
-                        }}>
-                            <span>Reset</span>
-                        </Button>
                         <Button type='button' onClick={() => {
                             if(document.getElementById('budget-dialogForms')){
                                 (document.getElementById('budget-dialogForms') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }))
                             }
                         }} id='budget-dialogSubmit'>Submit</Button>
+                        <Button variant={ `ghost` } onClick={() => {
+                            resetFormDialog();
+                        }}>
+                            <span>Reset</span>
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

@@ -1,14 +1,14 @@
-import { PropsWithChildren, useState } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
+import { Link } from "@inertiajs/react";
 import { BudgetItem } from "@/types";
 
 // Plugins
 import { formatRupiah } from "@/function";
+import moment from "moment";
 
 // Shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Button } from "@/Components/ui/button";
-import { Link } from "@inertiajs/react";
-import moment from "moment";
 
 type TemplateProps = {
     budget?: BudgetItem | undefined,
@@ -22,6 +22,21 @@ export default function TemplateList({ budget, deleteAction = true, editAction =
 
     // State for Dropdown
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
+
+    useEffect(() => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
+            setTimeout(() => {
+                setOpenDropdown(false);
+            }, 100);
+        }
+
+        document.addEventListener('dialog.budget.shown', handleDialogEvent);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.budget.shown', handleDialogEvent);
+        };
+    });
 
     return (
         <section key={r} onClick={($refs) => {
@@ -130,13 +145,13 @@ export default function TemplateList({ budget, deleteAction = true, editAction =
                             <span className={ ` leading-tight` }>{ formatRupiah(budget && 'remaining' in budget ? budget.remaining : 0) }</span>
                         </div>
 
-                        <span>{ formatRupiah((budget && 'remaining' in budget && 'amount' in budget ? ((budget.remaining / budget.amount) * 100) : 100), false, '') }%</span>
+                        <span>{ formatRupiah((budget && 'remaining' in budget && 'amount' in budget ? (((Math.max(budget.remaining, 1)) / (Math.max(budget.amount, 1))) * 100) : 100), false, '') }%</span>
                     </div>
                     {/* Progress Bar */}
                     <div className={ ` h-2 w-full rounded-full relative bg-gray-100 dark:bg-gray-700 overflow-hidden` }>
                         <div className={ ` h-full w-full absolute left-0 top-0 bg-primary` } style={
                             {
-                                width: `${(budget && 'remaining' in budget && 'amount' in budget ? ((budget.remaining / budget.amount) * 100) : 100)}%`
+                                width: `${(budget && 'remaining' in budget && 'amount' in budget ? (((Math.max(budget.remaining, 1)) / Math.max(budget.amount, 1)) * 100) : 100)}%`
                             }
                         }></div>
                     </div>

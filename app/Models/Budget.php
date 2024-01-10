@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DateTime;
 use Illuminate\Support\Str;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -328,6 +329,19 @@ class Budget extends Model
     public function scopeGetIntervalDaysRange($query)
     {
         $result = 0;
+
+        // Calculate days difference
+        $startDateString = $this->start;
+        $endDateString = $this->end;
+
+        // Create DateTime objects from the date strings
+        $start = new DateTime($startDateString);
+        $end = new DateTime($endDateString);
+
+        // Calculate the difference between the two dates
+        $interval = $start->diff($end);
+        // Get the number of days from the interval
+        $result = $interval->days;
         
         return $result;
     }

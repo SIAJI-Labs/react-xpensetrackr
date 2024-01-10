@@ -5,7 +5,7 @@ export interface User {
     email: string,
     email_verified_at: string,
     avatar?: string,
-    username?: string
+    username?: string,
 }
 
 export interface BudgetItem {
@@ -158,5 +158,6 @@ export interface Timezone {
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     auth: {
         user: User;
+        timezone?: string
     };
 };

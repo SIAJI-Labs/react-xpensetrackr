@@ -55,6 +55,20 @@ export default function Show({
     const isFirstRender = useIsFirstRender();
 
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
+    useEffect(() => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
+            setTimeout(() => {
+                setOpenDropdown(false);
+            }, 100);
+        }
+
+        document.addEventListener('dialog.budget.shown', handleDialogEvent);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.budget.shown', handleDialogEvent);
+        };
+    });
     const navigatePeriod = (action: string = 'prev') => {
         let target = null;
 

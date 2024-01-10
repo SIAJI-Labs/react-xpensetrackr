@@ -31,6 +31,20 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
     const isFirstRender = useIsFirstRender();
     const [openDropdown, setOpenDropdown] = useState<boolean>(false);
     useEffect(() => {
+        // Listen to Dialog event
+        const handleDialogEvent = () => {
+            setTimeout(() => {
+                setOpenDropdown(false);
+            }, 100);
+        }
+
+        document.addEventListener('dialog.planned-payment.shown', handleDialogEvent);
+        // Remove the event listener when the component unmounts
+        return () => {
+            document.removeEventListener('dialog.planned-payment.shown', handleDialogEvent);
+        };
+    });
+    useEffect(() => {
         // Listen to Record Dialog event
         const handleDialogPlannedPayment = (event: any) => {
             if(event.detail?.action && event.detail?.action === 'delete'){

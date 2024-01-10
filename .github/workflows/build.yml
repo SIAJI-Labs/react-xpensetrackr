@@ -40,6 +40,10 @@ jobs:
             echo "Build branch does not exist. Fetching existing main branch from origin remote."
             git checkout -b build
           fi
+        
+      - name: Sync build branch
+        run: |
+          git pull origin build --rebase
 
       - name: Install Dependencies
         run: npm install

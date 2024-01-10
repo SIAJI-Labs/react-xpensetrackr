@@ -1,0 +1,62 @@
+name: Build Application
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
+      contents: write
+
+    name: Build and Push Commit
+    steps:
+      - name: Checkout `Build` Branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Check if Build Branch Exists
+        run: |
+          if git rev-parse --verify build >/dev/null 2>&1; then
+            echo "Build branch already exists."
+            git checkout build
+            git pull origin build
+          else
+            echo "Build branch does not exist. Fetching existing main branch from origin remote."
+            git fetch origin build:build
+            git checkout build
+          fi
+
+      - name: Merge main branch -> build
+        run: |
+          git fetch origin main:main
+          git merge main
+      
+      - name: Handle build that use environment value
+        run: |
+          echo "APP_NAME=${{ secrets.ENV_APP_NAME }}" > .env
+          echo "APP_ENV=${{ secrets.ENV_APP_ENV }}" >> .env
+          echo "APP_DEBUG=false" >> .env
+          echo "APP_URL=${{ secrets.ENV_APP_URL }}" >> .env
+          
+      - name: Build Asset
+        run: npm run build # The build command of your project
+    
+      - name: Commit and Push to Build Branch
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Build application"
+          git push origin build

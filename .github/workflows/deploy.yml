@@ -1,0 +1,30 @@
+name: Deploy Recent Build to Production
+
+on:
+  push:
+    tags: [ 'v*.*.*' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Generate PR to release
+    steps:
+      - name: Check Tag Format
+        run: |
+          if [[ ! "$GITHUB_REF" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Not a valid release tag. Exiting..."
+            exit 0
+          fi
+
+      - name: Check if Build Branch Exists
+        run: |
+          if git rev-parse --verify build >/dev/null 2>&1; then
+            echo "Buld branch already exists."
+          else
+            echo "Build branch does not exist. No source branch to make PR."
+            exit 0
+          fi
+
+      - name: Execute strategy to deploy application to production
+        run: |
+          echo "Deploying application to production"

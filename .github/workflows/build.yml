@@ -39,9 +39,8 @@ jobs:
           else
             echo "Build branch does not exist. Fetching existing main branch from origin remote."
             git checkout -b build
-            git pull origin build
+            git pull origin build --allow-unrelated-histories
           fi
-          git merge --allow-unrelated-histories main
 
       - name: Install Dependencies
         run: npm install

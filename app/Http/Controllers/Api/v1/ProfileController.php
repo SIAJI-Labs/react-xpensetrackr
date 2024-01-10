@@ -218,6 +218,28 @@ class ProfileController extends Controller
     }
 
     /**
+     * Update the user password resource in storage.
+     */
+    public function updatePassword(Request $request, string $id)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => ['required', 'string', 'current_password'],
+            'password' => ['required', 'string', 'confirmed', 'min:5', 'different:current_password']
+        ]);
+
+        DB::transaction(function() use ($request, $user){
+            $user->password = bcrypt($request->password);
+            $user->save();
+        });
+
+        return $this->formatedJsonResponse(200, 'Data Updated', [
+            'data' => $user
+        ]);
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)

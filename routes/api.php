@@ -316,6 +316,8 @@ Route::group([
 
             // Update
             Route::put('{uuid}', [\App\Http\Controllers\Api\v1\ProfileController::class, 'update'])->name('update');
+            // Update Password
+            Route::put('{uuid}/password', [\App\Http\Controllers\Api\v1\ProfileController::class, 'updatePassword'])->name('update.password');
         });
     });
 

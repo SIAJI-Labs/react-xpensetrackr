@@ -25,6 +25,7 @@ jobs:
 
       - name: Check if Build Branch Exists
         run: |
+          git fetch origin main:main
           if git rev-parse --verify build >/dev/null 2>&1; then
             echo "Build branch already exists."
             git checkout build
@@ -34,10 +35,6 @@ jobs:
             git fetch origin build:build
             git checkout build
           fi
-
-      - name: Merge main branch -> build
-        run: |
-          git fetch origin main:main
           git merge main
 
       - name: Install Dependencies

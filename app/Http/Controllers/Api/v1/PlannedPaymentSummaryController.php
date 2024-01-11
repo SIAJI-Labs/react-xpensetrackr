@@ -72,6 +72,7 @@ class PlannedPaymentSummaryController extends Controller
                 // Mapping to get formated result
                 $data = collect($data)->map(function($data) use ($period){
                     $projection = $data->getExpectedProjection($period);
+                    $data->balance = $data->getBalance();
     
                     // Update variable
                     $data->expected_planned_income = $projection['expected_planned_income'];

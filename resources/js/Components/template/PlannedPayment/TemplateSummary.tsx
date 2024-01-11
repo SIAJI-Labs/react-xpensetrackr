@@ -38,30 +38,54 @@ export default function TemplateSummary({ plannedPayment, period }: PropsWithChi
             setOpenDropdown(true);
         }}>
             <div className={ ` flex flex-col gap-2 border rounded p-4 cursor-pointer` }>
-                <div className={ ` flex flex-row gap-6 justify-between` }>
-                    <span className={ ` whitespace-nowrap overflow-hidden overflow-ellipsis font-semibold` }>
-                        { plannedPayment && plannedPayment ? (`${plannedPayment.parent ? `${plannedPayment.parent.name} - ` : ''}${plannedPayment?.name}`) : `Wallet Name` }
-                    </span>
+                <div className={ ` flex flex-col gap-1` }>
+                    <div className={ ` flex flex-row gap-6 justify-between` }>
+                        <span className={ ` whitespace-nowrap overflow-hidden overflow-ellipsis font-semibold` }>
+                            { plannedPayment && plannedPayment ? (`${plannedPayment.parent ? `${plannedPayment.parent.name} - ` : ''}${plannedPayment?.name}`) : `Wallet Name` }
+                        </span>
 
-                    <div>
-                        <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="link" className={ ` p-0 h-auto leading-none dark:!text-white !text-black` } data-type="dropdown-trigger">
-                                    <i className={ `fa-solid fa-ellipsis-vertical` }></i>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
-                                <Link href={ plannedPayment ? route('sys.planned-payment.summary.show', {
-                                    wallet: plannedPayment.uuid,
-                                    period: period !== undefined ? moment(period).format('YYYY-MM') : null
-                                }) : '#' }>
-                                    <DropdownMenuItem className={ ` cursor-pointer` }>
-                                        <span className={ ` text-blue-500` }>Detail</span>
-                                    </DropdownMenuItem>
-                                </Link>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div>
+                            <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="link" className={ ` p-0 h-auto leading-none dark:!text-white !text-black` } data-type="dropdown-trigger">
+                                        <i className={ `fa-solid fa-ellipsis-vertical` }></i>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
+                                    <Link href={ plannedPayment ? route('sys.planned-payment.summary.show', {
+                                        wallet: plannedPayment.uuid,
+                                        period: period !== undefined ? moment(period).format('YYYY-MM') : null
+                                    }) : '#' }>
+                                        <DropdownMenuItem className={ ` cursor-pointer` }>
+                                            <span className={ ` text-blue-500` }>Detail</span>
+                                        </DropdownMenuItem>
+                                    </Link>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </div>
+
+                    {(() => {
+                        if(moment(period).format('YYYY-MM') === moment().format('YYYY-MM') && plannedPayment && 'balance' in plannedPayment){
+                            let income: number = 0;
+                            let expense: number = 0;
+                            if(plannedPayment && 'expected_income' in plannedPayment){
+                                income = plannedPayment.expected_income;
+                            }
+                            if(plannedPayment && 'expected_expense' in plannedPayment){
+                                expense = plannedPayment.expected_expense;
+                            }
+                            let calc = (plannedPayment.balance as number) + (income - expense);
+
+                            return <div className={ ` flex flex-row flex-wrap leading-tight gap-1` }>
+                                <small>Current balance: {formatRupiah(plannedPayment.balance)}</small>
+                                <small>/</small>
+                                <small>Expected final balance: {formatRupiah(calc)}</small>
+                            </div>
+                        }
+
+                        return <></>;
+                    })()}
                 </div>
 
                 <hr/>

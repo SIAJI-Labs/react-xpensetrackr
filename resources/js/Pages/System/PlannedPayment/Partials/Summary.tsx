@@ -91,7 +91,6 @@ export default function PlannedPaymentSummary({ auth }: PageProps<ContentProps>)
 
     // Summary List Template
     let listTemplate = (obj?:undefined) => {
-        console.log(obj);
         return <SummaryTemplate plannedPayment={obj} period={ moment(activePeriod).toDate() }/>;
     }
     // Summary List Skeleton

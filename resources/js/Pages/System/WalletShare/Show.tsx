@@ -19,6 +19,8 @@ import { formatRupiah, momentFormated, ucwords } from "@/function";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import moment from "moment";
 
 // Props
 type ContentProps = {
@@ -240,6 +242,40 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
                                                 <span className={ `` }>Refresh</span>
                                             </DropdownMenuItem>
 
+                                            {/* Share Action */}
+                                            {(() => {
+                                                // Check if record dialog form is exists
+                                                let walletDialogSection = document.getElementById('walletShare-dialogShareSection');
+                                                if(walletDialogSection){
+                                                    return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
+                                                        let el = $refs.target as HTMLElement;
+                                                        if(el){
+                                                            let originalText = el.innerHTML;
+                                                            el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+
+                                                            const revertToOriginalText = () => {
+                                                                if(originalText){
+                                                                    el.innerHTML = originalText;
+                                                                }
+
+                                                                document.removeEventListener('dialog.wallet-share.prompt-shown', revertToOriginalText);
+                                                            }
+                                                            document.addEventListener('dialog.wallet-share.prompt-shown', revertToOriginalText);
+                                                        }
+
+                                                        document.dispatchEvent(new CustomEvent('wallet-share.share-prompt', {
+                                                            bubbles: true,
+                                                            detail: {
+                                                                uuid: data && 'uuid' in data ? data?.uuid : ''
+                                                            }
+                                                        }));
+                                                    }}>
+                                                        <span className={ ` ` }>Share</span>
+                                                    </DropdownMenuItem>;
+                                                }
+
+                                                return <></>;
+                                            })()}
                                             {/* Edit Action */}
                                             {(() => {
                                                 // Check if record dialog form is exists
@@ -343,6 +379,37 @@ export default function Show({ auth, data }: PageProps<ContentProps>) {
                                         <span className={ `font-semibold` }>{ formatRupiah(data.balance ?? 0) }</span>
                                     </div>
                                 </div>
+
+                                {/* Extra */}
+                                {(() => {
+                                    let items = [];
+                                    if(data.passphrase){
+                                        items.push(<Badge className={ ` flex flex-row gap-1` } key={ `items_passphrase-${data.uuid}` }>
+                                            <i className={ `fa-solid fa-lock` }/>
+                                            <span>Passphrase</span>
+                                        </Badge>);
+                                    }
+                                    if(data.valid_until){
+                                        items.push(<Badge variant={ moment(moment(data.valid_until).format('YYYY-MM-DD')) < moment(moment().format('YYYY-MM-DD')) ? `destructive` : `default` } className={ ` flex flex-row gap-1` } key={ `items_deadline-${data.uuid}` }>
+                                            <i className={ `fa-solid fa-clock` }/>
+                                            <span>Valid until: {moment(data.valid_until).format('Do MMM, YYYY')}</span>
+                                        </Badge>);
+                                    }
+                                    if(data.wallet_share_item && data.wallet_share_item?.length > 0){
+                                        items.push(<Badge className={ ` flex flex-row gap-1` } key={ `items_wallet-${data.uuid}` }>
+                                            <i className={ `fa-solid fa-wallet` }/>
+                                            <span>{data.wallet_share_item.length} item{data.wallet_share_item.length > 1 ? 's' : ''} of wallet</span>
+                                        </Badge>);
+                                    }
+
+                                    if(items.length > 0){
+                                        return <div className={ ` flex flex-row gap-2 items-center flex-wrap` }>
+                                            {items}
+                                        </div>
+                                    }
+
+                                    return <></>;
+                                })()}
                             </div>
                         </CardContent>
                     </Card>

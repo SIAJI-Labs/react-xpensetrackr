@@ -8,9 +8,10 @@ import { formatRupiah } from "@/function";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Button } from "@/Components/ui/button";
 import { Link } from "@inertiajs/react";
+import moment from "moment";
 
 type TemplateProps = {
-    wallet?: WalletShareItem | any[],
+    wallet?: WalletShareItem,
     deleteAction?: boolean,
     editAction?: boolean
 }
@@ -30,9 +31,10 @@ export default function TemplateList({ wallet, deleteAction = true, editAction =
         }
 
         document.addEventListener('dialog.wallet-share.shown', handleDialogEvent);
+        document.addEventListener('dialog.wallet-share.prompt-shown', handleDialogEvent);
         // Remove the event listener when the component unmounts
         return () => {
-            document.removeEventListener('dialog.wallet-share.shown', handleDialogEvent);
+            document.removeEventListener('dialog.wallet-share.prompt-shown', handleDialogEvent);
         };
     });
 
@@ -93,6 +95,40 @@ export default function TemplateList({ wallet, deleteAction = true, editAction =
                                                 </Link>
                                             </>
                                         }
+                                        return <></>;
+                                    })()}
+                                    {/* Share Action */}
+                                    {(() => {
+                                        // Check if record dialog form is exists
+                                        let walletDialogSection = document.getElementById('walletShare-dialogShareSection');
+                                        if(walletDialogSection){
+                                            return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
+                                                let el = $refs.target as HTMLElement;
+                                                if(el){
+                                                    let originalText = el.innerHTML;
+                                                    el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+
+                                                    const revertToOriginalText = () => {
+                                                        if(originalText){
+                                                            el.innerHTML = originalText;
+                                                        }
+
+                                                        document.removeEventListener('dialog.wallet-share.prompt-shown', revertToOriginalText);
+                                                    }
+                                                    document.addEventListener('dialog.wallet-share.prompt-shown', revertToOriginalText);
+                                                }
+
+                                                document.dispatchEvent(new CustomEvent('wallet-share.share-prompt', {
+                                                    bubbles: true,
+                                                    detail: {
+                                                        uuid: wallet && 'uuid' in wallet ? wallet?.uuid : ''
+                                                    }
+                                                }));
+                                            }}>
+                                                <span className={ ` ` }>Share</span>
+                                            </DropdownMenuItem>;
+                                        }
+
                                         return <></>;
                                     })()}
                                     {/* Edit Action */}
@@ -191,8 +227,24 @@ export default function TemplateList({ wallet, deleteAction = true, editAction =
 
                 {/* List of wallet */}
                 {(() => {
+                    let items = [];
+                    if(wallet && wallet.passphrase){
+                        items.push(<small key={ `items_passphrase-${wallet.uuid}` }><i className={ `fa-solid fa-lock` }></i></small>);
+                    }
+                    if(wallet && wallet.valid_until){
+                        items.push(<small key={ `items_deadline-${wallet.uuid}` } className={ `${moment(moment(wallet.valid_until).format('YYYY-MM-DD')) < moment(moment().format('YYYY-MM-DD')) ? `text-red-500` : ``}` }><i className={ `fa-solid fa-clock` }></i></small>);
+                    }
                     if(wallet && 'wallet_share_item' in wallet && wallet.wallet_share_item){
-                        return <small>{ wallet && 'wallet_share_item' in wallet && wallet.wallet_share_item ? shownWallet(wallet.wallet_share_item) : '' }</small>;
+                        items.push(<small key={ `items_wallet-${wallet.uuid}` } className={ ` flex flex-row gap-1 items-center` }>
+                            <i className={ `fa-solid fa-wallet` }></i>
+                            <span>{ wallet && 'wallet_share_item' in wallet && wallet.wallet_share_item ? shownWallet(wallet.wallet_share_item) : '' }</span>
+                        </small>);
+                    }
+
+                    if(items.length > 0){
+                        return <div className={ ` flex flex-row flex-wrap gap-2 items-center` }>
+                            {items}
+                        </div>;
                     }
                     
                     return <></>;

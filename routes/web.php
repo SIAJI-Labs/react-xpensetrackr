@@ -19,8 +19,13 @@ use Inertia\Inertia;
 // Auth
 require __DIR__.'/auth.php';
 
-// Homepage - Landing Page
-Route::get('/', \App\Http\Controllers\Public\HomepageController::class)->name('public.index');
-
-// Wallet Share
-Route::get('wallet-share/{token}', \App\Http\Controllers\Public\WalletShareController::class)->name('wallet-share');
+// Public
+Route::group([
+    'as' => 'public.'
+], function(){
+    // Homepage - Landing Page
+    Route::get('/', \App\Http\Controllers\Public\HomepageController::class)->name('index');
+    
+    // Wallet Share
+    Route::get('wallet-share/{token}', \App\Http\Controllers\Public\WalletShareController::class)->name('wallet-share');
+});

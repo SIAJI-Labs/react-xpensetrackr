@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class WalletShare extends Model
 {
@@ -88,6 +89,27 @@ class WalletShare extends Model
         static::creating(function ($model) {
             // Always generate UUID on Data Create
             $model->{'uuid'} = Str::uuid()->toString();
+
+            // Generate first token
+            $alphabet = range('A', 'Z');
+            $numeric = range(0, 9);
+            $range = array_merge($alphabet, $numeric);
+            do {
+                $loop = false;
+                // Generate random token for access
+                $token = generateRandomMixCharacter(7, $range);
+                
+                // Check if data exsits
+                $checkIfExists = \App\Models\WalletShare::where(DB::raw('BINARY `token`'), $token)
+                    ->first();
+
+                // Related token exists in database, generate a new one
+                if(!empty($checkIfExists)){
+                    $loop = true;
+                }
+            } while($loop);
+
+            $model->token = $token;
         });
     }
     

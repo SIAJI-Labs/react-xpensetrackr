@@ -79,7 +79,7 @@ export default function CommandCenter({ openState, setOpenState, className = '' 
                                 { name: 'Tags', icon: '', link: route('sys.tags.index') },
                                 { name: 'Wallet', icon: '', link: route('sys.wallet.index') },
                                 { name: 'Wallet Group', icon: '', link: route('sys.wallet-group.index') },
-                                { name: 'Wallet Share', icon: '', link: null },
+                                { name: 'Wallet Share', icon: '', link: route('sys.wallet-share.index') },
                             ]
                         }, { // Report
                             name: 'Report',

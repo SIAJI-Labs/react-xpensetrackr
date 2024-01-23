@@ -94,4 +94,8 @@ Route::group([
     // Wallet Group
     Route::get('wallet-group/{uuid}', [\App\Http\Controllers\System\WalletGroupController::class, 'show'])->name('wallet-group.show');
     Route::get('wallet-group', [\App\Http\Controllers\System\WalletGroupController::class, 'index'])->name('wallet-group.index');
+
+    // Wallet Share
+    Route::get('wallet-share/{uuid}', [\App\Http\Controllers\System\WalletShareController::class, 'show'])->name('wallet-share.show');
+    Route::get('wallet-share', [\App\Http\Controllers\System\WalletShareController::class, 'index'])->name('wallet-share.index');
 });

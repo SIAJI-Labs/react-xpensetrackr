@@ -148,8 +148,8 @@ export default function Sidebar({ user, className = '' }: PropsWithChildren<{ us
                     active: ['sys.wallet-group.index', 'sys.wallet-group.show'],
                 }, {
                     name: 'Share',
-                    route: null,
-                    is_disabled: true,
+                    route: route('sys.wallet-share.index'),
+                    is_disabled: false,
                     active: [],
                 }
             ],

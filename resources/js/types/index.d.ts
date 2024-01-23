@@ -126,6 +126,18 @@ export interface WalletGroupItem {
     balance?: number,
     wallet_group_item?: WalletItem[]
 }
+export interface WalletShareItem {
+    // id: number,
+    uuid: string,
+    user_id?: number,
+    token: string,
+    name: string,
+    note?: string,
+    passphrase?: string,
+    valid_until: string,
+    balance?: number,
+    wallet_share_item?: WalletItem[]
+}
 
 export interface NotificationActionDetail {
     title: string,

@@ -12,10 +12,11 @@ import { Link } from "@inertiajs/react";
 type TemplateProps = {
     wallet?: WalletItem | any[],
     deleteAction?: boolean,
-    editAction?: boolean
+    editAction?: boolean,
+    detailAction?: boolean,
 }
 
-export default function TemplateList({ wallet, deleteAction = true, editAction = true }: PropsWithChildren<TemplateProps> ){
+export default function TemplateList({ wallet, deleteAction = true, editAction = true, detailAction = true }: PropsWithChildren<TemplateProps> ){
     // Generate random string as section-key
     let r = (Math.random() + 1).toString(36).substring(7);
 
@@ -48,123 +49,129 @@ export default function TemplateList({ wallet, deleteAction = true, editAction =
                     <div className={ ` flex flex-row flex-1 md:flex-none justify-between gap-2 items-center` }>
                         <span className={ ` font-normal whitespace-nowrap ` }>{ formatRupiah( wallet && 'balance' in wallet ? wallet.balance : 0) }</span>
                         
-                        <div>
-                            <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant={ `link` } className={ ` p-0 h-auto leading-none dark:!text-white !text-black` } data-type="dropdown-trigger">
-                                        <i className={ `fa-solid fa-ellipsis-vertical` }></i>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
-                                    {/* Detail Action */}
-                                    {(() => {
-                                        if(wallet && 'uuid' in wallet){
-                                            return <>
-                                                <Link href={ route('sys.wallet.show', {
-                                                    uuid: wallet.uuid
-                                                }) }>
-                                                    <DropdownMenuItem className={ ` cursor-pointer` }>
-                                                        <span className={ ` text-blue-500` }>Detail</span>
-                                                    </DropdownMenuItem>
-                                                </Link>
-                                            </>
-                                        }
-                                        return <></>;
-                                    })()}
+                        {(() => {
+                            if(detailAction || editAction || deleteAction){
+                                <div>
+                                    <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant={ `link` } className={ ` p-0 h-auto leading-none dark:!text-white !text-black` } data-type="dropdown-trigger">
+                                                <i className={ `fa-solid fa-ellipsis-vertical` }></i>
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent sideOffset={5} alignOffset={0} side={ `left` } align={ `start` }>
+                                            {/* Detail Action */}
+                                            {(() => {
+                                                if(wallet && 'uuid' in wallet && detailAction){
+                                                    return <>
+                                                        <Link href={ route('sys.wallet.show', {
+                                                            uuid: wallet.uuid
+                                                        }) }>
+                                                            <DropdownMenuItem className={ ` cursor-pointer` }>
+                                                                <span className={ ` text-blue-500` }>Detail</span>
+                                                            </DropdownMenuItem>
+                                                        </Link>
+                                                    </>
+                                                }
+                                                return <></>;
+                                            })()}
 
-                                    {/* Edit Action */}
-                                    {(() => {
-                                        // Check if record dialog form is exists
-                                        let walletDialogSection = document.getElementById('wallet-dialogSection');
-                                        if(walletDialogSection && editAction){
-                                            return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
-                                                let el = $refs.target as HTMLElement;
-                                                if(el){
-                                                    let originalText = el.innerHTML;
-                                                    el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+                                            {/* Edit Action */}
+                                            {(() => {
+                                                // Check if record dialog form is exists
+                                                let walletDialogSection = document.getElementById('wallet-dialogSection');
+                                                if(walletDialogSection && editAction){
+                                                    return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
+                                                        let el = $refs.target as HTMLElement;
+                                                        if(el){
+                                                            let originalText = el.innerHTML;
+                                                            el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
 
-                                                    const revertToOriginalText = () => {
-                                                        if(originalText){
-                                                            el.innerHTML = originalText;
+                                                            const revertToOriginalText = () => {
+                                                                if(originalText){
+                                                                    el.innerHTML = originalText;
+                                                                }
+
+                                                                document.removeEventListener('dialog.wallet.shown', revertToOriginalText);
+                                                            }
+                                                            document.addEventListener('dialog.wallet.shown', revertToOriginalText);
                                                         }
 
-                                                        document.removeEventListener('dialog.wallet.shown', revertToOriginalText);
-                                                    }
-                                                    document.addEventListener('dialog.wallet.shown', revertToOriginalText);
+                                                        document.dispatchEvent(new CustomEvent('wallet.edit-action', {
+                                                            bubbles: true,
+                                                            detail: {
+                                                                uuid: wallet && 'uuid' in wallet ? wallet?.uuid : ''
+                                                            }
+                                                        }));
+                                                    }}>
+                                                        <span className={ ` text-yellow-500` }>Edit</span>
+                                                    </DropdownMenuItem>;
                                                 }
 
-                                                document.dispatchEvent(new CustomEvent('wallet.edit-action', {
-                                                    bubbles: true,
-                                                    detail: {
-                                                        uuid: wallet && 'uuid' in wallet ? wallet?.uuid : ''
-                                                    }
-                                                }));
-                                            }}>
-                                                <span className={ ` text-yellow-500` }>Edit</span>
-                                            </DropdownMenuItem>;
-                                        }
+                                                return <></>;
+                                            })()}
 
-                                        return <></>;
-                                    })()}
+                                            {/* Balance Adjustment Action */}
+                                            {(() => {
+                                                // Check if record dialog form is exists
+                                                let walletDialogSection = document.getElementById('walletBalanceAdjustment-dialogSection');
+                                                if(walletDialogSection && editAction){
+                                                    return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
+                                                        let el = $refs.target as HTMLElement;
+                                                        if(el){
+                                                            let originalText = el.innerHTML;
+                                                            el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
 
-                                    {/* Balance Adjustment Action */}
-                                    {(() => {
-                                        // Check if record dialog form is exists
-                                        let walletDialogSection = document.getElementById('walletBalanceAdjustment-dialogSection');
-                                        if(walletDialogSection && editAction){
-                                            return <DropdownMenuItem className={ ` cursor-pointer` } onClick={($refs) => {
-                                                let el = $refs.target as HTMLElement;
-                                                if(el){
-                                                    let originalText = el.innerHTML;
-                                                    el.innerHTML = `<span class=" flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin-pulse"></i>Loading</span>`;
+                                                            const revertToOriginalText = () => {
+                                                                if(originalText){
+                                                                    el.innerHTML = originalText;
+                                                                }
 
-                                                    const revertToOriginalText = () => {
-                                                        if(originalText){
-                                                            el.innerHTML = originalText;
+                                                                document.removeEventListener('dialog.wallet.balance-adjustment.shown', revertToOriginalText);
+                                                            }
+                                                            document.addEventListener('dialog.wallet.balance-adjustment.shown', revertToOriginalText);
                                                         }
 
-                                                        document.removeEventListener('dialog.wallet.balance-adjustment.shown', revertToOriginalText);
-                                                    }
-                                                    document.addEventListener('dialog.wallet.balance-adjustment.shown', revertToOriginalText);
+                                                        document.dispatchEvent(new CustomEvent('wallet.balance-adjustment.edit-action', {
+                                                            bubbles: true,
+                                                            detail: {
+                                                                uuid: wallet && 'uuid' in wallet ? wallet?.uuid : ''
+                                                            }
+                                                        }));
+                                                    }}>
+                                                        <span className={ ` text-yellow-500` }>Balance Adjustment</span>
+                                                    </DropdownMenuItem>;
                                                 }
 
-                                                document.dispatchEvent(new CustomEvent('wallet.balance-adjustment.edit-action', {
-                                                    bubbles: true,
-                                                    detail: {
-                                                        uuid: wallet && 'uuid' in wallet ? wallet?.uuid : ''
-                                                    }
-                                                }));
-                                            }}>
-                                                <span className={ ` text-yellow-500` }>Balance Adjustment</span>
-                                            </DropdownMenuItem>;
-                                        }
+                                                return <></>;
+                                            })()}
 
-                                        return <></>;
-                                    })()}
+                                            {/* Delete Action */}
+                                            {(() => {
+                                                // Check if record dialog form is exists
+                                                let deleteSection = document.getElementById('wallet-deleteDialogSection');
+                                                if(deleteAction && deleteSection){
+                                                    return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
+                                                        document.dispatchEvent(new CustomEvent('wallet.delete-action', {
+                                                            bubbles: true,
+                                                            detail: {
+                                                                uuid: wallet && 'uuid' in wallet ? wallet?.uuid : null,
+                                                                action: 'delete'
+                                                            }
+                                                        }));
+                                                    }}>
+                                                        <span className={ ` text-red-500` }>Delete</span>
+                                                    </DropdownMenuItem>;
+                                                }
 
-                                    {/* Delete Action */}
-                                    {(() => {
-                                        // Check if record dialog form is exists
-                                        let deleteSection = document.getElementById('wallet-deleteDialogSection');
-                                        if(deleteAction && deleteSection){
-                                            return <DropdownMenuItem className={ ` cursor-pointer` } onClick={() => {
-                                                document.dispatchEvent(new CustomEvent('wallet.delete-action', {
-                                                    bubbles: true,
-                                                    detail: {
-                                                        uuid: wallet && 'uuid' in wallet ? wallet?.uuid : null,
-                                                        action: 'delete'
-                                                    }
-                                                }));
-                                            }}>
-                                                <span className={ ` text-red-500` }>Delete</span>
-                                            </DropdownMenuItem>;
-                                        }
+                                                return <></>;
+                                            })()}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            }
 
-                                        return <></>;
-                                    })()}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
+                            return <></>;
+                        })()}
                     </div>
                 </div>
 

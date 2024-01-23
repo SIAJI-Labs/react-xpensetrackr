@@ -25,6 +25,9 @@ import WalletDeleteDialog from '@/Components/system/Wallet/WalletDeleteDialog';
 import WalletDialog from '@/Components/system/Wallet/WalletDialog';
 import WalletGroupDeleteDialog from '@/Components/system/WalletGroup/WalletGroupDeleteDialog';
 import WalletGroupDialog from '@/Components/system/WalletGroup/WalletGroupDialog';
+import WalletShareDeleteDialog from '@/Components/system/WalletShare/WalletShareDeleteDialog';
+import WalletShareDialog from '@/Components/system/WalletShare/WalletShareDialog';
+import WalletSharePrompt from '@/Components/system/WalletShare/WalletSharePrompt';
 
 // Partials
 import { ThemeProvider } from '@/Components/template/theme-provider';
@@ -116,6 +119,20 @@ export default function SystemLayout({ user, header, children, fabAction = null 
     const [openWalletGroupDeleteDialog, setOpenWalletGroupDeleteDialog] = useState<boolean>(false);
     const handleOpenWalletGroupDeleteDialog = (isOpen: boolean) => {
         setOpenWalletGroupDeleteDialog(isOpen);
+    };
+
+    // Wallet Share Dialog
+    const [openWalletShareDialog, setOpenWalletShareDialog] = useState<boolean>(false);
+    const handleOpenWalletShareDialog = (isOpen: boolean) => {
+        setOpenWalletShareDialog(isOpen);
+    };
+    const [openWalletShareDeleteDialog, setOpenWalletShareDeleteDialog] = useState<boolean>(false);
+    const handleOpenWalletShareDeleteDialog = (isOpen: boolean) => {
+        setOpenWalletShareDeleteDialog(isOpen);
+    };
+    const [openWalletSharePromptDialog, setOpenWalletSharePromptDialog] = useState<boolean>(false);
+    const handleOpenWalletSharePromptDialog = (isOpen: boolean) => {
+        setOpenWalletSharePromptDialog(isOpen);
     };
 
     // Notification Dialog
@@ -330,11 +347,16 @@ export default function SystemLayout({ user, header, children, fabAction = null 
                 <WalletDeleteDialog openState={ openWalletDeleteDialog } setOpenState={ handleOpenWalletDeleteDialog }/>
                 <WalletBalanceAdjustmentDialog openState={ openWalletBalanceAdjustmentDialog } setOpenState={ handleOpenWalletBalanceAdjustmentDialog }/>
 
-                {/* Wallet Modal - Dialog */}
+                {/* Wallet Group Modal - Dialog */}
                 <WalletGroupDialog openState={ openWalletGroupDialog } setOpenState={ handleOpenWalletGroupDialog }/>
                 <WalletGroupDeleteDialog openState={ openWalletGroupDeleteDialog } setOpenState={ handleOpenWalletGroupDeleteDialog }/>
 
-                {/* Wallet Modal - Dialog */}
+                {/* Wallet Share Modal - Dialog */}
+                <WalletShareDialog openState={ openWalletShareDialog } setOpenState={ handleOpenWalletShareDialog }/>
+                <WalletShareDeleteDialog openState={ openWalletShareDeleteDialog } setOpenState={ handleOpenWalletShareDeleteDialog }/>
+                <WalletSharePrompt openState={ openWalletSharePromptDialog } setOpenState={ handleOpenWalletSharePromptDialog }/>
+
+                {/* Notification Modal - Dialog */}
                 <NotificationDialog openState={ openNotificationDialog } setOpenState={ handleOpenNotificationDialog }/>
             </div>
 

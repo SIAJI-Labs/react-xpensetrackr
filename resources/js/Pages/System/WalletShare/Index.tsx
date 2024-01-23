@@ -1,7 +1,7 @@
 import { useIsFirstRender } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
-import { PageProps } from "@/types";
+import { PageProps, WalletShareItem } from "@/types";
 import axios from "axios";
 
 // Partials
@@ -128,7 +128,7 @@ export default function Index({ auth }: PageProps<ContentProps>) {
         }
     }, [walletShareItem]);
     // List Template
-    let listTemplate = (obj?:any[]) => {
+    let listTemplate = (obj?:WalletShareItem) => {
         return <WalletShareTemplate wallet={obj}/>;
     }
 

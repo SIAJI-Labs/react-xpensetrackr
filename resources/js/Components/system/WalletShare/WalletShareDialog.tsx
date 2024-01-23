@@ -330,7 +330,7 @@ export default function WalletShareDialog({ openState, setOpenState }: dialogPro
                     // Update State
                     setFormUuid(data.uuid);
                     setFormName(data.name);
-                    setFormNotes(data.note);
+                    setFormNotes(data.note ?? '');
                     setFormHasPassphrase(data.passphrase ? true : false);
                     if(data.valid_until){
                         setFormHasValidUntil(true);

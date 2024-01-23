@@ -151,7 +151,7 @@ export default function WalletShareDialog({ openState, setOpenState }: dialogPro
     }
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
-    const [formDialogAbortController, setAbortControllerRecordDialog] = useState<AbortController | null>(null);
+    const [formDialogAbortController, setDialogAbortController] = useState<AbortController | null>(null);
     const handleWalletDialogSubmit: FormEventHandler = (e) => {
         // Cancel previous request
         if(formDialogAbortController instanceof AbortController){
@@ -173,7 +173,7 @@ export default function WalletShareDialog({ openState, setOpenState }: dialogPro
         // Create a new AbortController
         const abortController = new AbortController();
         // Store the AbortController in state
-        setAbortControllerRecordDialog(abortController);
+        setDialogAbortController(abortController);
 
         // Build Form Data
         let formData = new FormData();
@@ -255,7 +255,7 @@ export default function WalletShareDialog({ openState, setOpenState }: dialogPro
             }, 100);
         }).finally(() => {
             // Clear the AbortController from state
-            setAbortControllerRecordDialog(null);
+            setDialogAbortController(null);
         
             // Update to original state
             let submitBtn = document.getElementById('walletShare-dialogSubmit');

@@ -27,5 +27,8 @@ Route::group([
     Route::get('/', \App\Http\Controllers\Public\HomepageController::class)->name('index');
     
     // Wallet Share
+    Route::post('wallet-share/{token}/passphrase', [\App\Http\Controllers\Public\WalletShareController::class, 'passphrase'])->name('wallet-share.passphrase');
+    Route::get('wallet-share/{token}/record/{uuid}', [\App\Http\Controllers\Public\WalletShareController::class, 'recordDetail'])->name('wallet-share.record.show');
+    Route::get('wallet-share/{token}/record', [\App\Http\Controllers\Public\WalletShareController::class, 'recordList'])->name('wallet-share.record');
     Route::get('wallet-share/{token}', \App\Http\Controllers\Public\WalletShareController::class)->name('wallet-share');
 });

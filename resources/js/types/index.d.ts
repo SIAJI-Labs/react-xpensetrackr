@@ -132,7 +132,7 @@ export interface WalletShareItem {
     user_id?: number,
     token: string,
     name: string,
-    note: string,
+    note?: string,
     passphrase?: string,
     valid_until: string,
     balance?: number,

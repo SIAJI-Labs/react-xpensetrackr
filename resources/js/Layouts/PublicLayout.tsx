@@ -43,8 +43,13 @@ export default function Guest({ children }: PropsWithChildren) {
                 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#55799d"/>
             </Head>
 
-            <div className="min-h-[100dvh] w-full bg-slate-50 dark:bg-background">
-                {children}
+            <div className="min-h-screen bg-slate-50 dark:bg-background relative">
+                {/* Main Content */}
+                <div className={ ` flex justify-center px-6` }>
+                    <main className={ ` w-full md:max-w-[420px] md:min-w-[420px]` }>
+                        {children}
+                    </main>
+                </div>
 
                 <Toaster closeButton/>
             </div>

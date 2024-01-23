@@ -136,23 +136,42 @@ export default function WalletSharePromptDialog({ openState, setOpenState }: dia
                                 setTooltipTextContent('Copy');
                             }} onClick={handleCopyAction}/>
 
-                            <TooltipProvider>
-                                <Tooltip open={ tooltipOpenState } onOpenChange={ setTooltipOpenState }>
-                                    <TooltipTrigger asChild>
-                                        <Button type={ `button` } variant={ `outline` } className={ `aspect-square` } onMouseEnter={() => {
-                                            setTooltipOpenState(true);
-                                        }} onMouseLeave={() => {
-                                            setTooltipOpenState(false);
-                                            setTooltipTextContent('Copy');
-                                        }} onClick={handleCopyAction}>
-                                            <i className={ `fa-regular fa-copy` }></i>
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <span>{ tooltipTextContent }</span>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <div className={ ` flex flex-row gap-2` }>
+                                <TooltipProvider>
+                                    <Tooltip open={ tooltipOpenState } onOpenChange={ setTooltipOpenState }>
+                                        <TooltipTrigger asChild>
+                                            <Button type={ `button` } variant={ `outline` } className={ `aspect-square` } onMouseEnter={() => {
+                                                setTooltipOpenState(true);
+                                            }} onMouseLeave={() => {
+                                                setTooltipOpenState(false);
+                                                setTooltipTextContent('Copy');
+                                            }} onClick={handleCopyAction}>
+                                                <i className={ `fa-regular fa-copy` }></i>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <span>{ tooltipTextContent }</span>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button type={ `button` } variant={ `outline` } className={ `aspect-square` } onClick={() => {
+                                                window.open(route('public.wallet-share', {
+                                                    'token': walletShare?.token
+                                                }));
+                                            }}>
+                                                <i className={ `fa-solid fa-arrow-up-right-from-square` }></i>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <span>Open</span>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
                         </div>;
                     }
 

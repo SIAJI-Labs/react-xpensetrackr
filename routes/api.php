@@ -277,6 +277,30 @@ Route::group([
         });
     });
 
+    // Wallet Share
+    Route::group([
+        'prefix' => 'wallet-share',
+        'as' => 'wallet-share.'
+    ], function(){
+        // v1
+        Route::group([
+            'prefix' => 'v1',
+            'as' => 'v1.'
+        ], function(){
+            // List
+            Route::get('list', [\App\Http\Controllers\Api\v1\WalletShareController::class, 'index'])->name('list');
+            // Show
+            Route::get('{uuid}', [\App\Http\Controllers\Api\v1\WalletShareController::class, 'show'])->name('show');
+            
+            // Store
+            Route::post('store', [\App\Http\Controllers\Api\v1\WalletShareController::class, 'store'])->name('store');
+            // Update
+            Route::put('{uuid}', [\App\Http\Controllers\Api\v1\WalletShareController::class, 'update'])->name('update');
+            // Delete
+            Route::delete('{uuid}', [\App\Http\Controllers\Api\v1\WalletShareController::class, 'destroy'])->name('destroy');
+        });
+    });
+
     // Tags
     Route::group([
         'prefix' => 'tags',

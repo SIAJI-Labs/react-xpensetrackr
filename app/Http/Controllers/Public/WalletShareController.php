@@ -104,6 +104,8 @@ class WalletShareController extends Controller
     public function recordList(Request $request, $token)
     {
         $data = [];
+        $has_passphrase = false;
+
         $shared = \App\Models\WalletShare::where(DB::raw('BINARY `token`'), $token)
             ->first();
 

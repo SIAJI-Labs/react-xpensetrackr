@@ -533,7 +533,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
-    const [formDialogAbortController, setAbortControllerRecordDialog] = useState<AbortController | null>(null);
+    const [formDialogAbortController, setFormDialogAbortController] = useState<AbortController | null>(null);
     const handleSubmitDialog: FormEventHandler = (e) => {
         e.preventDefault();
         // Update submit button to loading state
@@ -550,7 +550,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         // Create a new AbortController
         const abortController = new AbortController();
         // Store the AbortController in state
-        setAbortControllerRecordDialog(abortController);
+        setFormDialogAbortController(abortController);
 
         // Build Form Data
         let formData = new FormData();
@@ -638,7 +638,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
             }, 100);
         }).finally(() => {
             // Clear the AbortController from state
-            setAbortControllerRecordDialog(null);
+            setFormDialogAbortController(null);
         
             // Update to original state
             let submitBtn = document.getElementById('record-dialogSubmit');

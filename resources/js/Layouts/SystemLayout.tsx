@@ -8,6 +8,7 @@ import '@/service-worker/service-worker'
 import '@/function';
 // Plugins
 import '@/../plugins/fontawesome/all.scss';
+import '@/../css/siaji-animation.scss';
 
 // Partials - Dialog
 import BudgetDeleteDialog from '@/Components/system/Budget/BudgetDeleteDialog';

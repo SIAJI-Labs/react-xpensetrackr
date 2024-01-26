@@ -500,8 +500,6 @@ class RecordController extends Controller
      */
     public function countPending(Request $request)
     {
-        // sleep(10);
-        
         $pending = \App\Models\Record::where('is_pending', true)
             ->count();
             

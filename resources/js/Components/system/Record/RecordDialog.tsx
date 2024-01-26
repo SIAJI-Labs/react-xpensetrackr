@@ -73,15 +73,18 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     const [calendarOpenState, setCalendarOpenState] = useState<boolean>(false);
 
     // Combobox - Category
-    let comboboxCategoryTimeout: any;
+    const [comboboxCategoryTimeout, setComboboxCategoryTimeout] = useState<any>();
     const [comboboxCategoryOpenState, setComboboxCategoryOpenState] = useState<boolean>(false);
     const [comboboxCategoryLabel, setComboboxCategoryLabel] = useState<string>("Select an option");
     const [comboboxCategoryList, setComboboxCategoryList] = useState<string[] | any>([]);
     const [comboboxCategoryInput, setComboboxCategoryInput] = useState<string>("");
     const [comboboxCategoryLoadState, setComboboxCategoryLoadState] = useState<boolean>(false);
     const [comboboxCategoryAbortController, setComboboxCategoryAbortController] = useState<AbortController | null>(null);
-    const fetchCategoryList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
-        // Fetch Category Item List
+    const fetchCategoryList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxCategoryAbortController(abortController);
+
+        // Handle loading state
         setComboboxCategoryLoadState(true);
 
         try {
@@ -96,50 +99,43 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
             try {
                 const response = await axios.get(`${route('api.category.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController?.signal
                 });
             
+                setComboboxCategoryAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let jsonResponse = response.data;
 
                 return jsonResponse.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
+                    // // Handle the cancellation here if needed
                     // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
+                    // // Handle other errors
                     // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
+            // // Handle errors, if needed
             // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxCategoryList;
     }
     useEffect(() => {
-        // Handle Category Item
         clearTimeout(comboboxCategoryTimeout);
-        // setComboboxCategoryList([]);
 
         if(comboboxCategoryOpenState){
-            if (comboboxCategoryAbortController) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxCategoryAbortController.abort();
-            }
+            let timeout = setTimeout(() => {
+                // Abort previous request
+                if(comboboxCategoryAbortController instanceof AbortController){
+                    comboboxCategoryAbortController.abort();
+                }
 
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxCategoryAbortController(newAbortController);
-
-            comboboxCategoryTimeout = setTimeout(() => {
-                fetchCategoryList(comboboxCategoryInput, newAbortController)
+                fetchCategoryList(comboboxCategoryInput)
                     .then((data: string[] = []) => {
                         setComboboxCategoryLoadState(false);
                         if(data){
@@ -150,6 +146,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                         // Handle errors, if needed
                     });
             }, 500);
+            setComboboxCategoryTimeout(timeout);
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
@@ -176,14 +173,18 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }, [formCategory]);
 
     // Combobox - From Wallet
-    let comboboxFromWalletTimeout: any;
+    const [comboboxFromWalletTimeout, setComboboxFromWalletTimeout] = useState<any>();
     const [comboboxFromWalletOpenState, setComboboxFromWalletOpenState] = useState<boolean>(false);
     const [comboboxFromWalletLabel, setComboboxFromWalletLabel] = useState<string>("Select an option");
     const [comboboxFromWalletList, setComboboxFromWalletList] = useState<string[] | any>([]);
     const [comboboxFromWalletInput, setComboboxFromWalletInput] = useState<string>("");
     const [comboboxFromWalletLoadState, setComboboxFromWalletLoadState] = useState<boolean>(false);
     const [comboboxFromWalletAbortController, setComboboxFromWalletAbortController] = useState<AbortController | null>(null);
-    const fetchFromWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const fetchFromWalletList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxFromWalletAbortController(abortController);
+
+        // Handle loading state
         setComboboxFromWalletLoadState(true);
 
         try {
@@ -198,50 +199,42 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
             try {
                 const response = await axios.get(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxFromWalletAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
+                    // // Handle the cancellation here if needed
                     // console.log('Request was canceled', error);
-
-                    return comboboxFromWalletList;
                 } else {
-                    // Handle other errors
+                    // // Handle other errors
                     // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxFromWalletList;
     }
     useEffect(() => {
         clearTimeout(comboboxFromWalletTimeout);
-        // setComboboxFromWalletList([]);
 
         if(comboboxFromWalletOpenState){
-            if (comboboxFromWalletAbortController) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxFromWalletAbortController.abort();
-            }
+            let timeout = setTimeout(() => {
+                // Abort previous request
+                if(comboboxFromWalletAbortController instanceof AbortController){
+                    comboboxFromWalletAbortController.abort();
+                }
 
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxFromWalletAbortController(newAbortController);
-
-            comboboxFromWalletTimeout = setTimeout(() => {
-                fetchFromWalletList(comboboxFromWalletInput, newAbortController)
+                fetchFromWalletList(comboboxFromWalletInput)
                     .then((data: string[] = []) => {
                         setComboboxFromWalletLoadState(false);
                         if(data){
@@ -251,7 +244,8 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                     .catch((error) => {
                         // Handle errors, if needed
                     });
-            }, 0);
+            }, 500);
+            setComboboxFromWalletTimeout(timeout);
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
@@ -277,14 +271,18 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }, [formFromWallet]);
 
     // Combobox - To Wallet
-    let comboboxToWalletTimeout: any;
+    const [comboboxToWalletTimeout, setComboboxToWalletTimeout] = useState<any>();
     const [comboboxToWalletOpenState, setComboboxToWalletOpenState] = useState<boolean>(false);
     const [comboboxToWalletLabel, setComboboxToWalletLabel] = useState<string>("Select an option");
     // const [comboboxToWalletList, setComboboxToWalletList] = useState<string[] | any>([]);
     const [comboboxToWalletInput, setComboboxToWalletInput] = useState<string>("");
     const [comboboxToWalletLoadState, setComboboxToWalletLoadState] = useState<boolean>(false);
     const [comboboxToWalletAbort, setComboboxToWalletAbort] = useState<AbortController | null>(null);
-    const fetchToWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const fetchToWalletList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxToWalletAbort(abortController);
+
+        // Handle loading state
         setComboboxToWalletLoadState(true);
 
         try {
@@ -299,53 +297,45 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
             try {
                 const response = await axios.get(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxToWalletAbort(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
+                    // // Handle the cancellation here if needed
                     // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
+                    // // Handle other errors
                     // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxFromWalletList;
     }
     useEffect(() => {
         clearTimeout(comboboxToWalletTimeout);
-        // setComboboxToWalletList([]);
-        // setComboboxFromWalletList([]);
 
         if(comboboxToWalletOpenState){
-            if (comboboxToWalletAbort) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxToWalletAbort.abort();
-            }
+            let timeout = setTimeout(() => {
+                // Abort previous request
+                if(comboboxToWalletAbort instanceof AbortController){
+                    comboboxToWalletAbort.abort();
+                }
 
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxToWalletAbort(newAbortController);
-
-            comboboxToWalletTimeout = setTimeout(() => {
-                fetchToWalletList(comboboxToWalletInput, newAbortController)
+                fetchToWalletList(comboboxToWalletInput)
                     .then((data: string[] = []) => {
                         setComboboxToWalletLoadState(false);
                         if(data){
-                            // setComboboxToWalletList(data);
                             setComboboxFromWalletList(data);
                         }
                     })
@@ -353,6 +343,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                         // Handle errors, if needed
                     });
             }, 500);
+            setComboboxToWalletTimeout(timeout);
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
@@ -378,14 +369,18 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }, [formToWallet]);
 
     // Combobox - Tags
-    let comboboxTagsTimeout: any;
+    const [comboboxTagsTimeout, setComboboxTagsTimeout] = useState<any>();
     const [comboboxTagsOpenState, setComboboxTagsOpenState] = useState<boolean>(false);
     const [comboboxTagsLabel, setComboboxTagsLabel] = useState<string[] | any[]>([]);
     const [comboboxTagsList, setComboboxTagsList] = useState<string[] | any>([]);
     const [comboboxTagsInput, setComboboxTagsInput] = useState<string>("");
     const [comboboxTagsLoadState, setComboboxTagsLoadState] = useState<boolean>(false);
-    const [comboboxTagsAbort, setComboboxTagsAbort] = useState<AbortController | null>(null);
-    const fetchTagsList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const [comboboxTagsAbortController, setComboboxTagsAbortController] = useState<AbortController | null>(null);
+    const fetchTagsList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxTagsAbortController(abortController);
+
+        // Handle loading state
         setComboboxTagsLoadState(true);
 
         try {
@@ -400,48 +395,42 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
             try {
                 const response = await axios.get(`${route('api.tags.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxTagsAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
+                    // // Handle the cancellation here if needed
                     // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
+                    // // Handle other errors
                     // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxTagsList;
     }
     useEffect(() => {
         clearTimeout(comboboxTagsTimeout);
-        // setComboboxTagsList([]);
 
         if(comboboxTagsOpenState){
-            if (comboboxTagsAbort) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxTagsAbort.abort();
-            }
+            let timeout = setTimeout(() => {
+                // Abort previous request
+                if(comboboxTagsAbortController instanceof AbortController){
+                    comboboxTagsAbortController.abort();
+                }
 
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxTagsAbort(newAbortController);
-
-            comboboxTagsTimeout = setTimeout(() => {
-                fetchTagsList(comboboxTagsInput, newAbortController)
+                fetchTagsList(comboboxTagsInput)
                     .then((data: string[] = []) => {
                         setComboboxTagsLoadState(false);
                         if(data){
@@ -452,11 +441,12 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                         // Handle errors, if needed
                     });
             }, 500);
+            setComboboxTagsTimeout(timeout);
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxTagsAbort) {
-                    comboboxTagsAbort.abort();
+                if (comboboxTagsAbortController) {
+                    comboboxTagsAbortController.abort();
                 }
             };
         }
@@ -474,6 +464,10 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                 // Cancel previous request
                 if(formDialogAbortController instanceof AbortController){
                     formDialogAbortController.abort();
+                }
+                // Abort previous request
+                if(recordFetchAbortController instanceof AbortController){
+                    recordFetchAbortController.abort();
                 }
                 
                 // Handle when record dialog is opened
@@ -593,10 +587,11 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
         // Make request call
         axios.post(actionRoute, formData, {
-            cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-            })
+            // cancelToken: new axios.CancelToken(function executor(c) {
+            //     // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+            //     abortController.abort = c;
+            // })
+            signal: abortController.signal
         }).then((response) => {
             if (response.status === 200) {
                 const responseJson = response.data;
@@ -673,35 +668,26 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     // Document Ready
     const [recordFetchAbortController, setRecordFetchAbortController] = useState<AbortController | null>(null);
     const fetchRecordData = async (uuid: string, action: string = 'detail') => {
-        // Cancel previous request
-        if(recordFetchAbortController instanceof AbortController){
-            recordFetchAbortController.abort();
-        }
-
-        // Create a new AbortController
         const abortController = new AbortController();
-        // Store the AbortController in state
         setRecordFetchAbortController(abortController);
-        
+
         // Fetch
         try {
             const response = await axios.get(`${route('api.record.v1.show', uuid)}?action=${action}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: abortController.signal
             });
         
+            setRecordFetchAbortController(null);
             // Use response.data instead of req.json() to get the JSON data
             let jsonResponse = response.data;
 
             return jsonResponse.result.data;
         } catch (error) {
             if (axios.isCancel(error)) {
-                // Handle the cancellation here if needed
+                // // Handle the cancellation here if needed
                 // console.log('Request was canceled', error);
             } else {
-                // Handle other errors
+                // // Handle other errors
                 // console.error('Error:', error);
             }
         }
@@ -713,6 +699,10 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         const editAction = (event: any) => {
             if(event?.detail?.uuid){
                 let uuid = event.detail.uuid;
+                // Abort previous request
+                if(recordFetchAbortController instanceof AbortController){
+                    recordFetchAbortController.abort();
+                }
 
                 // Fetch Data
                 fetchRecordData(uuid, 'edit').then((data: RecordItem) => {
@@ -791,10 +781,11 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         // Fetch
         try {
             const response = await axios.get(`${route('api.planned-payment.v1.show', uuid)}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                // cancelToken: new axios.CancelToken(function executor(c) {
+                //     // Create a CancelToken using Axios, which is equivalent to AbortController.signal
+                //     abortController.abort = c;
+                // })
+                signal: abortController.signal
             });
         
             // Use response.data instead of req.json() to get the JSON data

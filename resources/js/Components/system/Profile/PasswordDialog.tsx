@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import ErrorMessage from "@/Components/forms/ErrorMessage";
 
 // Shadcn
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/Components/ui/command";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/Components/ui/drawer";
 import { Button } from "@/Components/ui/button";
@@ -98,10 +97,7 @@ export default function ProfilePasswordDialog({ auth, openState, setOpenState }:
         let actionRoute = route('api.profile.v1.update.password', auth.user.uuid);
         // Make request call
         axios.post(actionRoute, formData, {
-            cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-            })
+            signal: abortController.signal
         }).then((response) => {
             if (response.status === 200) {
                 const responseJson = response.data;
@@ -159,13 +155,22 @@ export default function ProfilePasswordDialog({ auth, openState, setOpenState }:
 
     // Dialog Action
     useEffect(() => {
-        if(openState){
-            document.dispatchEvent(new CustomEvent('dialog.profile-password.shown', { bubbles: true }));
-        } else {
-            resetFormDialog();
+        if(!isFirstRender){
+            setTimeout(() => {
+                // Cancel previous request
+                if(formDialogAbortController instanceof AbortController){
+                    formDialogAbortController.abort();
+                }
 
-            // Announce Dialog Global Event
-            document.dispatchEvent(new CustomEvent('dialog.profile-password.hidden', { bubbles: true }));
+                if(openState){
+                    document.dispatchEvent(new CustomEvent('dialog.profile-password.shown', { bubbles: true }));
+                } else {
+                    resetFormDialog();
+        
+                    // Announce Dialog Global Event
+                    document.dispatchEvent(new CustomEvent('dialog.profile-password.hidden', { bubbles: true }));
+                }
+            }, 100);
         }
     }, [openState]);
 

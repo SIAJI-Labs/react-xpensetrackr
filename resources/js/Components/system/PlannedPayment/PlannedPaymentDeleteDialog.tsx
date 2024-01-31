@@ -1,8 +1,9 @@
-// Shadcn
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/Components/ui/alert-dialog';
 import { useEffect, useState } from 'react';
-import { Button } from '@/Components/ui/button';
 import axios, { AxiosError } from 'axios';
+
+// Shadcn
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/Components/ui/alert-dialog';
+import { Button } from '@/Components/ui/button';
 
 type dialogProps = {
     openState?: boolean;
@@ -32,6 +33,7 @@ export default function PlannedPaymentDeleteDialog({ openState, setOpenState }: 
                 }
             }
         }
+        
         window.addEventListener('planned-payment.delete-action', handleDeleteAction);
         // Remove the event listener when the component unmounts
         return () => {
@@ -65,10 +67,7 @@ export default function PlannedPaymentDeleteDialog({ openState, setOpenState }: 
                 uuid: plannedUuid,
                 action: plannedAction
             }), formData, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: abortController.signal
             }).then((response) => {
                 if (response.status === 200) {
                     const responseJson = response.data;

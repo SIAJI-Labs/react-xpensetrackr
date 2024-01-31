@@ -7,9 +7,7 @@ import axios from "axios";
 // Shadcn
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/Components/ui/drawer";
-import { ScrollArea } from "@/Components/ui/scroll-area";
 import { Button } from "@/Components/ui/button";
-import { toast } from "sonner";
 import { Input } from "@/Components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider } from "@/Components/ui/tooltip";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
@@ -52,10 +50,7 @@ export default function WalletSharePromptDialog({ openState, setOpenState }: dia
         // Fetch
         try {
             const response = await axios.get(`${route('api.wallet-share.v1.show', uuid)}?action=${action}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: abortController.signal
             });
         
             // Use response.data instead of req.json() to get the JSON data
@@ -64,11 +59,11 @@ export default function WalletSharePromptDialog({ openState, setOpenState }: dia
             return jsonResponse.result.data;
         } catch (error) {
             if (axios.isCancel(error)) {
-                // Handle the cancellation here if needed
-                console.log('Request was canceled', error);
+                // // Handle the cancellation here if needed
+                // console.log('Request was canceled', error);
             } else {
-                // Handle other errors
-                console.error('Error:', error);
+                // // Handle other errors
+                // console.error('Error:', error);
             }
         }
 

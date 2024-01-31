@@ -17,7 +17,8 @@ import { Calendar as CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import ErrorMessage from '@/Components/forms/ErrorMessage';
 
 // Shadcn Component
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/Components/ui/drawer';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/Components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { ScrollArea } from '@/Components/ui/scroll-area';
@@ -27,7 +28,6 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { toast } from 'sonner';
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/Components/ui/drawer';
 import { RemoveScroll } from 'react-remove-scroll';
 
 type dialogProps = {
@@ -128,13 +128,13 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     useEffect(() => {
         clearTimeout(comboboxCategoryTimeout);
 
+        // Abort previous request
+        if(comboboxCategoryAbortController instanceof AbortController){
+            comboboxCategoryAbortController.abort();
+        }
+
         if(comboboxCategoryOpenState){
             let timeout = setTimeout(() => {
-                // Abort previous request
-                if(comboboxCategoryAbortController instanceof AbortController){
-                    comboboxCategoryAbortController.abort();
-                }
-
                 fetchCategoryList(comboboxCategoryInput)
                     .then((data: string[] = []) => {
                         setComboboxCategoryLoadState(false);
@@ -147,13 +147,6 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                     });
             }, 500);
             setComboboxCategoryTimeout(timeout);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxCategoryAbortController) {
-                    comboboxCategoryAbortController.abort();
-                }
-            };
         }
     }, [comboboxCategoryInput, comboboxCategoryOpenState]);
     useEffect(() => {
@@ -227,13 +220,13 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     useEffect(() => {
         clearTimeout(comboboxFromWalletTimeout);
 
+        // Abort previous request
+        if(comboboxFromWalletAbortController instanceof AbortController){
+            comboboxFromWalletAbortController.abort();
+        }
+
         if(comboboxFromWalletOpenState){
             let timeout = setTimeout(() => {
-                // Abort previous request
-                if(comboboxFromWalletAbortController instanceof AbortController){
-                    comboboxFromWalletAbortController.abort();
-                }
-
                 fetchFromWalletList(comboboxFromWalletInput)
                     .then((data: string[] = []) => {
                         setComboboxFromWalletLoadState(false);
@@ -246,13 +239,6 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                     });
             }, 500);
             setComboboxFromWalletTimeout(timeout);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxFromWalletAbortController) {
-                    comboboxFromWalletAbortController.abort();
-                }
-            };
         }
     }, [comboboxFromWalletInput, comboboxFromWalletOpenState]);
     useEffect(() => {
@@ -423,13 +409,13 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     useEffect(() => {
         clearTimeout(comboboxTagsTimeout);
 
+        // Abort previous request
+        if(comboboxTagsAbortController instanceof AbortController){
+            comboboxTagsAbortController.abort();
+        }
+
         if(comboboxTagsOpenState){
             let timeout = setTimeout(() => {
-                // Abort previous request
-                if(comboboxTagsAbortController instanceof AbortController){
-                    comboboxTagsAbortController.abort();
-                }
-
                 fetchTagsList(comboboxTagsInput)
                     .then((data: string[] = []) => {
                         setComboboxTagsLoadState(false);
@@ -442,13 +428,6 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                     });
             }, 500);
             setComboboxTagsTimeout(timeout);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxTagsAbortController) {
-                    comboboxTagsAbortController.abort();
-                }
-            };
         }
     }, [comboboxTagsInput, comboboxTagsOpenState]);
     useEffect(() => {
@@ -461,13 +440,26 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
             setTimeout(() => {
                 // Reset error bag
                 setErrorFormDialog({});
-                // Cancel previous request
+                
+                // Abort Dialog request
                 if(formDialogAbortController instanceof AbortController){
                     formDialogAbortController.abort();
                 }
-                // Abort previous request
+                // Abort Detail request
                 if(recordFetchAbortController instanceof AbortController){
                     recordFetchAbortController.abort();
+                }
+                // Abort Category List request
+                if(comboboxCategoryAbortController instanceof AbortController){
+                    comboboxCategoryAbortController.abort();
+                }
+                // Abort Wallet List request
+                if(comboboxFromWalletAbortController instanceof AbortController){
+                    comboboxFromWalletAbortController.abort();
+                }
+                // Abort Tags List request
+                if(comboboxTagsAbortController instanceof AbortController){
+                    comboboxTagsAbortController.abort();
                 }
                 
                 // Handle when record dialog is opened
@@ -534,7 +526,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
     const [formDialogAbortController, setFormDialogAbortController] = useState<AbortController | null>(null);
-    const handleSubmitDialog: FormEventHandler = (e) => {
+    const handleFormSubmit: FormEventHandler = (e) => {
         e.preventDefault();
         // Update submit button to loading state
         let submitBtn = document.getElementById('record-dialogSubmit');
@@ -587,10 +579,6 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
         // Make request call
         axios.post(actionRoute, formData, {
-            // cancelToken: new axios.CancelToken(function executor(c) {
-            //     // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-            //     abortController.abort = c;
-            // })
             signal: abortController.signal
         }).then((response) => {
             if (response.status === 200) {
@@ -781,10 +769,6 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         // Fetch
         try {
             const response = await axios.get(`${route('api.planned-payment.v1.show', uuid)}`, {
-                // cancelToken: new axios.CancelToken(function executor(c) {
-                //     // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                //     abortController.abort = c;
-                // })
                 signal: abortController.signal
             });
         
@@ -876,7 +860,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
     const formContent = <>
         <RemoveScroll className={ `overflow-auto ${isDesktop ? `max-h-screen max-lg:max-h-[50vh] lg:max-h-[65vh] border-b border-t` : ` border-t`}` }>
-            <form onSubmit={handleSubmitDialog} id={ `record-dialogForms` } className={ ` !overflow-hidden ${isDesktop ? `` : ``}` }>
+            <form onSubmit={handleFormSubmit} id={ `record-dialogForms` } className={ ` !overflow-hidden ${isDesktop ? `` : ``}` }>
                 <div className={ ` flex gap-0 lg:gap-6 flex-col lg:flex-row px-6` }>
                     {/* Left */}
                     <div className={ `py-6 w-full lg:w-3/5` }>
@@ -1135,7 +1119,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                 thousandsSeparator={ `,` }
                                 scale={ 2 }
                                 radix={ `.` }
-                                onBlur={ (element) => {
+                                onBlur={ (element: any) => {
                                     let value = (element.target as HTMLInputElement).value;
                                     value = value.replaceAll(',', '');
 
@@ -1165,7 +1149,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                             thousandsSeparator={ `,` }
                                             scale={ 2 }
                                             radix={ `.` }
-                                            onBlur={ (element) => {
+                                            onBlur={ (element: any) => {
                                                 let value = (element.target as HTMLInputElement).value;
                                                 value = value.replaceAll(',', '');
 

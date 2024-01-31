@@ -6,7 +6,6 @@ import { useMediaQuery } from "usehooks-ts";
 
 // Plugins
 import { RemoveScroll } from "react-remove-scroll";
-import { IMaskMixin } from "react-imask";
 
 // Partials
 import ErrorMessage from "@/Components/forms/ErrorMessage";
@@ -87,10 +86,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
 
         // Make request call
         axios.post(actionRoute, formData, {
-            cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-            })
+            signal: abortController.signal
         }).then((response) => {
             if (response.status === 200) {
                 const responseJson = response.data;
@@ -152,14 +148,27 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
 
     // Dialog Action
     useEffect(() => {
-        if(openState){
-            document.dispatchEvent(new CustomEvent('dialog.tags.shown', { bubbles: true }));
-        } else {
-            resetFormDialog();
-            setKeepOpenTagsDialog(false);
-
-            // Announce Dialog Global Event
-            document.dispatchEvent(new CustomEvent('dialog.tags.hidden', { bubbles: true }));
+        if(!isFirstRender){
+            setTimeout(() => {
+                // Cancel previous request
+                if(formDialogAbortController instanceof AbortController){
+                    formDialogAbortController.abort();
+                }
+                // Abort previous request
+                if(tagsFetchAbortController instanceof AbortController){
+                    tagsFetchAbortController.abort();
+                }
+                
+                if(openState){
+                    document.dispatchEvent(new CustomEvent('dialog.tags.shown', { bubbles: true }));
+                } else {
+                    resetFormDialog();
+                    setKeepOpenTagsDialog(false);
+            
+                    // Announce Dialog Global Event
+                    document.dispatchEvent(new CustomEvent('dialog.tags.hidden', { bubbles: true }));
+                }
+            }, 100);
         }
     }, [openState]);
 
@@ -179,10 +188,7 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
         // Fetch
         try {
             const response = await axios.get(`${route('api.tags.v1.show', uuid)}?action=${action}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: abortController.signal
             });
         
             // Use response.data instead of req.json() to get the JSON data
@@ -191,11 +197,11 @@ export default function TagsDialog({ openState, setOpenState }: dialogProps){
             return jsonResponse.result.data;
         } catch (error) {
             if (axios.isCancel(error)) {
-                // Handle the cancellation here if needed
-                console.log('Request was canceled', error);
+                // // Handle the cancellation here if needed
+                // console.log('Request was canceled', error);
             } else {
-                // Handle other errors
-                console.error('Error:', error);
+                // // Handle other errors
+                // console.error('Error:', error);
             }
         }
 

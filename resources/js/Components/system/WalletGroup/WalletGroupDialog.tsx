@@ -39,14 +39,18 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
     const [keepOpenDialog, setKeepOpenWalletDialog] = useState<boolean>(false);
 
     // Combobox - Wallet
-    let comboboxWalletTimeout: any;
+    const [comboboxWalletTimeout, setComboboxWalletTimeout] = useState<any>();
     const [comboboxWalletOpenState, setComboboxWalletOpenState] = useState<boolean>(false);
     const [comboboxWalletLabel, setComboboxWalletLabel] = useState<string[] | any[]>([]);
     const [comboboxWalletList, setComboboxWalletList] = useState<string[] | any>([]);
     const [comboboxWalletInput, setComboboxWalletInput] = useState<string>("");
     const [comboboxWalletLoadState, setComboboxWalletLoadState] = useState<boolean>(false);
-    const [comboboxWalletAbort, setComboboxWalletAbort] = useState<AbortController | null>(null);
-    const fetchWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const [comboboxWalletAbortController, setComboboxWalletAbortController] = useState<AbortController | null>(null);
+    const fetchWalletList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxWalletAbortController(abortController);
+
+        // Handle loading state
         setComboboxWalletLoadState(true);
 
         try {
@@ -61,48 +65,42 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
 
             try {
                 const response = await axios.get(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxWalletAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxWalletList;
     }
     useEffect(() => {
         clearTimeout(comboboxWalletTimeout);
-        setComboboxWalletList([]);
+
+        // Abort previous request
+        if(comboboxWalletAbortController instanceof AbortController){
+            comboboxWalletAbortController.abort();
+        }
 
         if(comboboxWalletOpenState){
-            if (comboboxWalletAbort) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxWalletAbort.abort();
-            }
-
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxWalletAbort(newAbortController);
-
-            comboboxWalletTimeout = setTimeout(() => {
-                fetchWalletList(comboboxWalletInput, newAbortController)
+            let timeout = setTimeout(() => {
+                fetchWalletList(comboboxWalletInput)
                     .then((data: string[] = []) => {
                         setComboboxWalletLoadState(false);
                         if(data){
@@ -113,15 +111,12 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
                         // Handle errors, if needed
                     });
             }, 500);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxWalletAbort) {
-                    comboboxWalletAbort.abort();
-                }
-            };
+            setComboboxWalletTimeout(timeout);
         }
     }, [comboboxWalletInput, comboboxWalletOpenState]);
+    useEffect(() => {
+        setComboboxWalletInput('');
+    }, [comboboxWalletOpenState]);
 
     // Wallet Dialog - Forms
     const resetFormDialog = () => {
@@ -179,10 +174,7 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
 
         // Make request call
         axios.post(actionRoute, formData, {
-            cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-            })
+            signal: abortController.signal
         }).then((response) => {
             if (response.status === 200) {
                 const responseJson = response.data;
@@ -244,14 +236,34 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
 
     // Dialog Action
     useEffect(() => {
-        if(openState){
-            document.dispatchEvent(new CustomEvent('dialog.wallet-group.shown', { bubbles: true }));
-        } else {
-            resetFormDialog();
-            setKeepOpenWalletDialog(false);
+        if(!isFirstRender){
+            setTimeout(() => {
+                // Reset error bag
+                setErrorFormDialog({});
 
-            // Announce Dialog Global Event
-            document.dispatchEvent(new CustomEvent('dialog.wallet-group.hidden', { bubbles: true }))
+                // Abort Dialog request
+                if(formDialogAbortController instanceof AbortController){
+                    formDialogAbortController.abort();
+                }
+                // Abort Detail request
+                if(walletGroupFetchAbortController instanceof AbortController){
+                    walletGroupFetchAbortController.abort();
+                }
+                // Abort Wallet List request
+                if(comboboxWalletAbortController instanceof AbortController){
+                    comboboxWalletAbortController.abort();
+                }
+
+                if(openState){
+                    document.dispatchEvent(new CustomEvent('dialog.wallet-group.shown', { bubbles: true }));
+                } else {
+                    resetFormDialog();
+                    setKeepOpenWalletDialog(false);
+
+                    // Announce Dialog Global Event
+                    document.dispatchEvent(new CustomEvent('dialog.wallet-group.hidden', { bubbles: true }))
+                }
+            }, 100);
         }
     }, [openState]);
 
@@ -271,10 +283,7 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
         // Fetch
         try {
             const response = await axios.get(`${route('api.wallet-group.v1.show', uuid)}?action=${action}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: abortController.signal
             });
         
             // Use response.data instead of req.json() to get the JSON data
@@ -283,11 +292,11 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
             return jsonResponse.result.data;
         } catch (error) {
             if (axios.isCancel(error)) {
-                // Handle the cancellation here if needed
-                console.log('Request was canceled', error);
+                // // Handle the cancellation here if needed
+                // console.log('Request was canceled', error);
             } else {
-                // Handle other errors
-                console.error('Error:', error);
+                // // Handle other errors
+                // console.error('Error:', error);
             }
         }
 
@@ -362,7 +371,8 @@ export default function WalletGroupDialog({ openState, setOpenState }: dialogPro
                                 </PopoverTrigger>
                                 <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                     <Command shouldFilter={ false }>
-                                        <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxWalletInput} onValueChange={setComboboxWalletInput}/>
+                                        <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0 ${comboboxWalletLoadState ? 'is-loading' : ''}` } value={comboboxWalletInput} onValueChange={setComboboxWalletInput}/>
+                                        
                                         <ScrollArea className="p-0">
                                             <div className={ `max-h-[10rem]` }>
                                                 <CommandEmpty>{comboboxWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>

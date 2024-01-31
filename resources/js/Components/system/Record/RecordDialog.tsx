@@ -17,7 +17,8 @@ import { Calendar as CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import ErrorMessage from '@/Components/forms/ErrorMessage';
 
 // Shadcn Component
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/Components/ui/drawer';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/Components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { ScrollArea } from '@/Components/ui/scroll-area';
@@ -27,7 +28,6 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { toast } from 'sonner';
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/Components/ui/drawer';
 import { RemoveScroll } from 'react-remove-scroll';
 
 type dialogProps = {
@@ -73,15 +73,18 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     const [calendarOpenState, setCalendarOpenState] = useState<boolean>(false);
 
     // Combobox - Category
-    let comboboxCategoryTimeout: any;
+    const [comboboxCategoryTimeout, setComboboxCategoryTimeout] = useState<any>();
     const [comboboxCategoryOpenState, setComboboxCategoryOpenState] = useState<boolean>(false);
     const [comboboxCategoryLabel, setComboboxCategoryLabel] = useState<string>("Select an option");
     const [comboboxCategoryList, setComboboxCategoryList] = useState<string[] | any>([]);
     const [comboboxCategoryInput, setComboboxCategoryInput] = useState<string>("");
     const [comboboxCategoryLoadState, setComboboxCategoryLoadState] = useState<boolean>(false);
     const [comboboxCategoryAbortController, setComboboxCategoryAbortController] = useState<AbortController | null>(null);
-    const fetchCategoryList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
-        // Fetch Category Item List
+    const fetchCategoryList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxCategoryAbortController(abortController);
+
+        // Handle loading state
         setComboboxCategoryLoadState(true);
 
         try {
@@ -96,50 +99,43 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
             try {
                 const response = await axios.get(`${route('api.category.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController?.signal
                 });
             
+                setComboboxCategoryAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let jsonResponse = response.data;
 
                 return jsonResponse.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxCategoryList;
     }
     useEffect(() => {
-        // Handle Category Item
         clearTimeout(comboboxCategoryTimeout);
-        // setComboboxCategoryList([]);
+
+        // Abort previous request
+        if(comboboxCategoryAbortController instanceof AbortController){
+            comboboxCategoryAbortController.abort();
+        }
 
         if(comboboxCategoryOpenState){
-            if (comboboxCategoryAbortController) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxCategoryAbortController.abort();
-            }
-
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxCategoryAbortController(newAbortController);
-
-            comboboxCategoryTimeout = setTimeout(() => {
-                fetchCategoryList(comboboxCategoryInput, newAbortController)
+            let timeout = setTimeout(() => {
+                fetchCategoryList(comboboxCategoryInput)
                     .then((data: string[] = []) => {
                         setComboboxCategoryLoadState(false);
                         if(data){
@@ -150,13 +146,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                         // Handle errors, if needed
                     });
             }, 500);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxCategoryAbortController) {
-                    comboboxCategoryAbortController.abort();
-                }
-            };
+            setComboboxCategoryTimeout(timeout);
         }
     }, [comboboxCategoryInput, comboboxCategoryOpenState]);
     useEffect(() => {
@@ -176,14 +166,18 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }, [formCategory]);
 
     // Combobox - From Wallet
-    let comboboxFromWalletTimeout: any;
+    const [comboboxFromWalletTimeout, setComboboxFromWalletTimeout] = useState<any>();
     const [comboboxFromWalletOpenState, setComboboxFromWalletOpenState] = useState<boolean>(false);
     const [comboboxFromWalletLabel, setComboboxFromWalletLabel] = useState<string>("Select an option");
     const [comboboxFromWalletList, setComboboxFromWalletList] = useState<string[] | any>([]);
     const [comboboxFromWalletInput, setComboboxFromWalletInput] = useState<string>("");
     const [comboboxFromWalletLoadState, setComboboxFromWalletLoadState] = useState<boolean>(false);
     const [comboboxFromWalletAbortController, setComboboxFromWalletAbortController] = useState<AbortController | null>(null);
-    const fetchFromWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const fetchFromWalletList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxFromWalletAbortController(abortController);
+
+        // Handle loading state
         setComboboxFromWalletLoadState(true);
 
         try {
@@ -198,48 +192,42 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
             try {
                 const response = await axios.get(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxFromWalletAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxFromWalletList;
     }
     useEffect(() => {
         clearTimeout(comboboxFromWalletTimeout);
-        // setComboboxFromWalletList([]);
+
+        // Abort previous request
+        if(comboboxFromWalletAbortController instanceof AbortController){
+            comboboxFromWalletAbortController.abort();
+        }
 
         if(comboboxFromWalletOpenState){
-            if (comboboxFromWalletAbortController) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxFromWalletAbortController.abort();
-            }
-
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxFromWalletAbortController(newAbortController);
-
-            comboboxFromWalletTimeout = setTimeout(() => {
-                fetchFromWalletList(comboboxFromWalletInput, newAbortController)
+            let timeout = setTimeout(() => {
+                fetchFromWalletList(comboboxFromWalletInput)
                     .then((data: string[] = []) => {
                         setComboboxFromWalletLoadState(false);
                         if(data){
@@ -249,14 +237,8 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                     .catch((error) => {
                         // Handle errors, if needed
                     });
-            }, 0);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxFromWalletAbortController) {
-                    comboboxFromWalletAbortController.abort();
-                }
-            };
+            }, 500);
+            setComboboxFromWalletTimeout(timeout);
         }
     }, [comboboxFromWalletInput, comboboxFromWalletOpenState]);
     useEffect(() => {
@@ -275,14 +257,18 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }, [formFromWallet]);
 
     // Combobox - To Wallet
-    let comboboxToWalletTimeout: any;
+    const [comboboxToWalletTimeout, setComboboxToWalletTimeout] = useState<any>();
     const [comboboxToWalletOpenState, setComboboxToWalletOpenState] = useState<boolean>(false);
     const [comboboxToWalletLabel, setComboboxToWalletLabel] = useState<string>("Select an option");
     // const [comboboxToWalletList, setComboboxToWalletList] = useState<string[] | any>([]);
     const [comboboxToWalletInput, setComboboxToWalletInput] = useState<string>("");
     const [comboboxToWalletLoadState, setComboboxToWalletLoadState] = useState<boolean>(false);
     const [comboboxToWalletAbort, setComboboxToWalletAbort] = useState<AbortController | null>(null);
-    const fetchToWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const fetchToWalletList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxToWalletAbort(abortController);
+
+        // Handle loading state
         setComboboxToWalletLoadState(true);
 
         try {
@@ -297,53 +283,45 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
             try {
                 const response = await axios.get(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxToWalletAbort(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxFromWalletList;
     }
     useEffect(() => {
         clearTimeout(comboboxToWalletTimeout);
-        // setComboboxToWalletList([]);
-        // setComboboxFromWalletList([]);
 
         if(comboboxToWalletOpenState){
-            if (comboboxToWalletAbort) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxToWalletAbort.abort();
-            }
+            let timeout = setTimeout(() => {
+                // Abort previous request
+                if(comboboxToWalletAbort instanceof AbortController){
+                    comboboxToWalletAbort.abort();
+                }
 
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxToWalletAbort(newAbortController);
-
-            comboboxToWalletTimeout = setTimeout(() => {
-                fetchToWalletList(comboboxToWalletInput, newAbortController)
+                fetchToWalletList(comboboxToWalletInput)
                     .then((data: string[] = []) => {
                         setComboboxToWalletLoadState(false);
                         if(data){
-                            // setComboboxToWalletList(data);
                             setComboboxFromWalletList(data);
                         }
                     })
@@ -351,6 +329,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                         // Handle errors, if needed
                     });
             }, 500);
+            setComboboxToWalletTimeout(timeout);
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
@@ -376,14 +355,18 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }, [formToWallet]);
 
     // Combobox - Tags
-    let comboboxTagsTimeout: any;
+    const [comboboxTagsTimeout, setComboboxTagsTimeout] = useState<any>();
     const [comboboxTagsOpenState, setComboboxTagsOpenState] = useState<boolean>(false);
     const [comboboxTagsLabel, setComboboxTagsLabel] = useState<string[] | any[]>([]);
     const [comboboxTagsList, setComboboxTagsList] = useState<string[] | any>([]);
     const [comboboxTagsInput, setComboboxTagsInput] = useState<string>("");
     const [comboboxTagsLoadState, setComboboxTagsLoadState] = useState<boolean>(false);
-    const [comboboxTagsAbort, setComboboxTagsAbort] = useState<AbortController | null>(null);
-    const fetchTagsList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const [comboboxTagsAbortController, setComboboxTagsAbortController] = useState<AbortController | null>(null);
+    const fetchTagsList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxTagsAbortController(abortController);
+
+        // Handle loading state
         setComboboxTagsLoadState(true);
 
         try {
@@ -398,48 +381,42 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
             try {
                 const response = await axios.get(`${route('api.tags.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxTagsAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxTagsList;
     }
     useEffect(() => {
         clearTimeout(comboboxTagsTimeout);
-        // setComboboxTagsList([]);
+
+        // Abort previous request
+        if(comboboxTagsAbortController instanceof AbortController){
+            comboboxTagsAbortController.abort();
+        }
 
         if(comboboxTagsOpenState){
-            if (comboboxTagsAbort) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxTagsAbort.abort();
-            }
-
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxTagsAbort(newAbortController);
-
-            comboboxTagsTimeout = setTimeout(() => {
-                fetchTagsList(comboboxTagsInput, newAbortController)
+            let timeout = setTimeout(() => {
+                fetchTagsList(comboboxTagsInput)
                     .then((data: string[] = []) => {
                         setComboboxTagsLoadState(false);
                         if(data){
@@ -450,13 +427,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                         // Handle errors, if needed
                     });
             }, 500);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxTagsAbort) {
-                    comboboxTagsAbort.abort();
-                }
-            };
+            setComboboxTagsTimeout(timeout);
         }
     }, [comboboxTagsInput, comboboxTagsOpenState]);
     useEffect(() => {
@@ -469,9 +440,26 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
             setTimeout(() => {
                 // Reset error bag
                 setErrorFormDialog({});
-                // Cancel previous request
+                
+                // Abort Dialog request
                 if(formDialogAbortController instanceof AbortController){
                     formDialogAbortController.abort();
+                }
+                // Abort Detail request
+                if(recordFetchAbortController instanceof AbortController){
+                    recordFetchAbortController.abort();
+                }
+                // Abort Category List request
+                if(comboboxCategoryAbortController instanceof AbortController){
+                    comboboxCategoryAbortController.abort();
+                }
+                // Abort Wallet List request
+                if(comboboxFromWalletAbortController instanceof AbortController){
+                    comboboxFromWalletAbortController.abort();
+                }
+                // Abort Tags List request
+                if(comboboxTagsAbortController instanceof AbortController){
+                    comboboxTagsAbortController.abort();
                 }
                 
                 // Handle when record dialog is opened
@@ -537,8 +525,8 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     }
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
-    const [formDialogAbortController, setAbortControllerRecordDialog] = useState<AbortController | null>(null);
-    const handleSubmitDialog: FormEventHandler = (e) => {
+    const [formDialogAbortController, setFormDialogAbortController] = useState<AbortController | null>(null);
+    const handleFormSubmit: FormEventHandler = (e) => {
         e.preventDefault();
         // Update submit button to loading state
         let submitBtn = document.getElementById('record-dialogSubmit');
@@ -554,7 +542,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         // Create a new AbortController
         const abortController = new AbortController();
         // Store the AbortController in state
-        setAbortControllerRecordDialog(abortController);
+        setFormDialogAbortController(abortController);
 
         // Build Form Data
         let formData = new FormData();
@@ -591,10 +579,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
         // Make request call
         axios.post(actionRoute, formData, {
-            cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-            })
+            signal: abortController.signal
         }).then((response) => {
             if (response.status === 200) {
                 const responseJson = response.data;
@@ -641,7 +626,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
             }, 100);
         }).finally(() => {
             // Clear the AbortController from state
-            setAbortControllerRecordDialog(null);
+            setFormDialogAbortController(null);
         
             // Update to original state
             let submitBtn = document.getElementById('record-dialogSubmit');
@@ -671,36 +656,27 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
     // Document Ready
     const [recordFetchAbortController, setRecordFetchAbortController] = useState<AbortController | null>(null);
     const fetchRecordData = async (uuid: string, action: string = 'detail') => {
-        // Cancel previous request
-        if(recordFetchAbortController instanceof AbortController){
-            recordFetchAbortController.abort();
-        }
-
-        // Create a new AbortController
         const abortController = new AbortController();
-        // Store the AbortController in state
         setRecordFetchAbortController(abortController);
-        
+
         // Fetch
         try {
             const response = await axios.get(`${route('api.record.v1.show', uuid)}?action=${action}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: abortController.signal
             });
         
+            setRecordFetchAbortController(null);
             // Use response.data instead of req.json() to get the JSON data
             let jsonResponse = response.data;
 
             return jsonResponse.result.data;
         } catch (error) {
             if (axios.isCancel(error)) {
-                // Handle the cancellation here if needed
-                console.log('Request was canceled', error);
+                // // Handle the cancellation here if needed
+                // console.log('Request was canceled', error);
             } else {
-                // Handle other errors
-                console.error('Error:', error);
+                // // Handle other errors
+                // console.error('Error:', error);
             }
         }
 
@@ -711,6 +687,10 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         const editAction = (event: any) => {
             if(event?.detail?.uuid){
                 let uuid = event.detail.uuid;
+                // Abort previous request
+                if(recordFetchAbortController instanceof AbortController){
+                    recordFetchAbortController.abort();
+                }
 
                 // Fetch Data
                 fetchRecordData(uuid, 'edit').then((data: RecordItem) => {
@@ -789,10 +769,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         // Fetch
         try {
             const response = await axios.get(`${route('api.planned-payment.v1.show', uuid)}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: abortController.signal
             });
         
             // Use response.data instead of req.json() to get the JSON data
@@ -802,10 +779,10 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
         } catch (error) {
             if (axios.isCancel(error)) {
                 // Handle the cancellation here if needed
-                console.log('Request was canceled', error);
+                // console.log('Request was canceled', error);
             } else {
                 // Handle other errors
-                console.error('Error:', error);
+                // console.error('Error:', error);
             }
         }
 
@@ -883,7 +860,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
 
     const formContent = <>
         <RemoveScroll className={ `overflow-auto ${isDesktop ? `max-h-screen max-lg:max-h-[50vh] lg:max-h-[65vh] border-b border-t` : ` border-t`}` }>
-            <form onSubmit={handleSubmitDialog} id={ `record-dialogForms` } className={ ` !overflow-hidden ${isDesktop ? `` : ``}` }>
+            <form onSubmit={handleFormSubmit} id={ `record-dialogForms` } className={ ` !overflow-hidden ${isDesktop ? `` : ``}` }>
                 <div className={ ` flex gap-0 lg:gap-6 flex-col lg:flex-row px-6` }>
                     {/* Left */}
                     <div className={ `py-6 w-full lg:w-3/5` }>
@@ -947,46 +924,29 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                     </PopoverTrigger>
                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                         <Command shouldFilter={ false }>
-                                            <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
+                                            <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0 ${comboboxCategoryLoadState ? 'is-loading' : ''}` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
                                             <ScrollArea className="p-0">
                                                 <div className={ `max-h-[10rem]` }>
                                                     <CommandEmpty>{comboboxCategoryLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
                                                     <CommandGroup>
-                                                            {(() => {
-                                                                if(comboboxCategoryLoadState){
-                                                                    return <>
-                                                                        <CommandItem
-                                                                            value=''
-                                                                            key={ `category_loading-state` }
-                                                                            disabled={ true }
-                                                                        >
-                                                                            <Check
-                                                                                className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                            />
-                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                        </CommandItem>
-                                                                    </>;
-                                                                }
+                                                            
+                                                        {comboboxCategoryList.map((options: CategoryItem) => (
+                                                            <CommandItem
+                                                                value={options?.uuid}
+                                                                key={options?.uuid}
+                                                                onSelect={(currentValue) => {
+                                                                    setComboboxCategoryLabel(options.name);
+                                                                    setFormCategory(currentValue === formCategory ? "" : currentValue);
 
-                                                                return <></>;
-                                                            })()}
-                                                            {comboboxCategoryList.map((options: CategoryItem) => (
-                                                                <CommandItem
-                                                                    value={options?.uuid}
-                                                                    key={options?.uuid}
-                                                                    onSelect={(currentValue) => {
-                                                                        setComboboxCategoryLabel(options.name);
-                                                                        setFormCategory(currentValue === formCategory ? "" : currentValue);
-
-                                                                        setComboboxCategoryOpenState(false);
-                                                                    }}
-                                                                >
-                                                                    <Check
-                                                                        className={ `mr-2 h-4 w-4 ${formCategory === options?.uuid ? "opacity-100" : "opacity-0"}`}
-                                                                    />
-                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
-                                                                </CommandItem>
-                                                            ))}
+                                                                    setComboboxCategoryOpenState(false);
+                                                                }}
+                                                            >
+                                                                <Check
+                                                                    className={ `mr-2 h-4 w-4 ${formCategory === options?.uuid ? "opacity-100" : "opacity-0"}`}
+                                                                />
+                                                                <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>{ options?.name }</span>
+                                                            </CommandItem>
+                                                        ))}
                                                     </CommandGroup>
                                                 </div>
                                             </ScrollArea>
@@ -1016,29 +976,11 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                     </PopoverTrigger>
                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                         <Command shouldFilter={ false }>
-                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxFromWalletInput} onValueChange={setComboboxFromWalletInput}/>
+                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0 ${comboboxFromWalletLoadState ? `is-loading` : ``}` } value={comboboxFromWalletInput} onValueChange={setComboboxFromWalletInput}/>
                                             <ScrollArea className="p-0">
                                                 <div className={ `max-h-[10rem]` }>
                                                     <CommandEmpty>{comboboxFromWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                     <CommandGroup>
-                                                        {(() => {
-                                                            if(comboboxFromWalletLoadState){
-                                                                return <>
-                                                                    <CommandItem
-                                                                        value=''
-                                                                        key={ `from_wallet_loading-state` }
-                                                                        disabled={ true }
-                                                                    >
-                                                                        <Check
-                                                                            className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                        />
-                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                    </CommandItem>
-                                                                </>;
-                                                            }
-
-                                                            return <></>;
-                                                        })()}
                                                         {comboboxFromWalletList.map((options: WalletItem) => (
                                                             <CommandItem
                                                                 value={options?.uuid}
@@ -1104,13 +1046,13 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                         </Button>
                                                     </PopoverTrigger>
                                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
-                                                        <Command shouldFilter={ false }>
-                                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
+                                                        <Command shouldFilter={ false } className={ `bac-from_wallet` }>
+                                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0 ${comboboxToWalletLoadState ? `is-loading` : ``}` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
                                                             <ScrollArea className="p-0">
                                                                 <div className={ `max-h-[10rem]` }>
                                                                     <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                                     <CommandGroup>
-                                                                        {(() => {
+                                                                        {/* {(() => {
                                                                             if(comboboxToWalletLoadState){
                                                                                 return <>
                                                                                     <CommandItem
@@ -1127,7 +1069,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                                                             }
 
                                                                             return <></>;
-                                                                        })()}
+                                                                        })()} */}
                                                                         {/* {comboboxToWalletList.map((options: WalletItem) => ( */}
                                                                         {comboboxFromWalletList.map((options: WalletItem) => (
                                                                             <CommandItem
@@ -1177,7 +1119,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                 thousandsSeparator={ `,` }
                                 scale={ 2 }
                                 radix={ `.` }
-                                onBlur={ (element) => {
+                                onBlur={ (element: any) => {
                                     let value = (element.target as HTMLInputElement).value;
                                     value = value.replaceAll(',', '');
 
@@ -1207,7 +1149,7 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                             thousandsSeparator={ `,` }
                                             scale={ 2 }
                                             radix={ `.` }
-                                            onBlur={ (element) => {
+                                            onBlur={ (element: any) => {
                                                 let value = (element.target as HTMLInputElement).value;
                                                 value = value.replaceAll(',', '');
 
@@ -1436,29 +1378,11 @@ export default function RecordDialog({ openState, setOpenState }: dialogProps){
                                         </PopoverTrigger>
                                         <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                             <Command shouldFilter={ false }>
-                                                <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
+                                                <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0 ${comboboxTagsLoadState ? 'is-loading' : ''}` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
                                                 <ScrollArea className="p-0">
                                                     <div className={ `max-h-[10rem]` }>
                                                         <CommandEmpty>{comboboxTagsLoadState ? `Loading...` : `No tags found.`}</CommandEmpty>
                                                         <CommandGroup>
-                                                            {(() => {
-                                                                if(comboboxTagsLoadState){
-                                                                    return <>
-                                                                        <CommandItem
-                                                                            value=''
-                                                                            key={ `tags_loading-state` }
-                                                                            disabled={ true }
-                                                                        >
-                                                                            <Check
-                                                                                className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                            />
-                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                        </CommandItem>
-                                                                    </>;
-                                                                }
-
-                                                                return <></>;
-                                                            })()}
                                                             {comboboxTagsList.map((options: TagsItem) => (
                                                                 <CommandItem
                                                                     value={options?.uuid}

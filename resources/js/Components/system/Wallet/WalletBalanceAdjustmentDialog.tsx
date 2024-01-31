@@ -1,4 +1,4 @@
-import { FormEventHandler, useEffect, useState } from "react";
+import { FormEventHandler, useEffect, useRef, useState } from "react";
 import { useIsFirstRender } from "@/lib/utils";
 import axios, { AxiosError } from "axios";
 import { WalletItem } from "@/types";
@@ -11,9 +11,9 @@ import ErrorMessage from "@/Components/forms/ErrorMessage";
 
 // Shadcn
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
-import { Checkbox } from "@/Components/ui/checkbox";
 import { toast } from "sonner";
 
 type dialogProps = {
@@ -118,14 +118,10 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
 
         // Make request call
         axios.post(actionRoute, formData, {
-            cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-            })
+            signal: abortController.signal
         }).then((response) => {
             if (response.status === 200) {
                 const responseJson = response.data;
-                console.log(responseJson);
             
                 if (responseJson?.code === 200) {
                     // Close dialog
@@ -180,44 +176,51 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
 
     // Dialog Action
     useEffect(() => {
-        if(openState){
-            // Set focus to actual balance
+        if(!isFirstRender){
             setTimeout(() => {
-                if(document.getElementById('wallet_dialog-actual_balance') && document.getElementById('wallet_dialog-actual_balance')?.querySelector('input')){
-                    document.getElementById('wallet_dialog-actual_balance')?.querySelector('input')?.select();
-                    document.getElementById('wallet_dialog-actual_balance')?.querySelector('input')?.focus();
+                // Abort Dialog request
+                if(formDialogAbortController instanceof AbortController){
+                    formDialogAbortController.abort();
+                }
+                // Abort Detail request
+                if(walletFetchAbortController instanceof AbortController){
+                    walletFetchAbortController.abort();
+                }
+
+                if(openState){
+                    // Set focus to actual balance
+                    setTimeout(() => {
+                        if(document.getElementById('wallet_dialog-actual_balance') && document.getElementById('wallet_dialog-actual_balance')?.querySelector('input')){
+                            document.getElementById('wallet_dialog-actual_balance')?.querySelector('input')?.select();
+                            document.getElementById('wallet_dialog-actual_balance')?.querySelector('input')?.focus();
+                        }
+                    }, 100);
+        
+                    document.dispatchEvent(new CustomEvent('dialog.wallet.balance-adjustment.shown', { bubbles: true }));
+                } else {
+                    resetFormDialog(true);
+        
+                    // Announce Dialog Global Event
+                    document.dispatchEvent(new CustomEvent('dialog.wallet.balance-adjustment.hidden', { bubbles: true }));
                 }
             }, 100);
-
-            document.dispatchEvent(new CustomEvent('dialog.wallet.balance-adjustment.shown', { bubbles: true }));
-        } else {
-            resetFormDialog(true);
-
-            // Announce Dialog Global Event
-            document.dispatchEvent(new CustomEvent('dialog.wallet.balance-adjustment.hidden', { bubbles: true }));
         }
     }, [openState]);
 
+    // Create a ref to hold the AbortController instance
+    const walletFetchAbortController = useRef(new AbortController());
     // Document Ready
-    const [walletFetchAbortController, setWalletFetchAbortController] = useState<AbortController | null>(null);
     const fetchWalletData = async (uuid: string, action: string = 'detail') => {
         // Cancel previous request
-        if(walletFetchAbortController instanceof AbortController){
-            walletFetchAbortController.abort();
-        }
+        walletFetchAbortController.current.abort();
 
-        // Create a new AbortController
-        const abortController = new AbortController();
-        // Store the AbortController in state
-        setWalletFetchAbortController(abortController);
+        // Create a new AbortController for the next request
+        walletFetchAbortController.current = new AbortController();
         
         // Fetch
         try {
             const response = await axios.get(`${route('api.wallet.v1.show', uuid)}?action=${action}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: walletFetchAbortController.current.signal
             });
         
             // Use response.data instead of req.json() to get the JSON data
@@ -226,16 +229,17 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
             return jsonResponse.result.data;
         } catch (error) {
             if (axios.isCancel(error)) {
-                // Handle the cancellation here if needed
-                console.log('Request was canceled', error);
+                // // Handle the cancellation here if needed
+                // console.log('Request was canceled', error);
             } else {
-                // Handle other errors
-                console.error('Error:', error);
+                // // Handle other errors
+                // console.error('Error:', error);
             }
         }
 
         return [];
     }
+
     useEffect(() => {
         // Listen to Edit Action
         const editAction = (event: any) => {
@@ -243,26 +247,36 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
                 let uuid = event.detail.uuid;
 
                 // Fetch Data
-                fetchWalletData(uuid, 'edit').then((data: WalletItem) => {
-                    // Update State
-                    setFormUuid(data.uuid)
-                    setFormName(data.name);
-                    setFormParent(data.parent ? data.parent.uuid : '');
-                    setFormCurrentBalance(data.balance ? data.balance : 0);
-                    setFormActualBalance(data.balance ? data.balance : 0);
-
-                    // Open wallet-dialog
-                    setTimeout(() => {
-                        setOpenState(true);
-                    }, 100);
-                });
+                fetchWalletData(uuid, 'edit')
+                    .then((data: WalletItem) => {
+                        if(data && 'uuid' in data){
+                            // Update State
+                            setFormUuid(data.uuid)
+                            setFormName(data.name);
+                            setFormParent(data.parent ? data.parent.uuid : '');
+                            setFormCurrentBalance(data.balance ? data.balance : 0);
+                            setFormActualBalance(data.balance ? data.balance : 0);
+    
+                            // Open wallet-dialog
+                            setTimeout(() => {
+                                setOpenState(true);
+                            }, 100);
+                        }
+                    });
             } else {
                 setOpenState(true);
             }
         }
+        const cancelRequest = () => {
+            // Cancel the ongoing request
+            walletFetchAbortController.current.abort();
+        }
+        
+        document.addEventListener('dialog.wallet.shown', cancelRequest);
         document.addEventListener('wallet.balance-adjustment.edit-action', editAction);
         // Remove the event listener when the component unmounts
         return () => {
+            document.removeEventListener('dialog.wallet.shown', cancelRequest);
             document.removeEventListener('wallet.balance-adjustment.edit-action', editAction);
         };
     }, []);
@@ -298,7 +312,7 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
                                 thousandsSeparator={ `,` }
                                 scale={ 2 }
                                 radix={ `.` }
-                                onBlur={ (element) => {
+                                onBlur={ (element: any) => {
                                     let value = (element.target as HTMLInputElement).value;
                                     value = value.replaceAll(',', '');
 
@@ -324,7 +338,7 @@ export default function WalletBalanceAdjustmentDialog({ openState, setOpenState 
                                 thousandsSeparator={ `,` }
                                 scale={ 2 }
                                 radix={ `.` }
-                                onBlur={ (element) => {
+                                onBlur={ (element: any) => {
                                     let value = (element.target as HTMLInputElement).value;
                                     value = value.replaceAll(',', '');
 

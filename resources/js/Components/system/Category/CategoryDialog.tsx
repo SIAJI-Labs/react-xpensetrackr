@@ -39,15 +39,19 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
     const [keepOpenDialog, setKeepOpenCategoryDialog] = useState<boolean>(false);
 
     // Combobox - Parent Category
-    let comboboxParentTimeout: any;
-    const [openCategoryParent, setOpenCategoryParent] = useState<boolean>(false);
+    const [comboboxParentTimeout, setComboboxParentTimeout] = useState<any>();
+    const [comboboxParentOpenState, setComboboxParentOpenState] = useState<boolean>(false);
     const [comboboxParentLabel, setComboboxParentLabel] = useState<string>("Select an option");
     const [comboboxParentList, setComboboxParentList] = useState<string[] | any>([]);
     const [comboboxParentInput, setComboboxParentInput] = useState<string>("");
-    const [comboboxParentLoad, setComboboxParentLoad] = useState<boolean>(false);
+    const [comboboxParentLoadState, setComboboxParentLoadState] = useState<boolean>(false);
     const [comboboxParentAbortController, setComboboxParentAbortController] = useState<AbortController | null>(null);
-    const fetchCategoryList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
-        setComboboxParentLoad(true);
+    const fetchCategoryList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxParentAbortController(abortController);
+
+        // Handle loading state
+        setComboboxParentLoadState(true);
 
         try {
             // Build parameter
@@ -62,50 +66,45 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
 
             try {
                 const response = await axios.get(`${route('api.category.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController?.signal
                 });
             
+                setComboboxParentAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
+
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxParentList;
     }
     useEffect(() => {
         clearTimeout(comboboxParentTimeout);
-        setComboboxParentList([]);
 
-        if(openCategoryParent){
-            if (comboboxParentAbortController) {
-                // If there is an ongoing request, abort it before making a new one.
+        if(comboboxParentOpenState){
+            // Abort previous request
+            if(comboboxParentAbortController instanceof AbortController){
                 comboboxParentAbortController.abort();
             }
 
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxParentAbortController(newAbortController);
-
-            comboboxParentTimeout = setTimeout(() => {
-                fetchCategoryList(comboboxParentInput, newAbortController)
+            let timeout = setTimeout(() => {
+                fetchCategoryList(comboboxParentInput)
                     .then((data: string[] = []) => {
-                        setComboboxParentLoad(false);
+                        setComboboxParentLoadState(false);
                         if(data){
                             setComboboxParentList(data);
                         }
@@ -113,19 +112,13 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                     .catch((error) => {
                         // Handle errors, if needed
                     });
-            }, 0);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxParentAbortController) {
-                    comboboxParentAbortController.abort();
-                }
-            };
+            }, 500);
+            setComboboxParentTimeout(timeout);
         }
-    }, [comboboxParentInput, openCategoryParent]);
+    }, [comboboxParentInput, comboboxParentOpenState]);
     useEffect(() => {
         setComboboxParentInput('');
-    }, [openCategoryParent]);
+    }, [comboboxParentOpenState]);
     useEffect(() => {
         if(openState){
             if(formParent === ''){
@@ -138,7 +131,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
         }
     }, [formParent]);
 
-    // Category Dialog - Forms
+    // Form Reset
     const resetFormDialog = () => {
         setFormUuid('');
         setFormParent('');
@@ -190,10 +183,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
 
         // Make request call
         axios.post(actionRoute, formData, {
-            cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-            })
+            signal: abortController.signal
         }).then((response) => {
             if (response.status === 200) {
                 const responseJson = response.data;
@@ -256,14 +246,31 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
 
     // Dialog Action
     useEffect(() => {
-        if(openState){
-            document.dispatchEvent(new CustomEvent('dialog.category.shown', { bubbles: true }));
-        } else {
-            resetFormDialog();
-            setKeepOpenCategoryDialog(false);
-
-            // Announce Dialog Global Event
-            document.dispatchEvent(new CustomEvent('dialog.category.hidden', { bubbles: true }));
+        if(!isFirstRender){
+            setTimeout(() => {
+                // Abort Dialog request
+                if(formDialogAbortController instanceof AbortController){
+                    formDialogAbortController.abort();
+                }
+                // Abort Detail request
+                if(categoryFetchAbortController instanceof AbortController){
+                    categoryFetchAbortController.abort();
+                }
+                // Abort Category List request
+                if(comboboxParentAbortController instanceof AbortController){
+                    comboboxParentAbortController.abort();
+                }
+                
+                if(openState){
+                    document.dispatchEvent(new CustomEvent('dialog.category.shown', { bubbles: true }));
+                } else {
+                    resetFormDialog();
+                    setKeepOpenCategoryDialog(false);
+        
+                    // Announce Dialog Global Event
+                    document.dispatchEvent(new CustomEvent('dialog.category.hidden', { bubbles: true }));
+                }
+            }, 100);
         }
     }, [openState]);
 
@@ -283,10 +290,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
         // Fetch
         try {
             const response = await axios.get(`${route('api.category.v1.show', uuid)}?action=${action}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: abortController.signal
             });
         
             // Use response.data instead of req.json() to get the JSON data
@@ -295,11 +299,11 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
             return jsonResponse.result.data;
         } catch (error) {
             if (axios.isCancel(error)) {
-                // Handle the cancellation here if needed
-                console.log('Request was canceled', error);
+                // // Handle the cancellation here if needed
+                // console.log('Request was canceled', error);
             } else {
-                // Handle other errors
-                console.error('Error:', error);
+                // // Handle other errors
+                // console.error('Error:', error);
             }
         }
 
@@ -332,6 +336,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                 setOpenState(true);
             }
         }
+        
         document.addEventListener('category.edit-action', editAction);
         // Remove the event listener when the component unmounts
         return () => {
@@ -346,12 +351,12 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                 <div className={ ` form--group  ${errorFormDialog?.parent_id ? ` is--invalid` : ''}` } id={ `form-category_parent` }>
                     <label className={ ` form--label` }>Parent</label>
                     <div>
-                        <Popover open={openCategoryParent} onOpenChange={setOpenCategoryParent}>
+                        <Popover open={comboboxParentOpenState} onOpenChange={setComboboxParentOpenState}>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="outline"
                                     role="combobox"
-                                    aria-expanded={openCategoryParent}
+                                    aria-expanded={comboboxParentOpenState}
                                     className={ `w-full justify-between ${errorFormDialog?.parent_id ? ` !border-red-500` : ''} dark:text-white` }
                                 >
                                     <span className={ ` whitespace-nowrap overflow-hidden w-full text-ellipsis text-left font-light` }>{comboboxParentLabel}</span>
@@ -360,11 +365,11 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                             </PopoverTrigger>
                             <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                 <Command shouldFilter={ false }>
-                                    <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={comboboxParentInput} onValueChange={setComboboxParentInput}/>
+                                    <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0 ${comboboxParentLoadState ? 'is-loading' : ''}` } value={comboboxParentInput} onValueChange={setComboboxParentInput}/>
                                     
                                     <ScrollArea className="p-0">
                                         <div className={ `max-h-[10rem]` }>
-                                            <CommandEmpty>{comboboxParentLoad ? `Loading...` : `No category found.`}</CommandEmpty>
+                                            <CommandEmpty>{comboboxParentLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
                                             <CommandGroup>
                                                 {comboboxParentList.map((options: CategoryItem) => (
                                                     <CommandItem
@@ -374,7 +379,7 @@ export default function CategoryDialog({ openState, setOpenState }: dialogProps)
                                                             setFormParent(currentValue === formParent ? "" : currentValue);
                                                             setComboboxParentLabel(options.name);
                                                             
-                                                            setOpenCategoryParent(false);
+                                                            setComboboxParentOpenState(false);
                                                         }}
                                                     >
                                                         <Check

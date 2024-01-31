@@ -7,13 +7,12 @@ import axios, { AxiosError } from "axios";
 // Plugins
 import { RemoveScroll } from "react-remove-scroll";
 import { IMaskMixin } from "react-imask";
-import { format } from "date-fns";
 import { toast } from "sonner";
 import moment from "moment";
 
 // Partials
-import ErrorMessage from "@/Components/forms/ErrorMessage";
 import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
+import ErrorMessage from "@/Components/forms/ErrorMessage";
 
 // Shadcn
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/Components/ui/select";
@@ -82,11 +81,6 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
     const [formDialogAbortController, setFormDialogAbortController] = useState<AbortController | null>(null);
     const handleFormSubmit: FormEventHandler = (e) => {
-        // Cancel previous request
-        if(formDialogAbortController instanceof AbortController){
-            formDialogAbortController.abort();
-        }
-
         e.preventDefault();
         // Update submit button to loading state
         let submitBtn = document.getElementById('budget-dialogSubmit');
@@ -144,10 +138,7 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
 
         // Make request call
         axios.post(actionRoute, formData, {
-            cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-            })
+            signal: abortController.signal
         }).then((response) => {
             if (response.status === 200) {
                 const responseJson = response.data;
@@ -213,14 +204,18 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
     const [calendarEndOpenState, setCalendarEndOpenState] = useState<boolean>(false);
 
     // Combobox - Category
-    let comboboxCategoryTimeout: any;
+    const [comboboxCategoryTimeout, setComboboxCategoryTimeout] = useState<any>();
     const [comboboxCategoryOpenState, setComboboxCategoryOpenState] = useState<boolean>(false);
     const [comboboxCategoryLabel, setComboboxCategoryLabel] = useState<string[] | any[]>([]);
     const [comboboxCategoryList, setComboboxCategoryList] = useState<string[] | any>([]);
     const [comboboxCategoryInput, setComboboxCategoryInput] = useState<string>("");
     const [comboboxCategoryLoadState, setComboboxCategoryLoadState] = useState<boolean>(false);
-    const [comboboxCategoryAbort, setComboboxCategoryAbort] = useState<AbortController | null>(null);
-    const fetchCategoryList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const [comboboxCategoryAbortController, setComboboxCategoryAbortController] = useState<AbortController | null>(null);
+    const fetchCategoryList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxCategoryAbortController(abortController);
+
+        // Handle loading state
         setComboboxCategoryLoadState(true);
 
         try {
@@ -235,48 +230,43 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
 
             try {
                 const response = await axios.get(`${route('api.category.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController?.signal
                 });
             
+                setComboboxCategoryAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
-                let responseJson = response.data;
-                return responseJson.result.data;
+                let jsonResponse = response.data;
+
+                return jsonResponse.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxCategoryList;
     }
     useEffect(() => {
         clearTimeout(comboboxCategoryTimeout);
-        // setComboboxCategoryList([]);
+
+        // Abort previous request
+        if(comboboxCategoryAbortController instanceof AbortController){
+            comboboxCategoryAbortController.abort();
+        }
 
         if(comboboxCategoryOpenState){
-            if (comboboxCategoryAbort) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxCategoryAbort.abort();
-            }
-
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxCategoryAbort(newAbortController);
-
-            comboboxCategoryTimeout = setTimeout(() => {
-                fetchCategoryList(comboboxCategoryInput, newAbortController)
+            let timeout = setTimeout(() => {
+                fetchCategoryList(comboboxCategoryInput)
                     .then((data: string[] = []) => {
                         setComboboxCategoryLoadState(false);
                         if(data){
@@ -287,28 +277,26 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                         // Handle errors, if needed
                     });
             }, 500);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxCategoryAbort) {
-                    comboboxCategoryAbort.abort();
-                }
-            };
+            setComboboxCategoryTimeout(timeout);
         }
     }, [comboboxCategoryInput, comboboxCategoryOpenState]);
     useEffect(() => {
-        setComboboxCategoryInput('')
+        setComboboxCategoryInput('');
     }, [comboboxCategoryOpenState]);
 
     // Combobox - Wallet
-    let comboboxWalletTimeout: any;
+    const [comboboxWalletTimeout, setComboboxWalletTimeout] = useState<any>();
     const [comboboxWalletOpenState, setComboboxWalletOpenState] = useState<boolean>(false);
     const [comboboxWalletLabel, setComboboxWalletLabel] = useState<string[] | any[]>([]);
     const [comboboxWalletList, setComboboxWalletList] = useState<string[] | any>([]);
     const [comboboxWalletInput, setComboboxWalletInput] = useState<string>("");
     const [comboboxWalletLoadState, setComboboxWalletLoadState] = useState<boolean>(false);
-    const [comboboxWalletAbort, setComboboxWalletAbort] = useState<AbortController | null>(null);
-    const fetchWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const [comboboxWalletAbortController, setComboboxWalletAbortController] = useState<AbortController | null>(null);
+    const fetchWalletList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxWalletAbortController(abortController);
+
+        // Handle loading state
         setComboboxWalletLoadState(true);
 
         try {
@@ -323,48 +311,42 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
 
             try {
                 const response = await axios.get(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxWalletAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxWalletList;
     }
     useEffect(() => {
         clearTimeout(comboboxWalletTimeout);
-        // setComboboxWalletList([]);
+
+        // Abort previous request
+        if(comboboxWalletAbortController instanceof AbortController){
+            comboboxWalletAbortController.abort();
+        }
 
         if(comboboxWalletOpenState){
-            if (comboboxWalletAbort) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxWalletAbort.abort();
-            }
-
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxWalletAbort(newAbortController);
-
-            comboboxWalletTimeout = setTimeout(() => {
-                fetchWalletList(comboboxWalletInput, newAbortController)
+            let timeout = setTimeout(() => {
+                fetchWalletList(comboboxWalletInput)
                     .then((data: string[] = []) => {
                         setComboboxWalletLoadState(false);
                         if(data){
@@ -375,28 +357,26 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                         // Handle errors, if needed
                     });
             }, 500);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxWalletAbort) {
-                    comboboxWalletAbort.abort();
-                }
-            };
+            setComboboxWalletTimeout(timeout);
         }
     }, [comboboxWalletInput, comboboxWalletOpenState]);
     useEffect(() => {
-        setComboboxWalletInput('')
+        setComboboxWalletInput('');
     }, [comboboxWalletOpenState]);
 
     // Combobox - Tags
-    let comboboxTagsTimeout: any;
+    const [comboboxTagsTimeout, setComboboxTagsTimeout] = useState<any>();
     const [comboboxTagsOpenState, setComboboxTagsOpenState] = useState<boolean>(false);
     const [comboboxTagsLabel, setComboboxTagsLabel] = useState<string[] | any[]>([]);
     const [comboboxTagsList, setComboboxTagsList] = useState<string[] | any>([]);
     const [comboboxTagsInput, setComboboxTagsInput] = useState<string>("");
     const [comboboxTagsLoadState, setComboboxTagsLoadState] = useState<boolean>(false);
-    const [comboboxTagsAbort, setComboboxTagsAbort] = useState<AbortController | null>(null);
-    const fetchTagsList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const [comboboxTagsAbortController, setComboboxTagsAbortController] = useState<AbortController | null>(null);
+    const fetchTagsList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxTagsAbortController(abortController);
+
+        // Handle loading state
         setComboboxTagsLoadState(true);
 
         try {
@@ -411,48 +391,42 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
 
             try {
                 const response = await axios.get(`${route('api.tags.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxTagsAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxTagsList;
     }
     useEffect(() => {
         clearTimeout(comboboxTagsTimeout);
-        // setComboboxTagsList([]);
 
+        // Abort previous request
+        if(comboboxTagsAbortController instanceof AbortController){
+            comboboxTagsAbortController.abort();
+        }
+        
         if(comboboxTagsOpenState){
-            if (comboboxTagsAbort) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxTagsAbort.abort();
-            }
-
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxTagsAbort(newAbortController);
-
-            comboboxTagsTimeout = setTimeout(() => {
-                fetchTagsList(comboboxTagsInput, newAbortController)
+            let timeout = setTimeout(() => {
+                fetchTagsList(comboboxTagsInput)
                     .then((data: string[] = []) => {
                         setComboboxTagsLoadState(false);
                         if(data){
@@ -463,13 +437,7 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                         // Handle errors, if needed
                     });
             }, 500);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxTagsAbort) {
-                    comboboxTagsAbort.abort();
-                }
-            };
+            setComboboxTagsTimeout(timeout);
         }
     }, [comboboxTagsInput, comboboxTagsOpenState]);
     useEffect(() => {
@@ -478,14 +446,42 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
 
     // Dialog Action
     useEffect(() => {
-        if(openState){
-            document.dispatchEvent(new CustomEvent('dialog.budget.shown', { bubbles: true }));
-        } else {
-            resetFormDialog();
-            setKeepOpenBudgetDialog(false);
+        if(!isFirstRender){
+            setTimeout(() => {
+                // Reset error bag
+                setErrorFormDialog({});
 
-            // Announce Dialog Global Event
-            document.dispatchEvent(new CustomEvent('dialog.budget.hidden', { bubbles: true }));
+                // Abort Dialog request
+                if(formDialogAbortController instanceof AbortController){
+                    formDialogAbortController.abort();
+                }
+                // Abort Detail request
+                if(budgetFetchAbortController instanceof AbortController){
+                    budgetFetchAbortController.abort();
+                }
+                // Abort Category List request
+                if(comboboxCategoryAbortController instanceof AbortController){
+                    comboboxCategoryAbortController.abort();
+                }
+                // Abort Wallet List request
+                if(comboboxWalletAbortController instanceof AbortController){
+                    comboboxWalletAbortController.abort();
+                }
+                // Abort Tags List request
+                if(comboboxTagsAbortController instanceof AbortController){
+                    comboboxTagsAbortController.abort();
+                }
+
+                if(openState){
+                    document.dispatchEvent(new CustomEvent('dialog.budget.shown', { bubbles: true }));
+                } else {
+                    resetFormDialog();
+                    setKeepOpenBudgetDialog(false);
+
+                    // Announce Dialog Global Event
+                    document.dispatchEvent(new CustomEvent('dialog.budget.hidden', { bubbles: true }));
+                }
+            }, 100);
         }
     }, [openState]);
 
@@ -505,10 +501,7 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
         // Fetch
         try {
             const response = await axios.get(`${route('api.budget.v1.show', uuid)}?action=${action}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: abortController.signal
             });
         
             // Use response.data instead of req.json() to get the JSON data
@@ -517,11 +510,11 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
             return jsonResponse.result.data;
         } catch (error) {
             if (axios.isCancel(error)) {
-                // Handle the cancellation here if needed
-                console.log('Request was canceled', error);
+                // // Handle the cancellation here if needed
+                // console.log('Request was canceled', error);
             } else {
-                // Handle other errors
-                console.error('Error:', error);
+                // // Handle other errors
+                // console.error('Error:', error);
             }
         }
 
@@ -532,11 +525,13 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
         const editAction = (event: any) => {
             if(event?.detail?.uuid){
                 let uuid = event.detail.uuid;
+                // Abort previous request
+                if(budgetFetchAbortController instanceof AbortController){
+                    budgetFetchAbortController.abort();
+                }
 
                 // Fetch Data
                 fetchBudgetData(uuid, 'edit').then((data: BudgetItem) => {
-                    console.log(data);
-
                     // Update State
                     setFormUuid(data.uuid)
                     setFormName(data.name);
@@ -627,7 +622,7 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                         thousandsSeparator={ `,` }
                         scale={ 2 }
                         radix={ `.` }
-                        onBlur={ (element) => {
+                        onBlur={ (element: any) => {
                             let value = (element.target as HTMLInputElement).value;
                             value = value.replaceAll(',', '');
 
@@ -789,29 +784,12 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                                 </PopoverTrigger>
                                 <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                     <Command shouldFilter={ false }>
-                                        <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
+                                        <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0 ${comboboxCategoryLoadState ? 'is-loading' : ''}` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
+                                        
                                         <ScrollArea className="p-0">
                                             <div className={ `max-h-[10rem]` }>
                                                 <CommandEmpty>{comboboxCategoryLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
                                                 <CommandGroup>
-                                                    {(() => {
-                                                        if(comboboxCategoryLoadState){
-                                                            return <>
-                                                                <CommandItem
-                                                                    value=''
-                                                                    key={ `category_loading-state` }
-                                                                    disabled={ true }
-                                                                >
-                                                                    <Check
-                                                                        className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                    />
-                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                </CommandItem>
-                                                            </>;
-                                                        }
-
-                                                        return <></>;
-                                                    })()}
                                                     {comboboxCategoryList.map((options: CategoryItem) => (
                                                         <CommandItem
                                                             value={options?.uuid}
@@ -912,29 +890,12 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                                 </PopoverTrigger>
                                 <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                     <Command shouldFilter={ false }>
-                                        <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxWalletInput} onValueChange={setComboboxWalletInput}/>
+                                        <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0 ${comboboxWalletLoadState ? 'is-loading' : ''}` } value={comboboxWalletInput} onValueChange={setComboboxWalletInput}/>
+                                        
                                         <ScrollArea className="p-0">
                                             <div className={ `max-h-[10rem]` }>
                                                 <CommandEmpty>{comboboxWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                 <CommandGroup>
-                                                    {(() => {
-                                                        if(comboboxWalletLoadState){
-                                                            return <>
-                                                                <CommandItem
-                                                                    value=''
-                                                                    key={ `wallet_loading-state` }
-                                                                    disabled={ true }
-                                                                >
-                                                                    <Check
-                                                                        className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                    />
-                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                </CommandItem>
-                                                            </>;
-                                                        }
-
-                                                        return <></>;
-                                                    })()}
                                                     {comboboxWalletList.map((options: WalletItem) => (
                                                         <CommandItem
                                                             value={options?.uuid}
@@ -1035,29 +996,12 @@ export default function BudgetDialog({ openState, setOpenState }: dialogProps){
                                 </PopoverTrigger>
                                 <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                     <Command shouldFilter={ false }>
-                                        <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
+                                        <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0 ${comboboxTagsLoadState ? 'is-loading' : ''}` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
+                                        
                                         <ScrollArea className="p-0">
                                             <div className={ `max-h-[10rem]` }>
                                                 <CommandEmpty>{comboboxTagsLoadState ? `Loading...` : `No tags found.`}</CommandEmpty>
                                                 <CommandGroup>
-                                                    {(() => {
-                                                        if(comboboxTagsLoadState){
-                                                            return <>
-                                                                <CommandItem
-                                                                    value=''
-                                                                    key={ `tags_loading-state` }
-                                                                    disabled={ true }
-                                                                >
-                                                                    <Check
-                                                                        className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                    />
-                                                                    <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                </CommandItem>
-                                                            </>;
-                                                        }
-
-                                                        return <></>;
-                                                    })()}
                                                     {comboboxTagsList.map((options: TagsItem) => (
                                                         <CommandItem
                                                             value={options?.uuid}

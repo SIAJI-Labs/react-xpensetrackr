@@ -51,7 +51,7 @@ export default function TemplateList({ wallet, deleteAction = true, editAction =
                         
                         {(() => {
                             if(detailAction || editAction || deleteAction){
-                                <div>
+                                return <div>
                                     <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant={ `link` } className={ ` p-0 h-auto leading-none dark:!text-white !text-black` } data-type="dropdown-trigger">

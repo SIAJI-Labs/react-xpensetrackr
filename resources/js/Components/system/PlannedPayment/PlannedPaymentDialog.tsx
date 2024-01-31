@@ -70,15 +70,18 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
     const [calendarOpenState, setCalendarOpenState] = useState<boolean>(false);
 
     // Combobox - Category
-    let comboboxCategoryTimeout: any;
+    const [comboboxCategoryTimeout, setComboboxCategoryTimeout] = useState<any>();
     const [comboboxCategoryOpenState, setComboboxCategoryOpenState] = useState<boolean>(false);
     const [comboboxCategoryLabel, setComboboxCategoryLabel] = useState<string>("Select an option");
     const [comboboxCategoryList, setComboboxCategoryList] = useState<string[] | any>([]);
     const [comboboxCategoryInput, setComboboxCategoryInput] = useState<string>("");
     const [comboboxCategoryLoadState, setComboboxCategoryLoadState] = useState<boolean>(false);
     const [comboboxCategoryAbortController, setComboboxCategoryAbortController] = useState<AbortController | null>(null);
-    const fetchCategoryList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
-        // Fetch Category Item List
+    const fetchCategoryList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxCategoryAbortController(abortController);
+
+        // Handle loading state
         setComboboxCategoryLoadState(true);
 
         try {
@@ -93,50 +96,43 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
 
             try {
                 const response = await axios.get(`${route('api.category.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController?.signal
                 });
             
+                setComboboxCategoryAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let jsonResponse = response.data;
 
                 return jsonResponse.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxCategoryList;
     }
     useEffect(() => {
-        // Handle Category Item
         clearTimeout(comboboxCategoryTimeout);
-        // setComboboxCategoryList([]);
+        
+        // Abort previous request
+        if(comboboxCategoryAbortController instanceof AbortController){
+            comboboxCategoryAbortController.abort();
+        }
 
         if(comboboxCategoryOpenState){
-            if (comboboxCategoryAbortController) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxCategoryAbortController.abort();
-            }
-
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxCategoryAbortController(newAbortController);
-
-            comboboxCategoryTimeout = setTimeout(() => {
-                fetchCategoryList(comboboxCategoryInput, newAbortController)
+            let timeout = setTimeout(() => {
+                fetchCategoryList(comboboxCategoryInput)
                     .then((data: string[] = []) => {
                         setComboboxCategoryLoadState(false);
                         if(data){
@@ -147,13 +143,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                         // Handle errors, if needed
                     });
             }, 500);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxCategoryAbortController) {
-                    comboboxCategoryAbortController.abort();
-                }
-            };
+            setComboboxCategoryTimeout(timeout);
         }
     }, [comboboxCategoryInput, comboboxCategoryOpenState]);
     useEffect(() => {
@@ -166,21 +156,25 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                 setComboboxCategoryLabel(`Select an option`);
             }
         } else {
-            if(!formUuid){
+            if(!formUuid && formCategory === ''){
                 setComboboxCategoryLabel(`Select an option`);
             }
         }
     }, [formCategory]);
 
     // Combobox - From Wallet
-    let comboboxFromWalletTimeout: any;
+    const [comboboxFromWalletTimeout, setComboboxFromWalletTimeout] = useState<any>();
     const [comboboxFromWalletOpenState, setComboboxFromWalletOpenState] = useState<boolean>(false);
     const [comboboxFromWalletLabel, setComboboxFromWalletLabel] = useState<string>("Select an option");
     const [comboboxFromWalletList, setComboboxFromWalletList] = useState<string[] | any>([]);
     const [comboboxFromWalletInput, setComboboxFromWalletInput] = useState<string>("");
     const [comboboxFromWalletLoadState, setComboboxFromWalletLoadState] = useState<boolean>(false);
     const [comboboxFromWalletAbortController, setComboboxFromWalletAbortController] = useState<AbortController | null>(null);
-    const fetchFromWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const fetchFromWalletList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxFromWalletAbortController(abortController);
+
+        // Handle loading state
         setComboboxFromWalletLoadState(true);
 
         try {
@@ -195,48 +189,42 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
 
             try {
                 const response = await axios.get(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxFromWalletAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxFromWalletList;
     }
     useEffect(() => {
         clearTimeout(comboboxFromWalletTimeout);
-        // setComboboxFromWalletList([]);
+
+        // Abort previous request
+        if(comboboxFromWalletAbortController instanceof AbortController){
+            comboboxFromWalletAbortController.abort();
+        }
 
         if(comboboxFromWalletOpenState){
-            if (comboboxFromWalletAbortController) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxFromWalletAbortController.abort();
-            }
-
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxFromWalletAbortController(newAbortController);
-
-            comboboxFromWalletTimeout = setTimeout(() => {
-                fetchFromWalletList(comboboxFromWalletInput, newAbortController)
+            let timeout = setTimeout(() => {
+                fetchFromWalletList(comboboxFromWalletInput)
                     .then((data: string[] = []) => {
                         setComboboxFromWalletLoadState(false);
                         if(data){
@@ -246,14 +234,8 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                     .catch((error) => {
                         // Handle errors, if needed
                     });
-            }, 0);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxFromWalletAbortController) {
-                    comboboxFromWalletAbortController.abort();
-                }
-            };
+            }, 500);
+            setComboboxFromWalletTimeout(timeout);
         }
     }, [comboboxFromWalletInput, comboboxFromWalletOpenState]);
     useEffect(() => {
@@ -265,21 +247,25 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                 setComboboxFromWalletLabel(`Select an option`);
             }
         } else {
-            if(!formUuid){
+            if(!formUuid && formFromWallet === ''){
                 setComboboxFromWalletLabel(`Select an option`);
             }
         }
     }, [formFromWallet]);
 
     // Combobox - To Wallet
-    let comboboxToWalletTimeout: any;
+    const [comboboxToWalletTimeout, setComboboxToWalletTimeout] = useState<any>();
     const [comboboxToWalletOpenState, setComboboxToWalletOpenState] = useState<boolean>(false);
     const [comboboxToWalletLabel, setComboboxToWalletLabel] = useState<string>("Select an option");
     // const [comboboxToWalletList, setComboboxToWalletList] = useState<string[] | any>([]);
     const [comboboxToWalletInput, setComboboxToWalletInput] = useState<string>("");
     const [comboboxToWalletLoadState, setComboboxToWalletLoadState] = useState<boolean>(false);
     const [comboboxToWalletAbort, setComboboxToWalletAbort] = useState<AbortController | null>(null);
-    const fetchToWalletList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const fetchToWalletList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxToWalletAbort(abortController);
+
+        // Handle loading state
         setComboboxToWalletLoadState(true);
 
         try {
@@ -294,53 +280,45 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
 
             try {
                 const response = await axios.get(`${route('api.wallet.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxToWalletAbort(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxFromWalletList;
     }
     useEffect(() => {
         clearTimeout(comboboxToWalletTimeout);
-        // setComboboxToWalletList([]);
-        // setComboboxFromWalletList([]);
+
+        // Abort previous request
+        if(comboboxToWalletAbort instanceof AbortController){
+            comboboxToWalletAbort.abort();
+        }
 
         if(comboboxToWalletOpenState){
-            if (comboboxToWalletAbort) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxToWalletAbort.abort();
-            }
-
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxToWalletAbort(newAbortController);
-
-            comboboxToWalletTimeout = setTimeout(() => {
-                fetchToWalletList(comboboxToWalletInput, newAbortController)
+            let timeout = setTimeout(() => {
+                fetchToWalletList(comboboxToWalletInput)
                     .then((data: string[] = []) => {
                         setComboboxToWalletLoadState(false);
                         if(data){
-                            // setComboboxToWalletList(data);
                             setComboboxFromWalletList(data);
                         }
                     })
@@ -348,13 +326,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                         // Handle errors, if needed
                     });
             }, 500);
-
-            return () => {
-                // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxToWalletAbort) {
-                    comboboxToWalletAbort.abort();
-                }
-            };
+            setComboboxToWalletTimeout(timeout);
         }
     }, [comboboxToWalletInput, comboboxToWalletOpenState]);
     useEffect(() => {
@@ -366,21 +338,25 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                 setComboboxToWalletLabel(`Select an option`);
             }
         } else {
-            if(!formUuid){
+            if(!formUuid && formToWallet === ''){
                 setComboboxToWalletLabel(`Select an option`);
             }
         }
     }, [formToWallet]);
 
     // Combobox - Tags
-    let comboboxTagsTimeout: any;
+    const [comboboxTagsTimeout, setComboboxTagsTimeout] = useState<any>();
     const [comboboxTagsOpenState, setComboboxTagsOpenState] = useState<boolean>(false);
     const [comboboxTagsLabel, setComboboxTagsLabel] = useState<string[] | any[]>([]);
     const [comboboxTagsList, setComboboxTagsList] = useState<string[] | any>([]);
     const [comboboxTagsInput, setComboboxTagsInput] = useState<string>("");
     const [comboboxTagsLoadState, setComboboxTagsLoadState] = useState<boolean>(false);
-    const [comboboxTagsAbort, setComboboxTagsAbort] = useState<AbortController | null>(null);
-    const fetchTagsList = async (keyword: string, abortController: AbortController): Promise<string[]> => {
+    const [comboboxTagsAbortController, setComboboxTagsAbortController] = useState<AbortController | null>(null);
+    const fetchTagsList = async (keyword: string): Promise<string[]> => {
+        const abortController = new AbortController();
+        setComboboxTagsAbortController(abortController);
+
+        // Handle loading state
         setComboboxTagsLoadState(true);
 
         try {
@@ -395,48 +371,42 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
 
             try {
                 const response = await axios.get(`${route('api.tags.v1.list')}?${query.join('&')}`, {
-                    cancelToken: new axios.CancelToken(function executor(c) {
-                        // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                        abortController.abort = c;
-                    })
+                    signal: abortController.signal
                 });
             
+                setComboboxTagsAbortController(null);
                 // Use response.data instead of req.json() to get the JSON data
                 let responseJson = response.data;
                 return responseJson.result.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    // Handle the cancellation here if needed
-                    console.log('Request was canceled', error);
+                    // // Handle the cancellation here if needed
+                    // console.log('Request was canceled', error);
                 } else {
-                    // Handle other errors
-                    console.error('Error:', error);
+                    // // Handle other errors
+                    // console.error('Error:', error);
                 }
             }
         } catch (error) {
-            // Handle errors, if needed
-            console.error('Request error:', error);
+            // // Handle errors, if needed
+            // console.error('Request error:', error);
+
             throw error;
         }
 
-        return [];
+        return comboboxTagsList;
     }
     useEffect(() => {
         clearTimeout(comboboxTagsTimeout);
-        // setComboboxTagsList([]);
 
         if(comboboxTagsOpenState){
-            if (comboboxTagsAbort) {
-                // If there is an ongoing request, abort it before making a new one.
-                comboboxTagsAbort.abort();
-            }
+            let timeout = setTimeout(() => {
+                // Abort previous request
+                if(comboboxTagsAbortController instanceof AbortController){
+                    comboboxTagsAbortController.abort();
+                }
 
-            // Create a new AbortController for the new request.
-            const newAbortController = new AbortController();
-            setComboboxTagsAbort(newAbortController);
-
-            comboboxTagsTimeout = setTimeout(() => {
-                fetchTagsList(comboboxTagsInput, newAbortController)
+                fetchTagsList(comboboxTagsInput)
                     .then((data: string[] = []) => {
                         setComboboxTagsLoadState(false);
                         if(data){
@@ -447,11 +417,12 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                         // Handle errors, if needed
                     });
             }, 500);
+            setComboboxTagsTimeout(timeout);
 
             return () => {
                 // Cleanup: Abort the ongoing request and reset the AbortController when the component unmounts or when keyword changes.
-                if (comboboxTagsAbort) {
-                    comboboxTagsAbort.abort();
+                if (comboboxTagsAbortController) {
+                    comboboxTagsAbortController.abort();
                 }
             };
         }
@@ -462,14 +433,42 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
 
     // Dialog Action
     useEffect(() => {
-        if(openState){
-            document.dispatchEvent(new CustomEvent('dialog.planned-payment.shown', { bubbles: true }));
-        } else {
-            resetFormDialog();
-            setKeepOpenDialog(false);
+        if(!isFirstRender){
+            setTimeout(() => {
+                // Reset error bag
+                setErrorFormDialog({});
 
-            // Announce Dialog Global Event
-            document.dispatchEvent(new CustomEvent('dialog.planned-payment.hidden', { bubbles: true }));
+                // Abort Dialog request
+                if(formDialogAbortController instanceof AbortController){
+                    formDialogAbortController.abort();
+                }
+                // Abort Detail request
+                if(plannedPaymentFetchAbortController instanceof AbortController){
+                    plannedPaymentFetchAbortController.abort();
+                }
+                // Abort Category List request
+                if(comboboxCategoryAbortController instanceof AbortController){
+                    comboboxCategoryAbortController.abort();
+                }
+                // Abort Wallet List request
+                if(comboboxFromWalletAbortController instanceof AbortController){
+                    comboboxFromWalletAbortController.abort();
+                }
+                // Abort Tags List request
+                if(comboboxTagsAbortController instanceof AbortController){
+                    comboboxTagsAbortController.abort();
+                }
+
+                if(openState){
+                    document.dispatchEvent(new CustomEvent('dialog.planned-payment.shown', { bubbles: true }));
+                } else {
+                    resetFormDialog();
+                    setKeepOpenDialog(false);
+
+                    // Announce Dialog Global Event
+                    document.dispatchEvent(new CustomEvent('dialog.planned-payment.hidden', { bubbles: true }));
+                }
+            }, 100);
         }
     }, [openState]);
     
@@ -500,7 +499,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
     // Form Action
     const [errorFormDialog, setErrorFormDialog] = useState<{ [key: string]: string[] }>({});
     const [formDialogAbortController, setFormDialogAbortController] = useState<AbortController | null>(null);
-    const handleSubmitDialog: FormEventHandler = (e) => {
+    const handleFormSubmit: FormEventHandler = (e) => {
         // Cancel previous request
         if(formDialogAbortController instanceof AbortController){
             formDialogAbortController.abort();
@@ -554,10 +553,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
 
         // Make request call
         axios.post(actionRoute, formData, {
-            cancelToken: new axios.CancelToken(function executor(c) {
-                // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                abortController.abort = c;
-            })
+            signal: abortController.signal
         }).then((response) => {
             if (response.status === 200) {
                 const responseJson = response.data;
@@ -647,10 +643,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
         // Fetch
         try {
             const response = await axios.get(`${route('api.planned-payment.v1.show', uuid)}?action=${action}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: abortController.signal
             });
         
             // Use response.data instead of req.json() to get the JSON data
@@ -659,11 +652,11 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
             return jsonResponse.result.data;
         } catch (error) {
             if (axios.isCancel(error)) {
-                // Handle the cancellation here if needed
-                console.log('Request was canceled', error);
+                // // Handle the cancellation here if needed
+                // console.log('Request was canceled', error);
             } else {
-                // Handle other errors
-                console.error('Error:', error);
+                // // Handle other errors
+                // console.error('Error:', error);
             }
         }
 
@@ -739,7 +732,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
 
     const formContent = <>
         <RemoveScroll className={ `overflow-auto ${isDesktop ? `max-h-screen max-lg:max-h-[50vh] lg:max-h-[65vh] border-b border-t` : ` border-t`}` }>
-            <form onSubmit={handleSubmitDialog} id={ `plannedPayment-dialogForms` } className={ ` overflow-hidden` }>
+            <form onSubmit={handleFormSubmit} id={ `plannedPayment-dialogForms` } className={ ` overflow-hidden` }>
                 <div className={ ` flex gap-0 lg:gap-6 flex-col lg:flex-row px-6` }>
                     {/* Left */}
                     <div className={ `py-6 w-full lg:w-3/5` }>
@@ -795,7 +788,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                     </PopoverTrigger>
                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                         <Command shouldFilter={ false }>
-                                            <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
+                                            <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0 ${comboboxCategoryLoadState ? 'is-loading' : ''}` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
                                             <ScrollArea className="p-0">
                                                 <div className={ `max-h-[10rem]` }>
                                                     <CommandEmpty>{comboboxCategoryLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
@@ -864,8 +857,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                     </PopoverTrigger>
                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                         <Command shouldFilter={ false }>
-                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxFromWalletInput} onValueChange={setComboboxFromWalletInput}/>
-                                            
+                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0 ${comboboxFromWalletLoadState ? `is-loading` : ``}` } value={comboboxFromWalletInput} onValueChange={setComboboxFromWalletInput}/>
                                             <ScrollArea className="p-0">
                                                 <div className={ `max-h-[10rem]` }>
                                                     <CommandEmpty>{comboboxFromWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
@@ -954,7 +946,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                                     </PopoverTrigger>
                                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                                         <Command shouldFilter={ false }>
-                                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
+                                                            <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0 ${comboboxToWalletLoadState ? `is-loading` : ``}` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
                                                             <ScrollArea className="p-0">
                                                                 <div className={ `max-h-[10rem]` }>
                                                                     <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
@@ -1025,7 +1017,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                 thousandsSeparator={ `,` }
                                 scale={ 2 }
                                 radix={ `.` }
-                                onBlur={ (element) => {
+                                onBlur={ (element: any) => {
                                     let value = (element.target as HTMLInputElement).value;
                                     value = value.replaceAll(',', '');
 
@@ -1055,7 +1047,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                             thousandsSeparator={ `,` }
                                             scale={ 2 }
                                             radix={ `.` }
-                                            onBlur={ (element) => {
+                                            onBlur={ (element: any) => {
                                                 let value = (element.target as HTMLInputElement).value;
                                                 value = value.replaceAll(',', '');
 
@@ -1148,7 +1140,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                         thousandsSeparator={ `,` }
                                         scale={ 2 }
                                         radix={ `.` }
-                                        onBlur={ (element) => {
+                                        onBlur={ (element: any) => {
                                             let value = (element.target as HTMLInputElement).value;
                                             value = value.replaceAll(',', '');
 
@@ -1254,7 +1246,7 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                         </PopoverTrigger>
                                         <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                             <Command shouldFilter={ false }>
-                                                <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
+                                                <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0 ${comboboxTagsLoadState ? 'is-loading' : ''}` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
                                                 <ScrollArea className="p-0">
                                                     <div className={ `max-h-[10rem]` }>
                                                         <CommandEmpty>{comboboxTagsLoadState ? `Loading...` : `No tags found.`}</CommandEmpty>

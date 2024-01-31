@@ -1,18 +1,17 @@
-import { FormEventHandler, useEffect, useState } from "react";
-import { useIsFirstRender } from "@/lib/utils";
-import axios, { AxiosError } from "axios";
+import {useEffect, useState } from "react";
+import axios from "axios";
 import { NotificationItem } from "@/types";
 
 // Plugins
 import { useMediaQuery } from 'usehooks-ts'
+import moment from "moment";
 
 // Partials
 
 // Shadcn
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/Components/ui/drawer";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Button } from "@/Components/ui/button";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/Components/ui/drawer";
-import moment from "moment";
 import { Link } from "@inertiajs/react";
 
 type dialogProps = {
@@ -21,7 +20,6 @@ type dialogProps = {
 };
 
 export default function NotificationDialog({ openState, setOpenState }: dialogProps){
-    const isFirstRender = useIsFirstRender();
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
     const [notificationItem, setNotificationItem] = useState<NotificationItem | undefined>();
@@ -52,10 +50,7 @@ export default function NotificationDialog({ openState, setOpenState }: dialogPr
         // Fetch
         try {
             const response = await axios.get(`${route('api.report.notification.v1.show', uuid)}?action=${action}`, {
-                cancelToken: new axios.CancelToken(function executor(c) {
-                    // Create a CancelToken using Axios, which is equivalent to AbortController.signal
-                    abortController.abort = c;
-                })
+                signal: abortController?.signal
             });
         
             // Use response.data instead of req.json() to get the JSON data
@@ -64,11 +59,11 @@ export default function NotificationDialog({ openState, setOpenState }: dialogPr
             return jsonResponse.result.data;
         } catch (error) {
             if (axios.isCancel(error)) {
-                // Handle the cancellation here if needed
-                console.log('Request was canceled', error);
+                // // Handle the cancellation here if needed
+                // console.log('Request was canceled', error);
             } else {
-                // Handle other errors
-                console.error('Error:', error);
+                // // Handle other errors
+                // console.error('Error:', error);
             }
         }
 

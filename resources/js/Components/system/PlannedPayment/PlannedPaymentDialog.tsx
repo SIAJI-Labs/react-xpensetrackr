@@ -789,28 +789,11 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                         <Command shouldFilter={ false }>
                                             <CommandInput placeholder="Search category" className={ ` border-none focus:ring-0 ${comboboxCategoryLoadState ? 'is-loading' : ''}` } value={comboboxCategoryInput} onValueChange={setComboboxCategoryInput}/>
+                                            
                                             <ScrollArea className="p-0">
                                                 <div className={ `max-h-[10rem]` }>
                                                     <CommandEmpty>{comboboxCategoryLoadState ? `Loading...` : `No category found.`}</CommandEmpty>
                                                     <CommandGroup>
-                                                        {(() => {
-                                                            if(comboboxCategoryLoadState){
-                                                                return <>
-                                                                    <CommandItem
-                                                                        value=''
-                                                                        key={ `category_loading-state` }
-                                                                        disabled={ true }
-                                                                    >
-                                                                        <Check
-                                                                            className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                        />
-                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                    </CommandItem>
-                                                                </>;
-                                                            }
-
-                                                            return <></>;
-                                                        })()}
                                                         {comboboxCategoryList.map((options: CategoryItem) => (
                                                             <CommandItem
                                                                 value={options?.uuid}
@@ -858,28 +841,11 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                         <Command shouldFilter={ false }>
                                             <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0 ${comboboxFromWalletLoadState ? `is-loading` : ``}` } value={comboboxFromWalletInput} onValueChange={setComboboxFromWalletInput}/>
+                                            
                                             <ScrollArea className="p-0">
                                                 <div className={ `max-h-[10rem]` }>
                                                     <CommandEmpty>{comboboxFromWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                     <CommandGroup>
-                                                        {(() => {
-                                                            if(comboboxFromWalletLoadState){
-                                                                return <>
-                                                                    <CommandItem
-                                                                        value=''
-                                                                        key={ `from_wallet_loading-state` }
-                                                                        disabled={ true }
-                                                                    >
-                                                                        <Check
-                                                                            className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                        />
-                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                    </CommandItem>
-                                                                </>;
-                                                            }
-
-                                                            return <></>;
-                                                        })()}
                                                         {comboboxFromWalletList.map((options: WalletItem) => (
                                                             <CommandItem
                                                                 value={options?.uuid}
@@ -947,29 +913,11 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                                     <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                                         <Command shouldFilter={ false }>
                                                             <CommandInput placeholder="Search wallet" className={ ` border-none focus:ring-0 ${comboboxToWalletLoadState ? `is-loading` : ``}` } value={comboboxToWalletInput} onValueChange={setComboboxToWalletInput}/>
+                                                            
                                                             <ScrollArea className="p-0">
                                                                 <div className={ `max-h-[10rem]` }>
                                                                     <CommandEmpty>{comboboxToWalletLoadState ? `Loading...` : `No wallet found.`}</CommandEmpty>
                                                                     <CommandGroup>
-                                                                        {(() => {
-                                                                            if(comboboxToWalletLoadState){
-                                                                                return <>
-                                                                                    <CommandItem
-                                                                                        value=''
-                                                                                        key={ `to_wallet_loading-state` }
-                                                                                        disabled={ true }
-                                                                                    >
-                                                                                        <Check
-                                                                                            className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                                        />
-                                                                                        <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                                    </CommandItem>
-                                                                                </>;
-                                                                            }
-
-                                                                            return <></>;
-                                                                        })()}
-                                                                        {/* {comboboxToWalletList.map((options: WalletItem) => ( */}
                                                                         {comboboxFromWalletList.map((options: WalletItem) => (
                                                                             <CommandItem
                                                                                 value={options?.uuid}
@@ -1247,28 +1195,11 @@ export default function PlannedPaymentDialog({ openState, setOpenState }: dialog
                                         <PopoverContent className=" w-[300px] lg:w-[400px] p-0" align={ `start` }>
                                             <Command shouldFilter={ false }>
                                                 <CommandInput placeholder="Search tags" className={ ` border-none focus:ring-0 ${comboboxTagsLoadState ? 'is-loading' : ''}` } value={comboboxTagsInput} onValueChange={setComboboxTagsInput}/>
+                                                
                                                 <ScrollArea className="p-0">
                                                     <div className={ `max-h-[10rem]` }>
                                                         <CommandEmpty>{comboboxTagsLoadState ? `Loading...` : `No tags found.`}</CommandEmpty>
                                                         <CommandGroup>
-                                                            {(() => {
-                                                                if(comboboxTagsLoadState){
-                                                                    return <>
-                                                                        <CommandItem
-                                                                            value=''
-                                                                            key={ `tags_loading-state` }
-                                                                            disabled={ true }
-                                                                        >
-                                                                            <Check
-                                                                                className={ `mr-2 h-4 w-4 opacity-0`}
-                                                                            />
-                                                                            <span className={ ` w-full overflow-hidden whitespace-nowrap text-ellipsis` }>Fetching data...</span>
-                                                                        </CommandItem>
-                                                                    </>;
-                                                                }
-
-                                                                return <></>;
-                                                            })()}
                                                             {comboboxTagsList.map((options: TagsItem) => (
                                                                 <CommandItem
                                                                     value={options?.uuid}

@@ -194,7 +194,7 @@ export default function SystemLayout({ user, header, children, fabAction = null 
 
                 {/* Main Content */}
                 <div className={ ` flex justify-center px-6 py-6` }>
-                    <main className={ ` w-full md:max-w-[420px] md:min-w-[420px] pt-[calc(64px)]` }>
+                    <main className={ ` w-full md:w-full md:max-w-lg pt-[calc(64px)]` }>
                         {children}
                     </main>
                 </div>

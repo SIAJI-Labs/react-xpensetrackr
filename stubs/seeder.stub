@@ -4,6 +4,7 @@ namespace {{ namespace }};
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class {{ class }} extends Seeder
 {
@@ -12,6 +13,8 @@ class {{ class }} extends Seeder
      */
     public function run(): void
     {
-        //
+        Schema::disableForeignKeyConstraints();
+        // DB::table()->truncate();
+        Schema::enableForeignKeyConstraints();
     }
 }

@@ -69,7 +69,7 @@ export default function Navbar({ user, className = '' }: PropsWithChildren<{ use
                         </div>
 
                         {/* Search Command */}
-                        <div className={ ` h-full md:absolute md:left-1/2 md:-translate-x-1/2 items-center flex sm:max-w-[420px] w-full` }>
+                        <div className={ ` h-full md:absolute md:left-1/2 md:-translate-x-1/2 items-center flex md:w-full md:max-w-lg w-full` }>
                             <div className={ ` flex flex-row gap-4 w-full justify-between border h-10 rounded-md items-center px-4 cursor-pointer` } id={ `navbar-search` }>
                                 <div className={ ` flex flex-row items-center gap-4` }>
                                     <i className={ `fa-solid fa-magnifying-glass dark:text-white` }></i>
